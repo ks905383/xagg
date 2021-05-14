@@ -3,7 +3,7 @@ xagg
 [![Build Status](https://github.com/ks905383/xagg/workflows/Tests/badge.svg)](https://github.com/ks905383/xagg/actions)
 [![codecov](https://codecov.io/gh/ks905383/xagg/branch/master/graph/badge.svg)](https://codecov.io/gh/ks905383/xagg)
 [![pypi](https://img.shields.io/pypi/v/xagg.svg)](https://pypi.org/project/xagg)
-[![Documentation Status](https://readthedocs.org/projects/xagg-new/badge/?version=latest)](https://xagg-new.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/xagg-new/badge/?version=latest)](https://xagg.readthedocs.io/en/latest/?badge=latest)
 
 
 A package to aggregate gridded data in `xarray` to polygons in `geopandas` using area-weighting from the relative area overlaps between pixels and polygons.
@@ -14,6 +14,10 @@ The easiest way to install `xagg` is using `pip`.
 ```
 pip install xagg
 ```
+
+## Documentation 
+
+See the latest documentation at https://xagg.readthedocs.io/en/latest/index.html
 
 ## Intro 
 
