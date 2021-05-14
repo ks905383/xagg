@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - sphinx==3.4.3
-  - nbsphinx==0.8.1
+  - nbsphinx==0.8.5
   - pip:
     - sphinx_rtd_theme==0.5.1
     - numpydoc==1.1.0
