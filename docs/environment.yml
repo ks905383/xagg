@@ -6,3 +6,4 @@ dependencies:
   - nbsphinx==0.8.1
   - pip:
     - sphinx_rtd_theme==0.5.1
+    - numpydoc==1.1.0
