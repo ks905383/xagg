@@ -1,0 +1,26 @@
+name: test_env_xagg_38
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  ############## These will have to be adjusted to your specific project
+  - numpy
+  - scipy
+  - xarray
+  - pandas
+  - netcdf4
+  - geopandas
+  - shapely
+  - xesmf >= 0.5.2 # These versions and explicit loads are to fix an issue in xesmf's call to cf_xarray (possibly through esmpy) 
+  - cf_xarray >= 0.5.1
+  - esmf >= 8.1.0
+  - esmpy >= 8.1.0 
+  - matplotlib
+  - cartopy
+  - cmocean
+  ##############
+  - pytest
+  - pip:
+    - codecov
+    - pytest-cov
+    - coverage[toml]

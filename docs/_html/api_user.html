@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>User API &mdash; xagg 2.4 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Backend API" href="api_backend.html" />
+    <link rel="prev" title="Detailed code run" href="notebooks/full_run.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> xagg
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Intro</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/base_run.html">Base run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/full_run.html">Detailed code run</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#core-clases">Core clases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-xagg.wrappers">Primary (wrapper) functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-xagg.aux">Auxiliary functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_backend.html">Backend API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xagg</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>User API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/api_user.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="user-api">
+<h1>User API<a class="headerlink" href="#user-api" title="Permalink to this headline">¶</a></h1>
+<section id="core-clases">
+<h2>Core clases<a class="headerlink" href="#core-clases" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="xagg.classes.weightmap">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">xagg.classes.</span></span><span class="sig-name descname"><span class="pre">weightmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nowghts'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.classes.weightmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for mapping from pixels to polgyons, output from <a class="reference internal" href="#xagg.wrappers.pixel_overlaps" title="xagg.wrappers.pixel_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.wrappers.pixel_overlaps()</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xagg.classes.weightmap.diag_fig" title="xagg.classes.weightmap.diag_fig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_fig</span></code></a>(poly_idx)</p></td>
+<td><p>(NOT YET IMPLEMENTED) a diagnostic figure of the aggregation</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="xagg.classes.weightmap.diag_fig">
+<span class="sig-name descname"><span class="pre">diag_fig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">poly_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.classes.weightmap.diag_fig" title="Permalink to this definition">¶</a></dt>
+<dd><p>(NOT YET IMPLEMENTED) a diagnostic figure of the aggregation</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xagg.classes.aggregated">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">xagg.classes.</span></span><span class="sig-name descname"><span class="pre">aggregated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ds_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nowghts'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.classes.aggregated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for aggregated data, output from <a class="reference internal" href="#xagg.core.aggregate" title="xagg.core.aggregate"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.aggregate()</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xagg.classes.aggregated.to_csv" title="xagg.classes.aggregated.to_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_csv</span></code></a>(fn)</p></td>
+<td><p>Save as csv</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xagg.classes.aggregated.to_dataframe" title="xagg.classes.aggregated.to_dataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dataframe</span></code></a>()</p></td>
+<td><p>Convert to pandas dataframe.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xagg.classes.aggregated.to_dataset" title="xagg.classes.aggregated.to_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dataset</span></code></a>([loc_dim])</p></td>
+<td><p>Convert to xarray dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xagg.classes.aggregated.to_netcdf" title="xagg.classes.aggregated.to_netcdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_netcdf</span></code></a>(fn[, loc_dim])</p></td>
+<td><p>Save as netcdf</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xagg.classes.aggregated.to_shp" title="xagg.classes.aggregated.to_shp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_shp</span></code></a>(fn)</p></td>
+<td><p>Save as shapefile</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="xagg.classes.aggregated.to_csv">
+<span class="sig-name descname"><span class="pre">to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.classes.aggregated.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save as csv</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xagg.classes.aggregated.to_dataframe">
+<span class="sig-name descname"><span class="pre">to_dataframe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xagg.classes.aggregated.to_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to pandas dataframe.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xagg.classes.aggregated.to_dataset">
+<span class="sig-name descname"><span class="pre">to_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pix_idx'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.classes.aggregated.to_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to xarray dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xagg.classes.aggregated.to_netcdf">
+<span class="sig-name descname"><span class="pre">to_netcdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pix_idx'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.classes.aggregated.to_netcdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save as netcdf</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xagg.classes.aggregated.to_shp">
+<span class="sig-name descname"><span class="pre">to_shp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.classes.aggregated.to_shp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save as shapefile</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-xagg.wrappers">
+<span id="primary-wrapper-functions"></span><h2>Primary (wrapper) functions<a class="headerlink" href="#module-xagg.wrappers" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.wrappers.pixel_overlaps">
+<span class="sig-prename descclassname"><span class="pre">xagg.wrappers.</span></span><span class="sig-name descname"><span class="pre">pixel_overlaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ds'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset_bbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.wrappers.pixel_overlaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper function for determining overlaps between grid and polygon</p>
+<p>For a geodataframe <cite>gdf_in</cite>, takes an <cite>xarray</cite> structure <cite>ds</cite> (Dataset or 
+DataArray) and for each polygon in <cite>gdf_in</cite> provides a list of pixels 
+given by the <cite>ds</cite> grid which overlap that polygon, in addition to their
+relative area of overlap with the polygon.</p>
+<p>The output is then ready to be fed into <a class="reference internal" href="#xagg.core.aggregate" title="xagg.core.aggregate"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.aggregate()</span></code></a>, which aggregates
+the variables in <cite>ds</cite> to the polygons in <cite>gdf_in</cite> using area- (and 
+optionally other) weights.</p>
+<p>(NB: the wrapper uses <code class="docutils literal notranslate"><span class="pre">subset_bbox</span> <span class="pre">=</span> <span class="pre">True</span></code> in <a class="reference internal" href="api_backend.html#xagg.core.create_raster_polygons" title="xagg.core.create_raster_polygons"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.create_raster_polygons()</span></code></a>)</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></span></dt><dd><p>an xarray Dataset or DataArray containing at least
+grid variables (“lat”/”lon”, though several other names
+are supported; see docs for <a class="reference internal" href="#xagg.aux.fix_ds" title="xagg.aux.fix_ds"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.aux.fix_ds()</span></code></a>) and at least 
+one variable on that grid</p>
+</dd>
+<dt><strong>gdf_in</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></span></dt><dd><p>a geopandas GeoDataFrame containing polygons (and 
+any other fields, for example fields from shapefiles)</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code>, optional, default = <code class="docutils literal notranslate"><span class="pre">None</span></code></span></dt><dd><p>(by default, None) if additional weights are desired,
+(for example, weighting pixels by population in addition
+to by area overlap), <cite>weights</cite> is an <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>
+containing that information. It does <em>not</em> have to 
+be on the same grid as <cite>ds</cite> - grids will be homogonized
+(see below).</p>
+</dd>
+<dt><strong>weights_target</strong><span class="classifier">str, optional</span></dt><dd><p>if ‘ds’, then weights are regridded to the grid in [ds];
+if ‘weights’, then the <cite>ds</cite> variables are regridded to
+the grid in ‘weights’ (LATTER NOT SUPPORTED YET, raises
+a <cite>NotImplementedError</cite>)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>wm_out</strong><span class="classifier">dict</span></dt><dd><p>the output of <a class="reference internal" href="api_backend.html#xagg.core.get_pixel_overlaps" title="xagg.core.get_pixel_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.get_pixel_overlaps()</span></code></a>  which gives the mapping of pixels to polygon aggregation; to be
+input into <a class="reference internal" href="#xagg.core.aggregate" title="xagg.core.aggregate"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.aggregate()</span></code></a>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-xagg.core"></span><dl class="py function">
+<dt class="sig sig-object py" id="xagg.core.aggregate">
+<span class="sig-prename descclassname"><span class="pre">xagg.core.</span></span><span class="sig-name descname"><span class="pre">aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.core.aggregate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregate raster variable(s) to polygon(s)</p>
+<p>Aggregates (N-D) raster variables in <cite>ds</cite> to the polygons
+in <cite>gfd_out</cite> - in other words, gives the weighted average
+of the values in [ds] based on each pixel’s relative area
+overlap with the polygons.</p>
+<p>The values will be additionally weighted if a <cite>weight</cite> was
+inputted into <a class="reference internal" href="api_backend.html#xagg.core.create_raster_polygons" title="xagg.core.create_raster_polygons"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.create_raster_polygons()</span></code></a></p>
+<p>The code checks whether the input lat/lon grid in <cite>ds</cite> is 
+equivalent to the linearly indexed grid in <cite>wm</cite>, or 
+if it can be cropped to that grid.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>an <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> containing one or more
+variables with dimensions lat, lon (and possibly
+more). The dataset’s geographic grid has to 
+include the lat/lon coordinates used in 
+determining the pixel overlaps in 
+<a class="reference internal" href="api_backend.html#xagg.core.get_pixel_overlaps" title="xagg.core.get_pixel_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.get_pixel_overlaps()</span></code></a> (and saved in 
+<code class="docutils literal notranslate"><span class="pre">wm['source_grid']</span></code>)</p>
+</dd>
+<dt><strong>wm</strong><span class="classifier"><a class="reference internal" href="#xagg.classes.weightmap" title="xagg.classes.weightmap"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.weightmap</span></code></a></span></dt><dd><p>the output to <a class="reference internal" href="api_backend.html#xagg.core.get_pixel_overlaps" title="xagg.core.get_pixel_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.get_pixel_overlaps()</span></code></a>; a 
+<a class="reference internal" href="#xagg.classes.weightmap" title="xagg.classes.weightmap"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.weightmap</span></code></a> object containing</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">['agg']</span></code></dt><dd><p>a dataframe, 
+with one row per polygon, and the columns <cite>pix_idxs</cite>
+and <cite>rel_area</cite>, giving the linear indices and 
+the relative area of each pixel over the polygon,
+respectively</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">['source_grid']</span></code>  </dt><dd><p>the lat/lon grid on which the aggregating parameters
+were calculated (and on which the linear indices 
+are based)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>agg_out</strong><span class="classifier"><a class="reference internal" href="#xagg.classes.aggregated" title="xagg.classes.aggregated"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.aggregated</span></code></a></span></dt><dd><p>an <a class="reference internal" href="#xagg.classes.aggregated" title="xagg.classes.aggregated"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.aggregated</span></code></a> object with the aggregated variables</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-xagg.aux">
+<span id="auxiliary-functions"></span><h2>Auxiliary functions<a class="headerlink" href="#module-xagg.aux" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.aux.fix_ds">
+<span class="sig-prename descclassname"><span class="pre">xagg.aux.</span></span><span class="sig-name descname"><span class="pre">fix_ds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_cipher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'Lat':</span> <span class="pre">{'Lat':</span> <span class="pre">'lat',</span> <span class="pre">'Lon':</span> <span class="pre">'lon'},</span> <span class="pre">'Latitude':</span> <span class="pre">{'Latitude':</span> <span class="pre">'lat',</span> <span class="pre">'Longitude':</span> <span class="pre">'lon'},</span> <span class="pre">'Y':</span> <span class="pre">{'X':</span> <span class="pre">'lon',</span> <span class="pre">'Y':</span> <span class="pre">'lat'},</span> <span class="pre">'latitude':</span> <span class="pre">{'latitude':</span> <span class="pre">'lat',</span> <span class="pre">'longitude':</span> <span class="pre">'lon'},</span> <span class="pre">'latitude_1':</span> <span class="pre">{'latitude_1':</span> <span class="pre">'lat',</span> <span class="pre">'longitude_1':</span> <span class="pre">'lon'},</span> <span class="pre">'nav_lat':</span> <span class="pre">{'nav_lat':</span> <span class="pre">'lat',</span> <span class="pre">'nav_lon':</span> <span class="pre">'lon'},</span> <span class="pre">'y':</span> <span class="pre">{'x':</span> <span class="pre">'lon',</span> <span class="pre">'y':</span> <span class="pre">'lat'}}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chg_bnds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.aux.fix_ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Puts the input <cite>ds</cite> into a format compatible with the rest of the package</p>
+<ol class="arabic simple">
+<li><p>grid variables are renamed “lat” and “lon”</p></li>
+<li><p>the lon dimension is made -180:180 to be consistent with most geographic
+data (as well as any lon_bnds variable if <code class="docutils literal notranslate"><span class="pre">chg_bnds=True</span></code> (by default))</p></li>
+<li><p>the dataset is sorted in ascending order in both lat and lon</p></li>
+</ol>
+<p>NOTE: there probably should be a safeguard in case “y” and “x” are multiindex 
+dimension names instead of lat/lon names… maybe a warning for now… (TO DO)</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>an input <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>, which may or may not need adjustment to be 
+compatible with this package</p>
+</dd>
+<dt><strong>var_cipher</strong><span class="classifier">dict, optional</span></dt><dd><p>a dict of dicts for renaming lat/lon variables to “lat”/”lon”. The 
+form is <code class="docutils literal notranslate"><span class="pre">{search_str:{lat_name:'lat',lon_name:'lon'},...}</span></code>, 
+the code looks for <cite>search_str</cite> in the dimensions of the <cite>ds</cite>; 
+based on that, it renames <cite>lat_name</cite> to ‘lat’ and <cite>lon_name</cite> to ‘lon’.
+Common names for these variables (‘latitude’, ‘Latitude’, ‘Lat’,
+‘latitude_1’,’nav_lat’,’Y’) are included out of the box.</p>
+</dd>
+<dt><strong>chg_bnds</strong><span class="classifier">bool, optional, default = <code class="docutils literal notranslate"><span class="pre">True</span></code></span></dt><dd><p>if <code class="docutils literal notranslate"><span class="pre">True</span></code>, the names of variables with “_bnd” in their names
+are assumed to be dimension bound variables, and are changed as well if
+the rest of their name matches ‘o’ (for lon) or ‘a’ (for lat). 
+## DOES THIS WORK FOR “X” and “Y”?</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>a dataset with lat/lon variables in the format necessary for this package to function</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.aux.get_bnds">
+<span class="sig-prename descclassname"><span class="pre">xagg.aux.</span></span><span class="sig-name descname"><span class="pre">get_bnds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'lat':</span> <span class="pre">[-</span> <span class="pre">90,</span> <span class="pre">90],</span> <span class="pre">'lon':</span> <span class="pre">[-</span> <span class="pre">180,</span> <span class="pre">180]}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrap_around_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.aux.get_bnds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds vectors of lat/lon bounds if not present in <cite>ds</cite></p>
+<p>Assumes a regular rectangular grid - so each lat/lon bound
+is 0.5*(gap between pixels) over to the next pixel.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>an xarray dataset that may or may not 
+contain variables “lat_bnds” and 
+“lon_bnds”</p>
+</dd>
+<dt><strong>wrap_around_thresh</strong><span class="classifier">numeric, optional, default = <code class="docutils literal notranslate"><span class="pre">5</span></code> (degrees)</span></dt><dd><p>the minimum distance between the last 
+pixel edge and the ‘edges’ of the 
+coordinate system for which the pixels
+are ‘wrapped around’. For example, given
+‘lon’ edges of [-180,180] and a 
+wrap_around_thresh of 5 (default), if 
+the calculated edges of pixels match
+the edge on one side, but not the other
+(i.e. -180 and 179.4) and this gap 
+(180-179.4) is less than 5, the -180 
+edge is changed to 179.4 to allow the pixel
+to ‘wrap around’ the edge of the coordinate
+system.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>the same dataset as inputted, unchanged if “lat/lon_bnds” 
+already existed, or with new variables “lat_bnds” and “lon_bnds”
+if not.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.aux.normalize">
+<span class="sig-prename descclassname"><span class="pre">xagg.aux.</span></span><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.aux.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes the vector <cite>a</cite></p>
+<p>The vector <cite>a</cite> is divided by its sum.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>a</strong><span class="classifier">array_like</span></dt><dd><p>A vector to be normalized</p>
+</dd>
+<dt><strong>drop_na</strong><span class="classifier">bool, optional, default = <code class="docutils literal notranslate"><span class="pre">False</span></code></span></dt><dd><p>If drop_na = True, and there are nans in the vector a, then the normalization
+is calculated using only the non-nan locations in a, and the vector is returned
+with the nans in their original location. 
+In other words, <cite>np.nansum(normalize(a),drop_na=True) == 1.0</cite></p>
+<p>If drop_na = False, and nans are present in a, then normalize just returns a 
+vector of np.nan the same length of a.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>a</strong><span class="classifier">vector</span></dt><dd><p><cite>a</cite>, but normalized.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.aux.subset_find">
+<span class="sig-prename descclassname"><span class="pre">xagg.aux.</span></span><span class="sig-name descname"><span class="pre">subset_find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ds1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.aux.subset_find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the grid of <cite>ds1</cite> in <cite>ds0</cite>, and subsets <cite>ds0</cite> to the grid in <cite>ds1</cite></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ds0</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>an xarray Dataset to be subset based on the grid of ds1; must 
+contain grid variables “lat” or “lon” (could add a fix_ds call)</p>
+</dd>
+<dt><strong>ds1</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></span></dt><dd><p>either an <cite>xarray</cite> structrue (Dataset, DataArray) with “lat” “lon”
+variables, or a dictionary with DataArrays [‘lat’] and [‘lon’].
+IMPORTANT: <cite>ds1</cite> HAS TO BE BROADCAST - i.e. one value of lat, lon 
+each coordinate, with lat and lon vectors of equal length. This can 
+be done e.g. using <code class="docutils literal notranslate"><span class="pre">ds1.stack(loc=('lat','lon'))</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>ds0</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>The input <cite>ds0</cite>, subset to the locations in <cite>ds1</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="api_backend.html" class="btn btn-neutral float-right" title="Backend API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="notebooks/full_run.html" class="btn btn-neutral float-left" title="Detailed code run" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Kevin Schwarzwald.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

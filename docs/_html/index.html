@@ -1,0 +1,303 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>xagg &mdash; xagg 2.4 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Intro" href="intro.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> xagg
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Intro</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/base_run.html">Base run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/full_run.html">Detailed code run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_user.html">User API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_backend.html">Backend API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">xagg</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>xagg</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="xagg">
+<h1>xagg<a class="headerlink" href="#xagg" title="Permalink to this headline">¶</a></h1>
+<p>A package to aggregate gridded data in <code class="docutils literal notranslate"><span class="pre">xarray</span></code> to polygons in <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> using area-weighting from the relative area overlaps between pixels and polygons.</p>
+<p>The simplest code run, involving raster data in an <code class="docutils literal notranslate"><span class="pre">xarray</span></code> Dataset <code class="docutils literal notranslate"><span class="pre">ds</span></code> and polygons in a <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> GeoDataFrame <code class="docutils literal notranslate"><span class="pre">gpd</span></code>, is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">xagg</span> <span class="k">as</span> <span class="nn">xa</span>
+
+<span class="c1"># Get overlap between pixels and polygons</span>
+<span class="n">weightmap</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">pixel_overlaps</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">gdf</span><span class="p">)</span>
+
+<span class="c1"># Aggregate data in [ds] onto polygons</span>
+<span class="n">aggregated</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">weightmap</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">aggregated</span></code> can then be turned into an <code class="docutils literal notranslate"><span class="pre">xarray</span></code> Dataset, a <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> GeoDataFrame, or directly exported to a CSV (for use in, e.g., STATA), NetCDF, or Shapefile.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Intro</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#use-cases">Use cases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="intro.html#climate-econometrics">Climate econometrics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/base_run.html">Base run</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/base_run.html#Import">Import</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/base_run.html#Aggregate">Aggregate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/base_run.html#Convert">Convert</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/full_run.html">Detailed code run</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/full_run.html#Intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/full_run.html#Calculating-area-weights-between-a-raster-grid-and-polygons">Calculating area weights between a raster grid and polygons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/full_run.html#Aggregating-gridded-data-to-the-polygons-using-the-area-weights-(and-other-weights)-calculated-above">Aggregating gridded data to the polygons using the area weights (and other weights) calculated above</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/full_run.html#Converting-aggregated-data">Converting aggregated data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/full_run.html#Exporting-aggregated-data">Exporting aggregated data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/full_run.html#Export-to-netCDF">Export to netCDF</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/full_run.html#Export-to-.csv">Export to .csv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks/full_run.html#Export-to-shapefile">Export to shapefile</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_user.html">User API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_user.html#core-clases">Core clases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_user.html#module-xagg.wrappers">Primary (wrapper) functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_user.html#module-xagg.aux">Auxiliary functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_backend.html">Backend API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_backend.html#module-xagg.core">Core functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_backend.html#module-xagg.export">Export functions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<p>&#64; -29,4 +106,4 &#64;&#64; Indices and tables
+* <a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a>
+* <a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="intro.html" class="btn btn-neutral float-right" title="Intro" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Kevin Schwarzwald.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

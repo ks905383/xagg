@@ -1,0 +1,9 @@
+conda:
+    file: docs/environment.yml
+python:
+   version: 3.8
+   install:
+      - method: setuptools
+        path: package
+sphinx:
+  fail_on_warning: true

@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Intro &mdash; xagg 2.4 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="xagg" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> xagg
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Intro</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-cases">Use cases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#climate-econometrics">Climate econometrics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/base_run.html">Base run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/full_run.html">Detailed code run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_user.html">User API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_backend.html">Backend API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xagg</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Intro</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/intro.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="intro">
+<h1>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Science often happens on grids - gridded weather products, interpolated pollution data, night time lights, remote sensing all approximate the continuous real world for reasons of data resolution, processing time, or ease of calculation.</p>
+<p>However, living things don’t live on grids, and rarely play, act, or observe data on grids either. Instead, humans tend to work on the county, state, township, okrug, or city level; birds tend to fly along complex migratory corridors; and rain- and watersheds follow valleys and mountains.</p>
+<p>So, whenever we need to work with both gridded and geographic data products, we need ways of getting them to match up. We may be interested for example what the average temperature over a county is, or the average rainfall rate over a watershed.</p>
+<p>Enter <code class="docutils literal notranslate"><span class="pre">xagg</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">xagg</span></code> provides an easy-to-use (2 lines!), standardized way of aggregating raster data to polygons. All you need is some gridded data in an <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> and some polygon data in a <code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code>. Both of these are easy to use for the purposes of <code class="docutils literal notranslate"><span class="pre">xagg</span></code> - for example, all you need to use a shapefile is to open it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+
+<span class="c1"># Gridded data file (netcdf/climate data)</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s1">&#39;file.nc&#39;</span><span class="p">)</span>
+
+<span class="c1"># Shapefile</span>
+<span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s1">&#39;file.shp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">xagg</span></code> will then figure out the geographic grid (lat/lon) in <code class="docutils literal notranslate"><span class="pre">ds</span></code>, create polygons for each pixel, and then generate intersects between every polygon in the shapefile and every pixel. For each polygon in the shapefile, the relative area of each covering pixel is calculated - so, for example, if a polygon (say, a US county) is the size and shape of a grid pixel, but is split halfway between two pixels, the weight for each pixel will be 0.5, and the value of the gridded variables on that polygon will just be the average of both.</p>
+<p>The two lines mentioned before?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">xagg</span> <span class="k">as</span> <span class="nn">xa</span>
+
+<span class="c1"># Get overlap between pixels and polygons</span>
+<span class="n">weightmap</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">pixel_overlaps</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">gdf</span><span class="p">)</span>
+
+<span class="c1"># Aggregate data in [ds] onto polygons</span>
+<span class="n">aggregated</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">weightmap</span><span class="p">)</span>
+
+<span class="c1"># aggregated can now be converted into an xarray dataset (using aggregated.to_dataset()),</span>
+<span class="c1"># or a geopandas geodataframe (using aggregated.to_dataframe()), or directly exported</span>
+<span class="c1"># to netcdf, csv, or shp files using aggregated.to_csv()/.to_netcdf()/.to_shp()</span>
+</pre></div>
+</div>
+<p>Researchers often need to weight your data by more than just its relative area overlap with a polygon (for example, do you want to weight pixels with more population more?). <code class="docutils literal notranslate"><span class="pre">xagg</span></code> has a built-in support for adding an additional weight grid (another <cite>xarray</cite> DataArray) into <a class="reference internal" href="api_user.html#xagg.wrappers.pixel_overlaps" title="xagg.wrappers.pixel_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.wrappers.pixel_overlaps()</span></code></a>.</p>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">xagg</span></code> allows for direct exporting of the aggregated data in several commonly used data formats (please open issues if you’d like support for something else!):</p>
+<ul class="simple">
+<li><p>NetCDF</p></li>
+<li><p>CSV for STATA, R</p></li>
+<li><p>Shapefile for QGIS, further spatial processing</p></li>
+</ul>
+<p>Best of all, <code class="docutils literal notranslate"><span class="pre">xagg</span></code> is flexible. Multiple variables in your dataset? <code class="docutils literal notranslate"><span class="pre">xagg</span></code> will aggregate them all, as long as they have at least <code class="docutils literal notranslate"><span class="pre">lat/lon</span></code> dimensions. Fields in your shapefile that you’d like to keep? <code class="docutils literal notranslate"><span class="pre">xagg</span></code> keeps all fields (for example FIPS codes from county datasets) all the way through the final export. Weird dimension names? <code class="docutils literal notranslate"><span class="pre">xagg</span></code> is trained to recognize all versions of “lat”, “Latitude”, “Y”, “nav_lat”, “Latitude_1”… etc. that the author has run into over the years of working with climate data; and this list is easily expandable as a keyword argument if needed.</p>
+</section>
+<section id="use-cases">
+<h2>Use cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h2>
+<section id="climate-econometrics">
+<h3>Climate econometrics<a class="headerlink" href="#climate-econometrics" title="Permalink to this headline">¶</a></h3>
+<p>Many climate econometrics studies use societal data (mortality, crop yields, etc.) at a political or administrative level (for example, counties) but climate and weather data on grids. Oftentimes, further weighting by population or agricultural density is needed.</p>
+<p>Area-weighting of pixels onto polygons ensures that aggregating weather and climate data onto polygons occurs in a robust way. Consider a (somewhat contrived) example: an administrative region is in a relatively flat lowlands, but a pixel that slightly overlaps the polygon primarily covers a wholly different climate (mountainous, desert, etc.). Using a simple mask would weight that pixel the same, though its information is not necessarily relevant to the climate of the region. Population-weighting may not always be sufficient either; consider Los Angeles, which has multiple significantly different climates, all with high densities.</p>
+<p><code class="docutils literal notranslate"><span class="pre">xagg</span></code> allows a simple population <em>and</em> area-averaging, in addition to export functions that will turn the aggregated data into output easily used in STATA or R for further calculations.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="xagg" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Kevin Schwarzwald.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

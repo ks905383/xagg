@@ -1,0 +1,581 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Backend API &mdash; xagg 2.4 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="User API" href="api_user.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> xagg
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Intro</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/base_run.html">Base run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/full_run.html">Detailed code run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_user.html">User API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Backend API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-xagg.core">Core functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-xagg.export">Export functions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xagg</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Backend API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/api_backend.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="backend-api">
+<h1>Backend API<a class="headerlink" href="#backend-api" title="Permalink to this headline">¶</a></h1>
+<section id="module-xagg.core">
+<span id="core-functions"></span><h2>Core functions<a class="headerlink" href="#module-xagg.core" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.core.aggregate">
+<span class="sig-prename descclassname"><span class="pre">xagg.core.</span></span><span class="sig-name descname"><span class="pre">aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.core.aggregate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregate raster variable(s) to polygon(s)</p>
+<p>Aggregates (N-D) raster variables in <cite>ds</cite> to the polygons
+in <cite>gfd_out</cite> - in other words, gives the weighted average
+of the values in [ds] based on each pixel’s relative area
+overlap with the polygons.</p>
+<p>The values will be additionally weighted if a <cite>weight</cite> was
+inputted into <a class="reference internal" href="#xagg.core.create_raster_polygons" title="xagg.core.create_raster_polygons"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.create_raster_polygons()</span></code></a></p>
+<p>The code checks whether the input lat/lon grid in <cite>ds</cite> is 
+equivalent to the linearly indexed grid in <cite>wm</cite>, or 
+if it can be cropped to that grid.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>an <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> containing one or more
+variables with dimensions lat, lon (and possibly
+more). The dataset’s geographic grid has to 
+include the lat/lon coordinates used in 
+determining the pixel overlaps in 
+<a class="reference internal" href="#xagg.core.get_pixel_overlaps" title="xagg.core.get_pixel_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.get_pixel_overlaps()</span></code></a> (and saved in 
+<code class="docutils literal notranslate"><span class="pre">wm['source_grid']</span></code>)</p>
+</dd>
+<dt><strong>wm</strong><span class="classifier"><a class="reference internal" href="api_user.html#xagg.classes.weightmap" title="xagg.classes.weightmap"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.weightmap</span></code></a></span></dt><dd><p>the output to <a class="reference internal" href="#xagg.core.get_pixel_overlaps" title="xagg.core.get_pixel_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.get_pixel_overlaps()</span></code></a>; a 
+<a class="reference internal" href="api_user.html#xagg.classes.weightmap" title="xagg.classes.weightmap"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.weightmap</span></code></a> object containing</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">['agg']</span></code></dt><dd><p>a dataframe, 
+with one row per polygon, and the columns <cite>pix_idxs</cite>
+and <cite>rel_area</cite>, giving the linear indices and 
+the relative area of each pixel over the polygon,
+respectively</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">['source_grid']</span></code>  </dt><dd><p>the lat/lon grid on which the aggregating parameters
+were calculated (and on which the linear indices 
+are based)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>agg_out</strong><span class="classifier"><a class="reference internal" href="api_user.html#xagg.classes.aggregated" title="xagg.classes.aggregated"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.aggregated</span></code></a></span></dt><dd><p>an <a class="reference internal" href="api_user.html#xagg.classes.aggregated" title="xagg.classes.aggregated"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.aggregated</span></code></a> object with the aggregated variables</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.core.create_raster_polygons">
+<span class="sig-prename descclassname"><span class="pre">xagg.core.</span></span><span class="sig-name descname"><span class="pre">create_raster_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset_bbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ds'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.core.create_raster_polygons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create polygons for each pixel in a raster</p>
+<p>Note: 
+‘lat_bnds’ and ‘lon_bnds’ can be created through the
+<a class="reference internal" href="api_user.html#xagg.aux.get_bnds" title="xagg.aux.get_bnds"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.aux.get_bnds()</span></code></a> function if they are not already included
+in the input raster file.</p>
+<p>Note:
+Currently this code only supports regular 
+rectangular grids (so where every pixel side is
+a straight line in lat/lon space). Future versions
+may include support for irregular grids.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></span></dt><dd><p>an xarray dataset with the variables 
+‘lat_bnds’ and ‘lon_bnds’, which are both
+lat/lon x 2 arrays giving the min and 
+max values of lat and lon for each pixel
+given by lat/lon</p>
+</dd>
+<dt><strong>subset_bbox</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code>, optional, default = <code class="docutils literal notranslate"><span class="pre">None</span></code></span></dt><dd><p>if a <code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code>
+is entered, the bounding
+box around the geometries in the <cite>gdf</cite> 
+are used to mask the grid, to reduce
+the number of pixel polygons created</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>pix_agg: dict</dt><dd><p>a dictionary containing:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">'gdf_pixels'</span></code> </dt><dd><p>a <code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> containing a 
+‘geometry’ giving the pixel boundaries 
+for each ‘lat’ / ‘lon’ pair</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">'source_grid'</span></code> </dt><dd><p>a dictionary containing the original
+lat and lon inputs under the keys
+“lat” and “lon” (just the 
+<code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> of those variables in
+the input <cite>ds</cite>)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.core.get_pixel_overlaps">
+<span class="sig-prename descclassname"><span class="pre">xagg.core.</span></span><span class="sig-name descname"><span class="pre">get_pixel_overlaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gdf_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_agg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.core.get_pixel_overlaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get, for each polygon, the pixels that overlap and their area of overlap</p>
+<p>Finds, for each polygon in <cite>gdf_in</cite>, which pixels intersect it, and by how much.</p>
+<p>Note: 
+Uses EASE-Grid 2.0 on the WGS84 datum to calculate relative areas
+(see <a class="reference external" href="https://nsidc.org/data/ease">https://nsidc.org/data/ease</a>)</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>gdf_in</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrane</span></code></span></dt><dd><p>a <code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> giving the polygons over which 
+the variables should be aggregated. Can be just a read
+shapefile (with the added column of “poly_idx”, which 
+is just the index as a column).</p>
+</dd>
+<dt><strong>pix_agg</strong><span class="classifier">dict</span></dt><dd><p>the output of <a class="reference internal" href="#xagg.core.create_raster_polygons" title="xagg.core.create_raster_polygons"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.core.create_raster_polygons()</span></code></a>; a dict containing:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">'gdf_pixels'</span></code></dt><dd><p>a <code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> giving for each row 
+the columns “lat” and “lon” (with coordinates) 
+and a polygon giving the boundary of the pixel 
+given by lat/lon</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">'source_grid'</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">[da.lat,da.lon]</span></code> of the grid used to create
+the pixel polygons</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt>wm_out: dict</dt><dd><p>A dictionary containing:</p>
+<ul>
+<li><dl>
+<dt><code class="docutils literal notranslate"><span class="pre">'agg'</span></code></dt><dd><p>a dataframe containing all the fields of <cite>gdf_in</cite> (except
+geometry) and the additional columns:</p>
+<ul class="simple">
+<li><p><cite>coords</cite>:  the lat/lon coordiates of all pixels that overlap</p></li>
+</ul>
+<blockquote>
+<div><p>the polygon of that row</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><cite>pix_idxs</cite>: the linear indices of those pixels within the</p></li>
+</ul>
+<blockquote>
+<div><p><cite>gdf_pixels</cite> grid</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><cite>rel_area</cite>: the relative area of each of the overlaps between</p></li>
+</ul>
+<blockquote>
+<div><p>the pixels and the polygon (summing to 1 - e.g. 
+if the polygon is exactly the size and location of
+two pixels, their rel_areas would be 0.5 each)</p>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">'source_grid'</span></code>: </dt><dd><p>a dictionary with keys ‘lat’ and ‘lon’ giving the 
+original lat/lon grid whose overlaps with the polygons
+was calculated</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">'geometry'</span></code>: </dt><dd><p>just the polygons from <cite>gdf_in</cite></p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.core.process_weights">
+<span class="sig-prename descclassname"><span class="pre">xagg.core.</span></span><span class="sig-name descname"><span class="pre">process_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ds'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.core.process_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process weights - including regridding</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">target</span> <span class="pre">==</span> <span class="pre">'ds'</span></code>, regrid <cite>weights</cite> to <cite>ds</cite>. If <code class="docutils literal notranslate"><span class="pre">target</span> <span class="pre">==</span> <span class="pre">'weights'</span></code>,
+regrid <cite>ds</cite> to <cite>weights</cite>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></span></dt><dd><p>an <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>/<code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> to regrid</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>, optional, default = <code class="docutils literal notranslate"><span class="pre">None</span></code></span></dt><dd><p>an <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> containing a weight (numeric) 
+at each location</p>
+</dd>
+<dt><strong>target</strong><span class="classifier">str, optional, default = <code class="docutils literal notranslate"><span class="pre">'ds'</span></code></span></dt><dd><p>whether weights should be regridded to the <cite>ds</cite> grid (by
+default) or vice-versa (not yet supported, returns 
+<cite>NotImplementedError</cite>)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>ds</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArrays</span></code></span></dt><dd><p>the input <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code>/<code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>, with a new variable 
+<cite>weights</cite> specifying weights for each pixel</p>
+</dd>
+<dt><strong>weights_info</strong><span class="classifier">dict</span></dt><dd><p>a dictionary storing information about the 
+weights regridding process, with the fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code>: showing which of the two grids was retained</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ds_grid</span></code>: a dictionary with the grid <code class="docutils literal notranslate"><span class="pre">{&quot;lat&quot;:ds.lat,&quot;lon&quot;,ds.lon}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weights_grid</span></code>: a dictionary with the grid <code class="docutils literal notranslate"><span class="pre">{&quot;lat&quot;:weights.lat,&quot;lon&quot;:weights.lon}</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-xagg.export">
+<span id="export-functions"></span><h2>Export functions<a class="headerlink" href="#module-xagg.export" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.export.output_data">
+<span class="sig-prename descclassname"><span class="pre">xagg.export.</span></span><span class="sig-name descname"><span class="pre">output_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agg_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'poly_idx'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.export.output_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for <cite>prep_for_*</cite> functions</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>agg_obj</strong><span class="classifier"><a class="reference internal" href="api_user.html#xagg.classes.aggregated" title="xagg.classes.aggregated"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.aggregated</span></code></a></span></dt><dd><p>object to be exported</p>
+</dd>
+<dt><strong>output_format</strong><span class="classifier">str</span></dt><dd><p>‘netcdf’, ‘csv’, or ‘shp’</p>
+</dd>
+<dt><strong>output_fn: str</strong></dt><dd><p>the output filename</p>
+</dd>
+<dt><strong>loc_dim</strong><span class="classifier">str, optional. default = <code class="docutils literal notranslate"><span class="pre">'poly_idx'</span></code></span></dt><dd><p>the name of the
+dimension with location indices; used
+only by <a class="reference internal" href="#xagg.export.prep_for_nc" title="xagg.export.prep_for_nc"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.export.prep_for_nc()</span></code></a></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>the variable that gets saved, so depending on the <cite>output_format</cite>:</dt><dd><ul class="simple">
+<li><p>“netcdf”: the <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> on which <code class="docutils literal notranslate"><span class="pre">.to_netcdf</span></code>
+was called</p></li>
+<li><p>“csv”: the <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Dataframe</span></code> on which <code class="docutils literal notranslate"><span class="pre">.to_csv</span></code> 
+was called</p></li>
+<li><p>“shp”: the <code class="xref py py-class docutils literal notranslate"><span class="pre">geopandas.GeoDataDrame</span></code> on which <code class="docutils literal notranslate"><span class="pre">.to_file</span></code> was called</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.export.prep_for_csv">
+<span class="sig-prename descclassname"><span class="pre">xagg.export.</span></span><span class="sig-name descname"><span class="pre">prep_for_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agg_obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.export.prep_for_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preps aggregated data for output as a csv</p>
+<p>Concretely, aggregated data is placed in a new pandas dataframe
+and expanded wide - each aggregated variable is placed in new 
+columns; one column per coordinate in each dimension that isn’t
+the location (poolygon). So, for example, a lat x lon x time
+variable “tas”, aggregated to location x time, would be reshaped 
+long to columns “tas0”, “tas1”, “tas2”,… for timestep 0, 1, etc.</p>
+<p>Note: 
+Currently no support for variables with more than one extra dimension
+beyond their location dimensions. Potential options: a multi-index
+column name, so [var]0-0, [var]0-1, etc…</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>agg_obj</strong><span class="classifier"><a class="reference internal" href="api_user.html#xagg.classes.aggregated" title="xagg.classes.aggregated"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.aggregated</span></code></a></span></dt><dd><p>the output from <code class="xref py py-func docutils literal notranslate"><span class="pre">aggregate()</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>df</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></span></dt><dd><p>a pandas dataframe containing all the fields from the original 
+location polygons + columns containing the values of the aggregated
+variables at each location. This can then easily be exported as a 
+csv directly (using <code class="docutils literal notranslate"><span class="pre">df.to_csv</span></code>) or to shapefiles by first turning into
+a geodataframe.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xagg.export.prep_for_nc">
+<span class="sig-prename descclassname"><span class="pre">xagg.export.</span></span><span class="sig-name descname"><span class="pre">prep_for_nc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agg_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'poly_idx'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xagg.export.prep_for_nc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preps aggregated data for output as a netcdf</p>
+<p>Concretely, aggregated data is placed in a new xarray dataset 
+with dimensions of location (the different polygons in gdf_out)
+and any other dimension(s) in the original input raster data. 
+All fields from the input polygons are kept as variables with 
+dimension of location.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>agg_obj</strong><span class="classifier"><a class="reference internal" href="api_user.html#xagg.classes.aggregated" title="xagg.classes.aggregated"><code class="xref py py-class docutils literal notranslate"><span class="pre">xagg.classes.aggregated</span></code></a></span></dt><dd></dd>
+<dt><strong>loc_dim</strong><span class="classifier">str, optional</span></dt><dd><p>the name of the location dimension; by definition 
+‘poly_idx’. Values of that dimension are currently
+only an integer index (with further information given
+by the field variables). Future versions may allow, 
+if loc_dim is set to the name of a field in the input
+polygons, to replace the dimension with the values of
+that field.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="api_user.html" class="btn btn-neutral float-left" title="User API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Kevin Schwarzwald.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
