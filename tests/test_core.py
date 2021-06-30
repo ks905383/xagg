@@ -303,6 +303,28 @@ def test_get_pixel_overlaps_passthru_weights(pix_agg=pix_agg):
 
 # Should probably test multiple polygons just to be sure... 
 
+
+###### get_pixel_overlaps() and aggregate() coupling tests #####
+def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=pix_agg):
+	# Test to make sure it works with pre-existing indices in the gdf
+	# Create polygon covering multiple pixels
+	gdf_test = {'name':['test'],
+				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
+	gdf_test = gpd.GeoDataFrame(gdf_test,crs="EPSG:4326",index=np.arange(10,11))
+
+	# Get pixel overlaps
+	wm_out = get_pixel_overlaps(gdf_test,pix_agg)
+
+	# The index error for an incorrectly-indexed gdf is thrown in aggregate()
+	agg = aggregate(ds,wm_out)
+
+	# this assert uses 2.1666 because of the weighting that creates 
+	# the pix_agg variable that this whole section has used. Doesn't really 
+	# matter, since this is testing an index error that would've 
+	# happened during aggregate() above. 
+	assert np.allclose([v for v in agg.agg.test.values],2.1666,rtol=1e-4)
+
+
 ##### aggregate() tests #####
 
 
