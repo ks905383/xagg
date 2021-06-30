@@ -283,8 +283,9 @@ def get_pixel_overlaps(gdf_in,pix_agg):
     
     
     # Add an index for each polygon as a column to make indexing easier
-    if 'poly_idx' not in gdf_in.columns:
-        gdf_in['poly_idx'] = gdf_in.index.values
+    #if 'poly_idx' not in gdf_in.columns:
+    #    gdf_in['poly_idx'] = gdf_in.index.values
+    gdf_in['poly_idx'] = np.arange(0,len(gdf_in))
         
     # Match up CRSes
     pix_agg['gdf_pixels'] = pix_agg['gdf_pixels'].to_crs(gdf_in.crs)
