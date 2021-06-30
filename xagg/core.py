@@ -395,6 +395,15 @@ def aggregate(ds,wm):
         an :class:`xagg.classes.aggregated` object with the aggregated variables 
     
     """
+    # Turn into dataset if dataarray
+    if type(ds)==xr.core.dataarray.DataArray:
+      if ds.name is None:
+        warnings.warn('An unnamed xr.DataArray was inputted instead of a xr.Dataset; the output variable will be "var"')
+        ds = ds.to_dataset(name='var')
+      else:
+        ds = ds.to_dataset()
+
+
     # Run ds through fix_ds (to fix lat/lon names, lon coords)
     ds = fix_ds(ds)
 
