@@ -1,4 +1,5 @@
 import warnings
+import xarray as xr
 
 from . core import (create_raster_polygons,get_pixel_overlaps)
 
@@ -53,6 +54,13 @@ def pixel_overlaps(ds,gdf_in,
       input into :func:`xagg.core.aggregate`. 
     
     """
+
+    # Turn into dataset if dataarray
+    if type(ds)==xr.core.dataarray.DataArray:
+      if ds.name is None:
+        ds = ds.to_dataset(name='var')
+      else:
+        ds = ds.to_dataset()
     
     # Create a polygon for each pixel
     print('creating polygons for each pixel...')
