@@ -42,6 +42,14 @@ def normalize(a,drop_na = False):
     else:
         return a*np.nan
 
+def find_rel_area(df):
+    """ 
+    Find the relative area of each row in a geodataframe
+    """
+    df['rel_area'] = df.area/df.area.sum()
+    return df
+
+
 def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
                             'Latitude':{'Latitude':'lat','Longitude':'lon'},
                             'Lat':{'Lat':'lat','Lon':'lon'},
