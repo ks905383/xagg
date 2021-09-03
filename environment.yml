@@ -2,19 +2,16 @@ name: xagg
 channels:
   - conda-forge
 dependencies:
+  - python
   - pytest
-  - jupyter
   - jupyterlab
   - xarray
-  - numpy
   - scipy
   - dask
-  - netcdf4
-  - pandas
+  - netCDF4
   - geopandas
   - matplotlib
   - cartopy
   - cmocean
-  - shapely
-  - xesmf >= 0.5.2
+  - xesmf 
   - cf_xarray # separately, to ensure latest version

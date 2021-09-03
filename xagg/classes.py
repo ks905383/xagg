@@ -62,7 +62,13 @@ class aggregated(object):
         """ Convert to pandas dataframe.
         """
         df_out = prep_for_csv(self)
-        return df_out  
+        return df_out
+
+    def to_geodataframe(self):
+        """ Convert to geopandas.GeoDataFrame.
+        """
+        gdf_out = prep_for_csv(self, return_geodataframe=True)
+        return gdf_out
 
     # Export functions
     def to_netcdf(self,fn,loc_dim='pix_idx'):
