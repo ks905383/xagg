@@ -6,8 +6,8 @@ from shapely.geometry import Polygon
 import warnings
 import xesmf as xe
 
-from . aux import (normalize,fix_ds,get_bnds,subset_find)
-from . classes import (weightmap,aggregated)
+from .auxiliary import fix_ds, get_bnds, normalize, subset_find
+from .classes import aggregated, weightmap
 
 
 def process_weights(ds,weights=None,target='ds'):

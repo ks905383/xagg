@@ -3,8 +3,8 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 
+from .auxiliary import fix_ds, get_bnds, normalize, subset_find
 
-from . aux import (normalize,fix_ds,get_bnds,subset_find)
 
 
 def prep_for_nc(agg_obj,loc_dim='poly_idx'):
