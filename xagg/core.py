@@ -6,7 +6,7 @@ from shapely.geometry import Polygon
 import warnings
 import xesmf as xe
 
-from . aux import (find_rel_area,fix_ds,get_bnds,subset_find)
+from . aux import (find_rel_area,fix_ds,get_bnds,subset_find,list_or_first)
 from . classes import (weightmap,aggregated)
 
 
@@ -307,22 +307,40 @@ def get_pixel_overlaps(gdf_in,pix_agg):
     overlaps = gpd.overlay(gdf_in.to_crs(epsg_set),
                            pix_agg['gdf_pixels'].to_crs(epsg_set),
                            how='intersection')
-
+    
     overlaps = overlaps.groupby('poly_idx').apply(find_rel_area)
     overlaps['lat'] = overlaps['lat'].astype(float)
     overlaps['lon'] = overlaps['lon'].astype(float)
-    
-    
-    # Drop 'geometry' eventually, just for size/clarity
-    overlaps = overlaps.drop('geometry', axis=1)
+
+    # Now, group by poly_idx (each polygon in the shapefile)
+    ov_groups = overlaps.groupby('poly_idx')
+
+    overlap_info = ov_groups.agg(list_or_first)
+
+    overlap_info = overlap_info.rename(columns={'pix_idx': 'pix_idxs'})
+
+    # Zip lat, lon columns into a list of (lat,lon) coordinates
+    # (separate from above because as of 12/20, named aggs with 
+    # multiple columns is still an open issue in the pandas github)
+    overlap_info['coords'] = overlap_info.apply(lambda row: list(zip(row['lat'],row['lon'])),axis=1)
+    overlap_info = overlap_info.drop(columns=['lat','lon'])
+
+    # Reset index to make poly_idx a column for merging with gdf_in
+    overlap_info = overlap_info.reset_index()
+
+    # Merge in pixel overlaps to the input polygon geodataframe
+    overlap_columns = ['pix_idxs', 'rel_area', 'coords', 'poly_idx']
+    gdf_in = pd.merge(gdf_in, overlap_info[overlap_columns],'outer', on='poly_idx')
 
     # make the weight grid an xarray dataset for later dot product
     idx_cols = ['lat', 'lon', 'poly_idx']
-    overlaps_da = overlaps.set_index(idx_cols)['rel_area'].to_xarray()
-    overlaps_da = overlaps_da.stack(loc=['lat', 'lon'])
-    wm_out = weightmap(agg=overlaps_da,
+    overlap_da = overlaps.set_index(idx_cols)['rel_area'].to_xarray()
+    overlap_da = overlap_da.stack(loc=['lat', 'lon'])
+    overlap_da = overlap_da.fillna(0)
+    wm_out = weightmap(agg=gdf_in.drop('geometry', axis=1),
                source_grid=pix_agg['source_grid'],
-               geometry=gdf_in.geometry)
+               geometry=gdf_in.geometry,
+               overlap_da = overlap_da)
     
     if 'weights' in pix_agg['gdf_pixels'].columns:
         wm_out.weights = pix_agg['gdf_pixels'].weights
@@ -414,10 +432,19 @@ def aggregate(ds,wm):
         if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
             print('aggregating '+var+'...')
             var_array = ds[var]
-            var_array = wm.agg.dot(var_array)
+            var_array = wm.overlap_da.dot(var_array)
             data_dict[var] = var_array
 
     ds_combined = xr.Dataset(data_dict)    
+    df_combined = ds_combined.to_dataframe().reset_index()
+    df_combined = df_combined.groupby('poly_idx').agg(list_or_first)
+
+    wm.agg = pd.merge(wm.agg, df_combined, on='poly_idx')
+    for var in ds.var():
+        if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
+            # convert to list of arrays - NOT SURE THIS IS THE RIGHT THING TO
+            # DO, JUST TRYING TO MATCH ORIGINAL FORMAT
+            wm.agg[var] = wm.agg[var].apply(np.array).apply(lambda x: [x])
 
     # Put in class format
     agg_out = aggregated(agg=wm.agg,source_grid=wm.source_grid,

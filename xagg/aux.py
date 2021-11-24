@@ -50,6 +50,17 @@ def find_rel_area(df):
     return df
 
 
+def list_or_first(ser):
+    lis = list(ser)
+    # only the columns associated with the pixels should have multiple values;
+    # for all other columns (those associated with the polygons), it should be
+    # safe to return just the first item
+    if all(x == lis[0] for x in lis) and ser.name not in ['pix_idx', 'coords', 'rel_area', 'lat', 'lon']:
+        return lis[0]
+    else:
+        return lis
+
+
 def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
                             'Latitude':{'Latitude':'lat','Longitude':'lon'},
                             'Lat':{'Lat':'lat','Lon':'lon'},
