@@ -75,7 +75,7 @@ def prep_for_nc(agg_obj,loc_dim='poly_idx'):
     return ds_out
 
 
-def prep_for_csv(agg_obj):
+def prep_for_csv(agg_obj,add_geom=False):
     """ Preps aggregated data for output as a csv
     
     Concretely, aggregated data is placed in a new pandas dataframe
@@ -94,6 +94,12 @@ def prep_for_csv(agg_obj):
     ----------------
     agg_obj : :class:`xagg.classes.aggregated`
         the output from :func:`aggregate`
+
+    add_geom : bool, default `False`
+        if `True`, adds the geometry from the original shapefile/
+        geodataframe back into the prepped output; this is for 
+        the `.to_geodataframe()` conversion option. 
+
                
     Returns
     ----------------
@@ -134,6 +140,10 @@ def prep_for_csv(agg_obj):
                              expanded_var],
                             axis=1)
         del expanded_var
+
+    if add_geom:
+        # Return the geometry from the original geopandas.GeoDataFrame
+        csv_out.geometry = agg_obj.geometry
         
     # Return 
     return csv_out

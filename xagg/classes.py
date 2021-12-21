@@ -58,6 +58,12 @@ class aggregated(object):
         ds_out = prep_for_nc(self,loc_dim=loc_dim)
         return ds_out
 
+    def to_geodataframe(self):
+        """ Convert to geopandas geodataframe.
+        """
+        df_out = prep_for_csv(self,add_geom=True)
+        return df_out
+
     def to_dataframe(self):
         """ Convert to pandas dataframe.
         """
