@@ -165,7 +165,8 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx'):
     loc_dim : str, optional. default = ``'poly_idx'``
         the name of the
         dimension with location indices; used
-        only by :func:`xagg.export.prep_for_nc`
+        by :func:`xagg.export.prep_for_nc` for nc, 
+        csv output
                      
     Returns
     ---------------
@@ -173,7 +174,7 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx'):
         -  "netcdf": the :class:`xarray.Dataset` on which ``.to_netcdf``
            was called
         -  "csv": the :class:`pandas.Dataframe` on which ``.to_csv`` 
-           was called
+           was called (uses the `xarray` `ds.to_dataframe()` functionality)
         - "shp": the :class:`geopandas.GeoDataDrame` on which ``.to_file`` was called
      
     """
@@ -193,7 +194,8 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx'):
 
     elif output_format == 'csv':
 
-        csv_out = prep_for_csv(agg_obj)
+        csv_out = prep_for_nc(agg_obj,loc_dim=loc_dim)
+        csv_out = csv_out.to_dataframe()
 
         # Save as csv
         if not output_fn.endswith('.csv'):
