@@ -1,5 +1,7 @@
-from .export import (prep_for_nc,prep_for_csv,output_data)
+from .export import (prep_for_nc,prep_for_csv,output_data,export_weightmap)
 import warnings
+import os
+import re
 
 try:
     import cartopy 
@@ -10,6 +12,12 @@ try:
     no_plotting = False
 except ImportError:
     no_plotting = True
+
+try:
+    import tables
+except ImportError:
+    no_hd5_output = True
+
 
 # POSSIBLE CHANGE: I'm not quite sure how python deals with memory
 # in this case - but [aggregated], which contains [ds] as one of its
@@ -39,6 +47,12 @@ class weightmap(object):
         # - the pixels overlapping polygon
         #    - shaded by the amount of overlapping area 
         #    - or the total weight (area+weight)
+
+    def to_file(self,fn,overwrite=False):
+        """ Save a copy of the weightmap, to avoid recalculating it
+        """
+        export_weightmap(self,fn,overwrite)
+
 
 
 class aggregated(object):

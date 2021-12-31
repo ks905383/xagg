@@ -18,3 +18,5 @@ dependencies:
   - shapely
   - xesmf >= 0.5.2
   - cf_xarray # separately, to ensure latest version
+  - pip:
+    - tables >= 3.7.0 # For exporting hd5 files through wm.to_file() (3.6.0 may have issues)

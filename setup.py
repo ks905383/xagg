@@ -30,6 +30,6 @@ setup(
         'shapely',
         'xesmf>=0.5.2',
         'cf_xarray>=0.5.1',
-        'esmpy>=8.1.0' 
+        'esmpy>=8.1.0',
     ],
 )

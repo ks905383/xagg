@@ -24,3 +24,4 @@ dependencies:
     - codecov
     - pytest-cov
     - coverage[toml]
+    - tables >= 3.7.0 # For exporting hd5 files through wm.to_file() (3.6.0 may have issues)
