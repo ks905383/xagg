@@ -423,7 +423,7 @@ def aggregate(ds,wm):
             warnings.warn('wm.weights is: \n '+print(wm.weights)+
                             ', \n which is not a supported weight vector (in a pandas series) '+
                             'or "nowghts" as a string. Assuming no weights are included...')
-        weights = np.ones((len(wm.source_grid['lat'])))
+        weights = np.ones((len(wm.overlap_da['loc'])))
     
     data_dict = dict()
     for var in ds.var():
@@ -431,9 +431,34 @@ def aggregate(ds,wm):
         # bound variable
         if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
             print('aggregating '+var+'...')
-            var_array = ds[var]
-            var_array = wm.overlap_da.dot(var_array)
-            data_dict[var] = var_array
+
+            # select just data for which we have overlaps
+            var_array = ds[var].sel(loc=wm.overlap_da['loc'])
+
+            # multiply percent-overlaps by user-supplied weights 
+            weights_and_overlaps = wm.overlap_da * weights
+
+            # fill any nans in the gridded data to zero and change the corresponding
+            # weights to zero so that they will not affect the aggregated value
+            var_array_filled = var_array.fillna(0)
+            weights_and_overlaps = weights_and_overlaps.where(var_array.notnull(), 0)
+
+            # the weights now may add up to less than one because of nans or
+            # because of the user-supplied weights. here we normalize the
+            # weights so they add up to 1 and fill any nan's with 0 so they
+            # won't be counted
+            normed_weights = weights_and_overlaps/weights_and_overlaps.sum(dim = "loc", skipna=True)
+            normed_weights = normed_weights.fillna(0)
+
+            # finally we do the dot product to get the weighted averages
+            aggregated_array = normed_weights.dot(var_array_filled)
+
+            # if the original gridded values were all nan, make the final
+            # aggregation nan
+            if np.isnan(var_array.values).all():
+                aggregated_array = aggregated_array * np.nan
+
+            data_dict[var] = aggregated_array
 
     ds_combined = xr.Dataset(data_dict)    
     df_combined = ds_combined.to_dataframe().reset_index()
