@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
 	name="xagg",
-    version="0.2.5",
+    version="0.2.6",
     author="Kevin Schwarzwald",
     author_email="kschwarzwald@iri.columbia.edu",
     description="Aggregating raster data over polygons",
