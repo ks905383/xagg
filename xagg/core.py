@@ -177,21 +177,15 @@ def create_raster_polygons(ds,
     ds_bnds = ds_bnds.stack(loc=('lat','lon'))
     
     # In order:
-    # (lon0,lat0),(lon0,lat1),(lon1,lat1),(lon1,lat1), but as a single array; to be 
-    # put in the right format for Polygon.from_bounds in the next step
-#     pix_poly_coords = np.transpose(np.vstack([ds_bnds.lon_bnds.isel(bnds=0).values,ds_bnds.lat_bnds.isel(bnds=0).values,
-#                                                 ds_bnds.lon_bnds.isel(bnds=0).values,ds_bnds.lat_bnds.isel(bnds=1).values,
-#                                                 ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=1).values,
-#                                                 ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=0).values]))
+    # polygon bounds [lon0, lat0, lon1, lat1] as a single array; to be put 
+    # in the right format for Polygon.from_bounds in the next step
     pix_poly_coords = np.transpose(np.vstack([ds_bnds.lon_bnds.isel(bnds=0).values,ds_bnds.lat_bnds.isel(bnds=0).values,
                                                 ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=1).values]))  
-    print(pix_poly_coords)
-    # Reshape so each location has a 4 x 2 (vertex vs coordinate) array, 
-    # and convert each of those vertices to tuples. This means every element
-    # of pix_poly_coords is the input to shapely.geometry.Polygon of one pixel
-#     pix_poly_coords = tuple(map(tuple,np.reshape(pix_poly_coords,(np.shape(pix_poly_coords)[0],4,2))))
+
+    # Reshape and covert to tuple so each element is a length 4 array of polygon 
+    # bounds. This means every element of pix_poly_coords is the input to 
+    # shapely.geometry.Polygon.from_bounds for one pixel
     pix_poly_coords = tuple(pix_poly_coords)    
-    print(pix_poly_coords)
     
     # Create empty geodataframe
     gdf_pixels = gpd.GeoDataFrame()
@@ -206,25 +200,15 @@ def create_raster_polygons(ds,
         gdf_pixels['weights'] = [None]*ds_bnds.dims['loc']
     
     # Now populate with a polygon for every pixel, and the lat/lon coordinates
-    # of that pixel (Try if preallocating it with the right dimensions above 
-    # makes it faster, because it's pretty slow rn (NB: it doesn't really))
-#     for loc_idx in np.arange(0,ds_bnds.dims['loc']):
-#         gdf_pixels.loc[loc_idx,'lat'] = ds_bnds.lat.isel(loc=loc_idx).values
-#         gdf_pixels.loc[loc_idx,'lon'] = ds_bnds.lon.isel(loc=loc_idx).values
-#         gdf_pixels.loc[loc_idx,'geometry'] = Polygon(pix_poly_coords[loc_idx])
-#         if weights is not None:
-#             gdf_pixels.loc[loc_idx,'weights'] = weights.isel(loc=loc_idx).values
-
-    # speed improvement for above loop
+    # of that pixel 
     poly_dict = {'poly_bnds': pix_poly_coords}
     df_poly = pd.DataFrame(poly_dict, columns=['poly_bnds'])
-    print(df_poly)
     df_poly['poly']=df_poly.poly_bnds.apply(lambda pts: Polygon.from_bounds(*pts))
     gdf_pixels['geometry']=df_poly['poly']
     gdf_pixels['lat']=ds_bnds.lat.values
     gdf_pixels['lon']=ds_bnds.lon.values    
     if weights is not None:
-        gdf_pixels['weights'] = weights.values # haven't tested this yet
+        gdf_pixels['weights'] = weights.values
         
     # Add a "pixel idx" to make indexing better later
     gdf_pixels['pix_idx'] = gdf_pixels.index.values
