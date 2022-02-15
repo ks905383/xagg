@@ -185,12 +185,13 @@ def create_raster_polygons(ds,
 #                                                 ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=0).values]))
     pix_poly_coords = np.transpose(np.vstack([ds_bnds.lon_bnds.isel(bnds=0).values,ds_bnds.lat_bnds.isel(bnds=0).values,
                                                 ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=1).values]))  
-    
+    print(pix_poly_coords)
     # Reshape so each location has a 4 x 2 (vertex vs coordinate) array, 
     # and convert each of those vertices to tuples. This means every element
     # of pix_poly_coords is the input to shapely.geometry.Polygon of one pixel
 #     pix_poly_coords = tuple(map(tuple,np.reshape(pix_poly_coords,(np.shape(pix_poly_coords)[0],4,2))))
     pix_poly_coords = tuple(pix_poly_coords)    
+    print(pix_poly_coords)
     
     # Create empty geodataframe
     gdf_pixels = gpd.GeoDataFrame()
@@ -217,6 +218,7 @@ def create_raster_polygons(ds,
     # speed improvement for above loop
     poly_dict = {'poly_bnds': pix_poly_coords}
     df_poly = pd.DataFrame(poly_dict, columns=['poly_bnds'])
+    print(df_poly)
     df_poly['poly']=df_poly.poly_bnds.apply(lambda pts: Polygon.from_bounds(*pts))
     gdf_pixels['geometry']=df_poly['poly']
     gdf_pixels['lat']=ds_bnds.lat.values
