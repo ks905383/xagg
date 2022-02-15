@@ -154,7 +154,9 @@ def create_raster_polygons(ds,
         if type(subset_bbox) == gpd.geodataframe.GeoDataFrame:
             # Using the biggest difference in lat/lon to make sure that the pixels are subset
             # in a way that the bounding box is fully filled out
-            bbox_thresh = np.max([ds.lat.diff('lat').max(),ds.lon.diff('lon').max()])+0.1
+            # bbox_thresh = np.max([ds.lat.diff('lat').max(),ds.lon.diff('lon').max()])+0.1 
+            grid_dist = np.max([ds.lat.diff('lat').max(),ds.lon.diff('lon').max()]) # first get the max grid size
+            bbox_thresh = grid_dist*2. # then set threshold to twice grid size, avoids huge subsets for high res grids
             ds = ds.sel(lon=slice(subset_bbox.total_bounds[0]-bbox_thresh,subset_bbox.total_bounds[2]+bbox_thresh),
                         lat=slice(subset_bbox.total_bounds[1]-bbox_thresh,subset_bbox.total_bounds[3]+bbox_thresh))
         else:
