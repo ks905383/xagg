@@ -176,16 +176,28 @@ def create_raster_polygons(ds,
     # Stack so it's just pixels and bounds
     ds_bnds = ds_bnds.stack(loc=('lat','lon'))
     
+    
     # In order:
-    # polygon bounds [lon0, lat0, lon1, lat1] as a single array; to be put 
-    # in the right format for Polygon.from_bounds in the next step
+    # (lon0,lat0),(lon0,lat1),(lon1,lat1),(lon1,lat1), but as a single array; to be 
+    # put in the right format for Polygon in the next step
     pix_poly_coords = np.transpose(np.vstack([ds_bnds.lon_bnds.isel(bnds=0).values,ds_bnds.lat_bnds.isel(bnds=0).values,
-                                                ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=1).values]))  
+                                                ds_bnds.lon_bnds.isel(bnds=0).values,ds_bnds.lat_bnds.isel(bnds=1).values,
+                                                ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=1).values,
+                                                ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=0).values]))
+#     # In order:
+#     # polygon bounds [lon0, lat0, lon1, lat1] as a single array; to be put 
+#     # in the right format for Polygon.from_bounds in the next step
+#     pix_poly_coords = np.transpose(np.vstack([ds_bnds.lon_bnds.isel(bnds=0).values,ds_bnds.lat_bnds.isel(bnds=0).values,
+#                                                 ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=1).values]))  
 
-    # Reshape and covert to tuple so each element is a length 4 array of polygon 
-    # bounds. This means every element of pix_poly_coords is the input to 
-    # shapely.geometry.Polygon.from_bounds for one pixel
-    pix_poly_coords = tuple(pix_poly_coords)    
+    # Reshape so each location has a 4 x 2 (vertex vs coordinate) array, 
+    # and convert each of those vertices to tuples. This means every element
+    # of pix_poly_coords is the input to shapely.geometry.Polygon of one pixel
+    pix_poly_coords = tuple(map(tuple,np.reshape(pix_poly_coords,(np.shape(pix_poly_coords)[0],4,2))))
+#     # Reshape and covert to tuple so each element is a length 4 array of polygon 
+#     # bounds. This means every element of pix_poly_coords is the input to 
+#     # shapely.geometry.Polygon.from_bounds for one pixel
+#     pix_poly_coords = tuple(pix_poly_coords)    
     
     # Create empty geodataframe
     gdf_pixels = gpd.GeoDataFrame()
@@ -203,7 +215,8 @@ def create_raster_polygons(ds,
     # of that pixel 
     poly_dict = {'poly_bnds': pix_poly_coords}
     df_poly = pd.DataFrame(poly_dict, columns=['poly_bnds'])
-    df_poly['poly']=df_poly.poly_bnds.apply(lambda pts: Polygon.from_bounds(*pts))
+    print(df_poly)
+    df_poly['poly']=df_poly.poly_bnds.apply(lambda pts: Polygon(*pts))
     gdf_pixels['geometry']=df_poly['poly']
     gdf_pixels['lat']=ds_bnds.lat.values
     gdf_pixels['lon']=ds_bnds.lon.values    
