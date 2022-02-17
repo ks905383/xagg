@@ -68,7 +68,7 @@ def process_weights(ds,weights=None,target='ds'):
 
         # Regrid, if necessary (do nothing if the grids match up to within
         # floating-point precision)
-        if ((not ((ds.sizes['lat'] is weights.sizes['lat']) & (ds.sizes['lon'] == weights.sizes['lon']))) or 
+        if ((not ((ds.sizes['lat'] == weights.sizes['lat']) & (ds.sizes['lon'] == weights.sizes['lon']))) or 
             (not (np.allclose(ds.lat,weights.lat) & np.allclose(ds.lon,weights.lon)))):
             if target == 'ds':
                 print('regridding weights to data grid...')
