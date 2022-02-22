@@ -203,15 +203,15 @@ def create_raster_polygons(ds,
     
     # Now populate with a polygon for every pixel, and the lat/lon coordinates
     # of that pixel 
-    poly_dict = {'poly_bnds': pix_poly_coords}
-    df_poly = pd.DataFrame(poly_dict, columns=['poly_bnds'])
-    df_poly['poly']=df_poly.poly_bnds.apply(lambda pts: Polygon(pts))
+    poly_dict = {'poly_pts': pix_poly_coords}
+    df_poly = pd.DataFrame(poly_dict, columns=['poly_pts'])
+    df_poly['poly']=df_poly.poly_pts.apply(lambda pts: Polygon(pts))
     gdf_pixels['geometry']=df_poly['poly']
     gdf_pixels['lat']=ds_bnds.lat.values
-    gdf_pixels['lon']=ds_bnds.lon.values    
+    gdf_pixels['lon']=ds_bnds.lon.values  
     if weights is not None:
         gdf_pixels['weights'] = weights.values
-        
+
     # Add a "pixel idx" to make indexing better later
     gdf_pixels['pix_idx'] = gdf_pixels.index.values
     
