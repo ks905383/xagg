@@ -175,7 +175,7 @@ def create_raster_polygons(ds,
                               drop_vars([v for v in ds.keys() if v not in ['lat_bnds','lon_bnds']])))
     # Stack so it's just pixels and bounds
     ds_bnds = ds_bnds.stack(loc=('lat','lon'))
-    
+        
     # In order:
     # (lon0,lat0),(lon0,lat1),(lon1,lat1),(lon1,lat1), but as a single array; to be 
     # put in the right format for Polygon in the next step
@@ -183,7 +183,7 @@ def create_raster_polygons(ds,
                                                 ds_bnds.lon_bnds.isel(bnds=0).values,ds_bnds.lat_bnds.isel(bnds=1).values,
                                                 ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=1).values,
                                                 ds_bnds.lon_bnds.isel(bnds=1).values,ds_bnds.lat_bnds.isel(bnds=0).values]))
-    
+
     # Reshape so each location has a 4 x 2 (vertex vs coordinate) array, 
     # and convert each of those vertices to tuples. This means every element
     # of pix_poly_coords is the input to shapely.geometry.Polygon of one pixel
@@ -202,15 +202,16 @@ def create_raster_polygons(ds,
         gdf_pixels['weights'] = [None]*ds_bnds.dims['loc']
     
     # Now populate with a polygon for every pixel, and the lat/lon coordinates
-    # of that pixel (Try if preallocating it with the right dimensions above 
-    # makes it faster, because it's pretty slow rn (NB: it doesn't really))
-    for loc_idx in np.arange(0,ds_bnds.dims['loc']):
-        gdf_pixels.loc[loc_idx,'lat'] = ds_bnds.lat.isel(loc=loc_idx).values
-        gdf_pixels.loc[loc_idx,'lon'] = ds_bnds.lon.isel(loc=loc_idx).values
-        gdf_pixels.loc[loc_idx,'geometry'] = Polygon(pix_poly_coords[loc_idx])
-        if weights is not None:
-            gdf_pixels.loc[loc_idx,'weights'] = weights.isel(loc=loc_idx).values
-        
+    # of that pixel 
+    poly_dict = {'poly_pts': pix_poly_coords}
+    df_poly = pd.DataFrame(poly_dict, columns=['poly_pts'])
+    df_poly['poly']=df_poly.poly_pts.apply(lambda pts: Polygon(pts))
+    gdf_pixels['geometry']=df_poly['poly']
+    gdf_pixels['lat']=ds_bnds.lat.values
+    gdf_pixels['lon']=ds_bnds.lon.values  
+    if weights is not None:
+        gdf_pixels['weights'] = weights.values
+
     # Add a "pixel idx" to make indexing better later
     gdf_pixels['pix_idx'] = gdf_pixels.index.values
     

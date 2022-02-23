@@ -81,21 +81,22 @@ def test_create_raster_polygons_basic():
 	# build raster polygons from a simple 2x2 grid of lat/lon pixels
 	ds = xr.Dataset({'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
 					 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
-					coords={'lat':(['lat'],np.array([0,1])),
-							'lon':(['lon'],np.array([0,1])),
-							'bnds':(['bnds'],np.array([0,1]))})
+					coords={'lat':(['lat'],np.array([0.,1.])),
+							'lon':(['lon'],np.array([0.,1.])),
+							'bnds':(['bnds'],np.array([0.,1.]))})
 	pix_agg = create_raster_polygons(ds)
 
-	# Create comparison geodataframe (what it should come out to)
-	poly_test = {'lat':[np.array(v) for v in [0.,0.,1.,1.]],'lon':[np.array(v) for v in [0.,1.,0.,1.]],
+    # Create comparison geodataframe (what it should come out to)
+	poly_test = {'lat':np.array([0.,0.,1.,1.]),'lon':np.array([0.,1.,0.,1.]),
 						'geometry':[Polygon([(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5),(-0.5,-0.5)]),
 								   Polygon([(0.5, -0.5), (0.5, 0.5), (1.5, 0.5), (1.5, -0.5), (0.5, -0.5)]),
 								   Polygon([(-0.5, 0.5), (-0.5, 1.5), (0.5, 1.5), (0.5, 0.5), (-0.5, 0.5)]),
 								   Polygon([(0.5, 0.5), (0.5, 1.5), (1.5, 1.5), (1.5, 0.5), (0.5, 0.5)])],
 						'pix_idx':[0,1,2,3]}
+    
 	poly_test = gpd.GeoDataFrame(poly_test,crs="EPSG:4326")
 
-	# Use gpd assert (there's a check_less_precise option for "almost equal", 
+    # Use gpd assert (there's a check_less_precise option for "almost equal", 
 	# but that doesn't seem necessary for this simple example)
 	gpdt.assert_geodataframe_equal(poly_test,pix_agg['gdf_pixels'])
 
