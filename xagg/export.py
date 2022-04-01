@@ -3,7 +3,9 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 import os
+import re
 import warnings
+import shutil
 
 from . aux import (normalize,fix_ds,get_bnds,subset_find)
 
@@ -18,33 +20,40 @@ def export_weightmap(wm_obj,fn,overwrite=False):
     if (not overwrite) and (os.path.exists(fn)):
         raise FileExistsError(fn+'/ already exists. Either change the [fn] or set overwrite=True.')
 
-    ###### Save geometry
-    # This also creates a folder, into which we can add the rest
-    # of the files
-    wm_obj.geometry.to_file(fn)
+    try: 
+        ###### Save geometry
+        # This also creates a folder, into which we can add the rest
+        # of the files
+        wm_obj.geometry.to_file(fn)
 
-    ####### Save agg 
-    # Turn into a dataframe from a geodataframe; only dataframes
-    # can be converted to HD5 files (and there's no geographic 
-    # information here that's needed; can all be saved in the 
-    # geographic save below)
-    df_out = pd.DataFrame(wm_obj.agg)
-    df_out.to_hdf(fn+'/'+fn+'.h5','wm')
+        ####### Save agg 
+        # Turn into a dataframe from a geodataframe; only dataframes
+        # can be converted to HD5 files (and there's no geographic 
+        # information here that's needed; can all be saved in the 
+        # geographic save below)
+        df_out = pd.DataFrame(wm_obj.agg)
+        df_out.to_hdf(fn+'/'+re.split('\/',fn)[-1]+'.h5','wm')
 
-    ###### Save source grid
-    for k in wm_obj.source_grid:
-        # Adding v to variable (i.e., 'latv', 'lonv') needed 
-        # because of the multi-index being used here 
-        wm_obj.source_grid[k].reset_index('loc').to_dataset(name=k+'v').to_netcdf(fn+'/'+fn+'_'+k+'.nc')
+        ###### Save source grid
+        for k in wm_obj.source_grid:
+            # Adding v to variable (i.e., 'latv', 'lonv') needed 
+            # because of the multi-index being used here 
+            wm_obj.source_grid[k].reset_index('loc').to_dataset(name=k+'v').to_netcdf(fn+'/'+re.split('\/',fn)[-1]+'_'+k+'.nc')
 
-    ###### Save weights
-    # (If weights == 'nowghts', then no file to load)
-    if (type(wm_obj.weights) is not str) or (wm_obj.weights != 'nowghts'):
-        # Setting astype(object) to make sure integral weights
-        # don't change the general type of the frame. This may
-        # only affect the testing routines, but setting this here
-        # to be explicit 
-        wm_obj.weights.astype(object).to_csv(fn+'/'+fn+'_weights.csv')
+        ###### Save weights
+        # (If weights == 'nowghts', then no file to load)
+        if (type(wm_obj.weights) is not str) or (wm_obj.weights != 'nowghts'):
+            # Setting astype(object) to make sure integral weights
+            # don't change the general type of the frame. This may
+            # only affect the testing routines, but setting this here
+            # to be explicit 
+            wm_obj.weights.astype(object).to_csv(fn+'/'+re.split('\/',fn)[-1]+'_weights.csv')
+    except:
+        # Remove files that have already been generated, to make 
+        # sure no flawed files are floating around. 
+        shutil.rmtree(fn)
+        raise Exception('Error while saving. The directory '+fn+' has been removed.')
+
 
 def prep_for_nc(agg_obj,loc_dim='poly_idx'):
     """ Preps aggregated data for output as a netcdf
