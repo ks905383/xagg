@@ -7,7 +7,8 @@ from . core import (create_raster_polygons,get_pixel_overlaps)
 
 def pixel_overlaps(ds,gdf_in,
                    weights=None,weights_target='ds',
-                   subset_bbox = True):
+                   subset_bbox = True,
+                   impl='for_loop'):
     """ Wrapper function for determining overlaps between grid and polygon
     
     For a geodataframe `gdf_in`, takes an `xarray` structure `ds` (Dataset or 
@@ -41,11 +42,16 @@ def pixel_overlaps(ds,gdf_in,
       be on the same grid as `ds` - grids will be homogonized
       (see below).
 
-    weights_target : str, optional
+    weights_target : :class:`str`, optional
       if 'ds', then weights are regridded to the grid in [ds];
       if 'weights', then the `ds` variables are regridded to
       the grid in 'weights' (LATTER NOT SUPPORTED YET, raises
       a `NotImplementedError`)
+
+    impl : :class:`str`, optional, default = ``'for_loop'``
+      whether to use the ``'for_loop'`` or ``'dot_product'``
+      methods for aggregating; the former uses less memory,
+      the latter may be faster in certain circumstances
    
     
     Returns
@@ -75,7 +81,7 @@ def pixel_overlaps(ds,gdf_in,
     
     # Get overlaps between these pixel polygons and the gdf_in polygons
     print('calculating overlaps between pixels and output polygons...')
-    wm_out = get_pixel_overlaps(gdf_in,pix_agg)
+    wm_out = get_pixel_overlaps(gdf_in,pix_agg,impl=impl)
     print('success!')
     
     return wm_out
