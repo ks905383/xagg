@@ -24,7 +24,7 @@ class weightmap(object):
     """ Class for mapping from pixels to polgyons, output from :func:`xagg.wrappers.pixel_overlaps`
     
     """
-    def __init__(self,agg,source_grid,geometry,overlap_da,weights='nowghts'):
+    def __init__(self,agg,source_grid,geometry,overlap_da=None,weights='nowghts'):
         self.agg = agg
         self.source_grid = source_grid
         self.geometry = geometry
