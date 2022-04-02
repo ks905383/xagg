@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
 	name="xagg",
-    version="0.2.6",
+    version="0.3.0",
     author="Kevin Schwarzwald",
     author_email="kschwarzwald@iri.columbia.edu",
     description="Aggregating raster data over polygons",
@@ -28,6 +28,7 @@ setup(
         'netcdf4',
         'geopandas',
         'shapely',
+	'pytables',
         'xesmf>=0.5.2',
         'cf_xarray>=0.5.1',
         'esmpy>=8.1.0',
