@@ -15,13 +15,11 @@ dependencies:
   - cf_xarray >= 0.5.1
   - esmf >= 8.1.0
   - esmpy >= 8.1.0 
-  - matplotlib
-  - cartopy
-  - cmocean
+  - pytables
   ##############
   - pytest
   - pip:
     - codecov
     - pytest-cov
     - coverage[toml]
-    - tables >= 3.7.0 # For exporting hd5 files through wm.to_file() (3.6.0 may have issues)
+    #- tables >= 3.7.0 # For exporting hd5 files through wm.to_file() (3.6.0 may have issues)
