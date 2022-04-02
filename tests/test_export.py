@@ -33,7 +33,7 @@ def test_pixel_overlaps_export_and_import():
 						'bnds':(['bnds'],np.array([0,1]))})
 
 	# Add a simple weights grid
-	weights = xr.DataArray(data=np.array([[0.,1.],[2.,3.]]),
+	weights = xr.DataArray(data=np.array([[0.,1.],[2.,3.]]).astype(object),
 								dims=['lat','lon'],
 								coords=[ds.lat,ds.lon])
 
