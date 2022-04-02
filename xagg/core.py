@@ -5,9 +5,82 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 import warnings
 import xesmf as xe
+import re 
+import os
 
 from . aux import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
 from . classes import (weightmap,aggregated)
+
+def read_wm(path):
+    """ Load temporary weightmap files from wm.to_file()
+
+    Builds a weightmap out of saved weightmap component 
+    files. Particularly useful if the weightmap took a 
+    particularly long time to calculated (i.e., if the 
+    grid is particularly high resolution). 
+
+    Assumes the files are generated from `wm.to_file()`; 
+    i.e., the files are all in a directory `name`: 
+
+    `name/name.shp` : the geometry of the input polygons
+    `name/name.agg` : the dataframe with the pixel overlap
+                      data
+    `name/name_lat.nc`, `name/name_lon.nc` : 
+                      the source grid of the raster data
+    `name/name_weights.nc` :
+                      the additional weights grid, if used
+                      (this file is optional; if no file
+                      with this name is found, no weights 
+                      are assumed, and 
+                      `wm.weights='noweights'`)
+
+    Parameters
+    ---------------
+    path : str 
+        The directory in which the files are stored. They
+        are assumed to follow the filename convention of
+        sharing the name of the directory (i.e., the last
+        part of this path.)
+
+    Returns
+    ---------------
+    wm : :class:`xagg.weightmap`
+
+    """
+    # the last bit of the path is also the filename
+    fn = re.split('/',path)[-1]
+    
+
+    ###### Load geometry
+    geo = gpd.read_file(path+'/'+fn+'.shp')
+    geo = geo['geometry']
+
+    ####### Load agg 
+    agg = pd.read_hdf(path+'/'+fn+'.h5', 'wm')
+
+    ###### Load source grid
+    source_grid = {k:xr.open_dataset(path+'/'+fn+'_'+k+'.nc').set_index({'loc':('lat','lon')})[k+'v'] for k in ['lat','lon']}
+
+    ###### Load weights
+    if os.path.exists(path+'/'+fn+'_weights.csv'):
+        # Specifying column because it saves it as with 
+        # a dummy index column that gets loaded in an 
+        # unproductive way
+        weights = pd.read_csv(path+'/'+fn+'_weights.csv')['weights'].astype(object)
+        # ^^ Setting astype(object) to make sure integral weights
+        # don't change the general type of the frame. This may
+        # only affect the testing routines, but setting this here
+        # to be explicit 
+    else:
+        weights = 'nowghts'
+
+    ###### Combine into weightmap
+    wm = weightmap(agg=agg,
+                   geometry=geo,
+                   source_grid=source_grid,
+                   weights=weights)
+
+    return wm
 
 
 def process_weights(ds,weights=None,target='ds'):
