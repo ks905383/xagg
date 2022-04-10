@@ -106,7 +106,7 @@ def prep_for_nc(agg_obj,loc_dim='poly_idx'):
         
             # Now insert aggregated values 
             for poly_idx in agg_obj.agg.poly_idx:
-                ds_out[var].loc[{'poly_idx':poly_idx}] = agg_obj.agg.loc[poly_idx,var][0]
+                ds_out[var].loc[{'poly_idx':poly_idx}] = np.squeeze(agg_obj.agg.loc[poly_idx,var])
     
     # Add non-geographic coordinates for the variables to be aggregated
     for crd in [k for k in agg_obj.ds_in.sizes.keys() if (k not in ['lat','lon','loc','bnds'])]:
