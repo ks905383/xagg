@@ -29,7 +29,7 @@ setup(
         'geopandas',
         'shapely',
 	'tables',
-        'xesmf=0.7.1',
+        'xesmf==0.7.1',
         'cf_xarray>=0.5.1',
         'esmpy>=8.1.0',
 	 ],
