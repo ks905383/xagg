@@ -8,7 +8,7 @@ dependencies:
   - scipy
   - netcdf4
   - pandas
-  - geopandas
-  - xesmf >= 0.5.2
+  - geopandas >= 0.12.0
+  - xesmf >= 0.7.1
   - cf_xarray # separately, to ensure latest version
   - pytables
