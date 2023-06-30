@@ -1,8 +1,8 @@
-name: test_env_xagg_37
+name: test_env_xagg_new
 channels:
   - conda-forge
 dependencies:
-  - python=3.7
+  - python=3.10
   ############## These will have to be adjusted to your specific project
   - numpy
   - scipy
@@ -22,4 +22,4 @@ dependencies:
     - codecov
     - pytest-cov
     - coverage[toml]
-    #- tables >= 3.7.0 # For exporting hd5 files through wm.to_file() (3.6.0 may have issues)
+   # - tables >= 3.7.0 # For exporting hd5 files through wm.to_file() (3.6.0 may have issues)
