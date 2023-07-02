@@ -401,13 +401,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
     
     if impl=='dot_product':
         # Get relative area of each pixel
-        overlaps = overlaps.groupby('poly_idx').apply(find_rel_area)
-        # This creates an extra index of poly_idx which duplicates
-        # the existing column,... so remove those columns. `level_1`
-        # doesn't show up in the python 3.8 tests (?); so to be robust
-        # specify the remaining columns to keep instead.
-        overlaps = overlaps.drop(['poly_idx'],axis=1).reset_index()
-        overlaps = overlaps[['poly_idx','name','lat','lon','pix_idx','geometry','rel_area']]#drop('level_1',axis=1)
+        overlaps = overlaps.groupby('poly_idx',group_keys=False).apply(find_rel_area)
         overlaps['lat'] = overlaps['lat'].astype(float)
         overlaps['lon'] = overlaps['lon'].astype(float)
 
