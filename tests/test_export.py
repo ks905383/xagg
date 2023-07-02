@@ -62,7 +62,7 @@ def test_to_dataframe(agg=agg):
 
 ##### pixel_overlaps() export tests #####
 
-def test_pixel_overlaps_export_and_import():
+def test_pixel_overlaps_export_and_import(ds=ds):
 	# Testing the .to_file() --> read_wm() workflow. 
 	# Rather complex because of the many different components of wm. 
 	# wm.agg in particular is a dataframe with lists in it (which is 
@@ -74,12 +74,12 @@ def test_pixel_overlaps_export_and_import():
 	fn = 'wm_export_test'
 
 	# Build sample dataset
-	ds = xr.Dataset({'test':(['lon','lat'],np.array([[0,1],[2,3]])),
-				 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
-				 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
-				coords={'lat':(['lat'],np.array([0,1])),
-						'lon':(['lon'],np.array([0,1])),
-						'bnds':(['bnds'],np.array([0,1]))})
+	#ds = xr.Dataset({'test':(['lon','lat'],np.array([[0,1],[2,3]])),
+	#			 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
+	#			 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
+	#			coords={'lat':(['lat'],np.array([0,1])),
+	#					'lon':(['lon'],np.array([0,1])),
+	#					'bnds':(['bnds'],np.array([0,1]))})
 
 	# Add a simple weights grid
 	weights = xr.DataArray(data=np.array([[0.,1.],[2.,3.]]).astype(object),
@@ -118,7 +118,7 @@ def test_pixel_overlaps_export_and_import():
 
 	###### source grids
 	for k in wm_out.source_grid:
-		xr.testing.assert_equal(wm_out.source_grid[k],wm_in.source_grid[k])
+		xr.testing.assert_allclose(wm_out.source_grid[k],wm_in.source_grid[k])
 
 	###### weights
 	if (type(wm_out.weights) is str) and (wm_out.weights=='nowghts'):

@@ -9,9 +9,9 @@ dependencies:
   - xarray
   - pandas
   - netcdf4
-  - geopandas
+  - geopandas >= 0.12.0
   - shapely
-  - xesmf >= 0.5.2 # These versions and explicit loads are to fix an issue in xesmf's call to cf_xarray (possibly through esmpy) 
+  - xesmf >= 0.7.0 # These versions and explicit loads are to fix an issue in xesmf's call to cf_xarray (possibly through esmpy) 
   - cf_xarray >= 0.5.1
   - esmf >= 8.1.0
   - esmpy >= 8.1.0 
