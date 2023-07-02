@@ -559,7 +559,7 @@ def aggregate(ds,wm,impl='for_loop'):
     
     if impl=='dot_product':
         data_dict = dict()
-        for var in ds.var():
+        for var in ds:
             # Process for every variable that has locational information, but isn't a 
             # bound variable
             if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
@@ -598,7 +598,7 @@ def aggregate(ds,wm,impl='for_loop'):
         df_combined = df_combined.groupby('poly_idx').agg(list_or_first)
 
         wm.agg = pd.merge(wm.agg, df_combined, on='poly_idx')
-        for var in ds.var():
+        for var in ds:
             if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
                 # convert to list of arrays - NOT SURE THIS IS THE RIGHT THING TO
                 # DO, JUST TRYING TO MATCH ORIGINAL FORMAT
@@ -608,7 +608,7 @@ def aggregate(ds,wm,impl='for_loop'):
         agg_out = aggregated(agg=wm.agg,source_grid=wm.source_grid,
                             geometry=wm.geometry,ds_in=ds_combined,weights=wm.weights)
     elif impl=='for_loop':
-        for var in ds.var():
+        for var in ds:
             # Process for every variable that has locational information, but isn't a 
             # bound variable
             if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
