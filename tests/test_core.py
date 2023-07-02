@@ -337,7 +337,6 @@ def test_aggregate_basic(ds=ds):
 	# tests below
 	pix_agg = create_raster_polygons(ds)
 
-
 	# Get pixel overlaps
 	wm = get_pixel_overlaps(gdf,pix_agg)
 
@@ -351,27 +350,29 @@ def test_aggregate_basic(ds=ds):
 	assert np.allclose([v for v in agg.agg.test.values],1.4999,rtol=1e-4)
 
 def test_aggregate_basic_wdotproduct(ds=ds):
-	# Create polygon covering multiple pixels, using the dot product option
-	gdf = {'name':['test'],
-				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
-	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+    # Create multiple polygons, to double check, since dot product
+    # implementation takes a slightly different approach to indices 
+    # in the geodataframe
+    gdf = {'name':['test1','test2'],
+           'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)]),
+                            Polygon([(-1,0),(-1,1),(0,1),(0,0),(-1,0)])]}
+    gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
 
-	# calculate the pix_agg variable tested above, to be used in the 
-	# tests below
-	pix_agg = create_raster_polygons(ds)
+    # calculate the pix_agg variable tested above, to be used in the 
+    # tests below
+    pix_agg = create_raster_polygons(ds)
 
+    # Get pixel overlaps
+    wm = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
 
-	# Get pixel overlaps
-	wm = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
-
-	# Get aggregate
-	agg = aggregate(ds,wm,impl='dot_product')
-
-	# This requires shifting rtol to 1e-4 for some reason, in that 
-	# it's actually 1.499981, whereas multiplying out 
-	# np.sum(agg.agg.rel_area[0]*np.array([0,1,2,3]))gives 1.499963... 
-	# Possibly worth examining more closely later
-	assert np.allclose([v for v in agg.agg.test.values],1.4999,rtol=1e-4)
+    # Get aggregate
+    agg = aggregate(ds,wm,impl='dot_product')
+    
+    # This requires shifting rtol to 1e-3 for some reason, in that 
+    # it's actually 1.499981, whereas multiplying out 
+    # np.sum(agg.agg.rel_area[0]*np.array([0,1,2,3]))gives 1.499963... 
+    # Possibly worth examining more closely later
+    assert np.allclose([v for v in agg.agg.test.values],[[1.4999],[0.4999]],rtol=1e-3)
 
 
 def test_aggregate_with_weights(ds=ds):

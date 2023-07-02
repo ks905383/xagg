@@ -32,7 +32,10 @@ def export_weightmap(wm_obj,fn,overwrite=False):
         # information here that's needed; can all be saved in the 
         # geographic save below)
         df_out = pd.DataFrame(wm_obj.agg)
-        df_out.to_hdf(fn+'/'+re.split('\/',fn)[-1]+'.h5','wm')
+        with warnings.catch_warnings():
+            # Catch performance warning about pickling
+            warnings.filterwarnings('ignore')
+            df_out.to_hdf(fn+'/'+re.split('\/',fn)[-1]+'.h5','wm')
 
         ###### Save source grid
         for k in wm_obj.source_grid:

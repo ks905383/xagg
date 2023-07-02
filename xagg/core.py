@@ -60,6 +60,8 @@ def read_wm(path):
 
     ###### Load source grid
     source_grid = {k:xr.open_dataset(path+'/'+fn+'_'+k+'.nc').set_index({'loc':('lat','lon')})[k+'v'] for k in ['lat','lon']}
+    # Rename, removing the v added for the multi-index issue in export
+    source_grid = {k:v.rename(k) for k,v in source_grid.items()}
 
     ###### Load weights
     if os.path.exists(path+'/'+fn+'_weights.csv'):
@@ -263,10 +265,9 @@ def create_raster_polygons(ds,
     pix_poly_coords = tuple(map(tuple,np.reshape(pix_poly_coords,(np.shape(pix_poly_coords)[0],4,2))))
     
     # Create empty geodataframe
-    gdf_pixels = gpd.GeoDataFrame()
-    gdf_pixels['lat'] = [None]*ds_bnds.dims['loc']
-    gdf_pixels['lon'] = [None]*ds_bnds.dims['loc']
-    gdf_pixels['geometry'] = [None]*ds_bnds.dims['loc']
+    gdf_pixels = gpd.GeoDataFrame(pd.DataFrame({v:[None]*ds_bnds.dims['loc']
+                               for v in ['lat','lon','geometry']}),
+                              geometry='geometry')
     if weights is not None:
         # Stack weights so they are linearly indexed like the ds (and fill
         # NAs with 0s)
@@ -371,7 +372,8 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
     # Match up CRSes
     pix_agg['gdf_pixels'] = pix_agg['gdf_pixels'].to_crs(gdf_in.crs)
 
-    # Get GeoDataFrame of the overlaps between every pixel and the polygons
+    # Choose a common crs for both, just to minimize the chance
+    # of geographic shenanigans
     # (using the EASE grid https://nsidc.org/data/ease)
     if np.all(gdf_in.total_bounds[[1,3]]>0):
         # If min/max lat are both in NH, use North grid
@@ -386,12 +388,20 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
         #epsg_set = {'init':'EPSG:6933'}
         epsg_set = 'EPSG:6933'
     
-    overlaps = gpd.overlay(gdf_in.to_crs(epsg_set),
-                           pix_agg['gdf_pixels'].to_crs(epsg_set),
-                           how='intersection')
+    # Get GeoDataFrame of the overlaps between every pixel and the polygons
+    with warnings.catch_warnings():
+        # Filter UserWarnings that flag when overlapping would result in 
+        # lines, or point overlaps (but we only care about 3D overlaps, so
+        # keep_geom_type=True is the right call, and we don't need the 
+        # warning)
+        warnings.filterwarnings('ignore',category=UserWarning)
+        overlaps = gpd.overlay(gdf_in.to_crs(epsg_set),
+                               pix_agg['gdf_pixels'].to_crs(epsg_set),
+                               how='intersection')
     
     if impl=='dot_product':
-        overlaps = overlaps.groupby('poly_idx').apply(find_rel_area)
+        # Get relative area of each pixel
+        overlaps = overlaps.groupby('poly_idx',group_keys=False).apply(find_rel_area)
         overlaps['lat'] = overlaps['lat'].astype(float)
         overlaps['lon'] = overlaps['lon'].astype(float)
 
