@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Detailed code run &mdash; xagg 2.4 documentation</title>
@@ -14,8 +13,6 @@
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -32,13 +29,12 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -95,6 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../notebooks/base_run.html">Base run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../notebooks/full_run.html">Detailed code run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_user.html">User API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_backend.html">Backend API</a></li>
 </ul>
@@ -434,7 +431,7 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<section id="Detailed-code-run">
+<div class="section" id="Detailed-code-run">
 <h1>Detailed code run<a class="headerlink" href="#Detailed-code-run" title="Permalink to this headline">¶</a></h1>
 <p>Here is a deep dive in to the <code class="docutils literal notranslate"><span class="pre">xagg</span></code> functionality.</p>
 <div class="nbinput nblast docutils container">
@@ -442,14 +439,14 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">xagg</span> <span class="k">as</span> <span class="nn">xa</span>
-<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span></span>import xagg as xa
+import xarray as xr
+import numpy as np
+import geopandas as gpd
 </pre></div>
 </div>
 </div>
-<section id="Intro">
+<div class="section" id="Intro">
 <h2>Intro<a class="headerlink" href="#Intro" title="Permalink to this headline">¶</a></h2>
 <p>We’ll be aggregating a gridded dataset onto a set of shapefiles, using an extra set of weights. Specifically, we’ll use: - gridded: month-of-year average temperature projections for the end-of-century from a climate model (CCSM4) - shapefiles: US counties - additional weights: global gridded population density (<a class="reference external" href="https://sedac.ciesin.columbia.edu/data/collection/gpw-v4">GPW</a>, 30 min resolution)</p>
 <p>This is a setup that you may for example use if projecting the impact of temperature on some human variable (temperature vs. mortality, for example) for which you have data at the US county level. Since your mortality data is likely at the county level, you need to aggregate the gridded climate model output data to counties - i.e., what is the average temperature over each county? This code will calculate which pixels overlap each county - and by how much - allowing an area-averaged value for
@@ -462,8 +459,8 @@ case, but is used as a sample here</em>)</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load some climate data as an xarray dataset</span>
-<span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s1">&#39;../../data/climate_data/tas_Amon_CCSM4_rcp85_monthavg_20700101-20991231.nc&#39;</span><span class="p">)</span>
+<span></span># Load some climate data as an xarray dataset
+ds = xr.open_dataset(&#39;../../data/climate_data/tas_Amon_CCSM4_rcp85_monthavg_20700101-20991231.nc&#39;)
 </pre></div>
 </div>
 </div>
@@ -472,8 +469,8 @@ case, but is used as a sample here</em>)</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load US counties shapefile as a geopandas GeoDataFrame</span>
-<span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;../../data/geo_data/UScounties.shp&#39;</span><span class="p">)</span>
+<span></span># Load US counties shapefile as a geopandas GeoDataFrame
+gdf = gpd.read_file(&#39;../../data/geo_data/UScounties.shp&#39;)
 </pre></div>
 </div>
 </div>
@@ -482,14 +479,14 @@ case, but is used as a sample here</em>)</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load global gridded population data from GPW</span>
-<span class="n">ds_pop</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s1">&#39;../../data/pop_data/pop2000.nc&#39;</span><span class="p">)</span>
+<span></span># Load global gridded population data from GPW
+ds_pop = xr.open_dataset(&#39;../../data/pop_data/pop2000.nc&#39;)
 </pre></div>
 </div>
 </div>
 <p><em>NB: the GPW file above has been pre-processed, by subsampling to ``raster=0`` (the 2000 population), and renaming the primary variable to ``pop`` for ease of use.</em></p>
-</section>
-<section id="Calculating-area-weights-between-a-raster-grid-and-polygons">
+</div>
+<div class="section" id="Calculating-area-weights-between-a-raster-grid-and-polygons">
 <h2>Calculating area weights between a raster grid and polygons<a class="headerlink" href="#Calculating-area-weights-between-a-raster-grid-and-polygons" title="Permalink to this headline">¶</a></h2>
 <p>First, <code class="docutils literal notranslate"><span class="pre">xagg</span></code> has to figure out how much each pixel overlaps each polygon. This process requires a few steps:</p>
 <ol class="arabic simple" start="0">
@@ -518,8 +515,8 @@ saved, and their relative area would be 0.5 each). Areas are calculated using th
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Calculate overlaps</span>
-<span class="n">weightmap</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">pixel_overlaps</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">gdf</span><span class="p">,</span><span class="n">weights</span><span class="o">=</span><span class="n">ds_pop</span><span class="o">.</span><span class="n">pop</span><span class="p">)</span>
+<span></span># Calculate overlaps
+weightmap = xa.pixel_overlaps(ds,gdf,weights=ds_pop.pop)
 </pre></div>
 </div>
 </div>
@@ -552,8 +549,8 @@ calculating overlaps between pixels and output polygons...
 success!
 </pre></div></div>
 </div>
-</section>
-<section id="Aggregating-gridded-data-to-the-polygons-using-the-area-weights-(and-other-weights)-calculated-above">
+</div>
+<div class="section" id="Aggregating-gridded-data-to-the-polygons-using-the-area-weights-(and-other-weights)-calculated-above">
 <h2>Aggregating gridded data to the polygons using the area weights (and other weights) calculated above<a class="headerlink" href="#Aggregating-gridded-data-to-the-polygons-using-the-area-weights-(and-other-weights)-calculated-above" title="Permalink to this headline">¶</a></h2>
 <p>Now that we know which pixels overlap which polygons and by how much (and what the value of the population weight for each pixel is), it’s time to aggregate data to the polygon level. <code class="docutils literal notranslate"><span class="pre">xagg</span></code> will assume that all variables in the original <code class="docutils literal notranslate"><span class="pre">ds</span></code> that have <code class="docutils literal notranslate"><span class="pre">lat</span></code> and <code class="docutils literal notranslate"><span class="pre">lon</span></code> coordinates should be aggregated. These variables may have extra dimensions (3-D variables (i.e. <code class="docutils literal notranslate"><span class="pre">lon</span> <span class="pre">x</span> <span class="pre">lat</span> <span class="pre">x</span> <span class="pre">time</span></code>) are supported; 4-D etc. <em>should</em> be supported but haven’t been tested yet - the biggest issue may be in
 exporting).</p>
@@ -563,8 +560,8 @@ exporting).</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Aggregate</span>
-<span class="n">aggregated</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">weightmap</span><span class="p">)</span>
+<span></span># Aggregate
+aggregated = xa.aggregate(ds,weightmap)
 </pre></div>
 </div>
 </div>
@@ -579,8 +576,8 @@ aggregating tas...
 all variables aggregated to polygons!
 </pre></div></div>
 </div>
-</section>
-<section id="Converting-aggregated-data">
+</div>
+<div class="section" id="Converting-aggregated-data">
 <h2>Converting aggregated data<a class="headerlink" href="#Converting-aggregated-data" title="Permalink to this headline">¶</a></h2>
 <p>Now that the data is aggregated, we want it in a useable format.</p>
 <p>Supported formats for converting include: - <code class="docutils literal notranslate"><span class="pre">xarray</span></code> Dataset (using <code class="docutils literal notranslate"><span class="pre">.to_dataset()</span></code>) - Grid dimensions from the original dataset are replaced with a single dimensions for polygons - by default called “poly_idx” (change this with the <code class="docutils literal notranslate"><span class="pre">loc_dim=...</span></code> option). Aggregated variables keep their non-grid dimensions unchanged; with their grid dimension replaced as above. - All original fields from the <code class="docutils literal notranslate"><span class="pre">geodataframe</span></code> are kept as <code class="docutils literal notranslate"><span class="pre">poly_idx</span> <span class="pre">x</span> <span class="pre">1</span></code> variables. - <code class="docutils literal notranslate"><span class="pre">pandas</span></code> Dataframe (using
@@ -591,9 +588,9 @@ all variables aggregated to polygons!
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Example as a dataset</span>
-<span class="n">ds_out</span> <span class="o">=</span> <span class="n">aggregated</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">()</span>
-<span class="n">ds_out</span>
+<span></span># Example as a dataset
+ds_out = aggregated.to_dataset()
+ds_out
 </pre></div>
 </div>
 </div>
@@ -986,9 +983,9 @@ Data variables:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Example as a dataframe</span>
-<span class="n">df_out</span> <span class="o">=</span> <span class="n">aggregated</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="n">df_out</span>
+<span></span># Example as a dataframe
+df_out = aggregated.to_dataframe()
+df_out
 </pre></div>
 </div>
 </div>
@@ -1260,12 +1257,12 @@ Data variables:
 <p>3141 rows × 17 columns</p>
 </div></div>
 </div>
-</section>
-<section id="Exporting-aggregated-data">
+</div>
+<div class="section" id="Exporting-aggregated-data">
 <h2>Exporting aggregated data<a class="headerlink" href="#Exporting-aggregated-data" title="Permalink to this headline">¶</a></h2>
 <p>For reproducability and code simplicity, you will likely want to save your aggregated data. In addtion, many researchers use multiple languages or software packages as part of their workflow; for example, STATA or R for regression analysis, or QGIS for spatial analysis, and need to be able to transfer their work to these other environments.</p>
 <p><code class="docutils literal notranslate"><span class="pre">xagg</span></code> has built-in export functions that allow the export of aggregated data to: - NetCDF - csv (for use in STATA, R) - shapefile (for use in GIS applications)</p>
-<section id="Export-to-netCDF">
+<div class="section" id="Export-to-netCDF">
 <h3>Export to netCDF<a class="headerlink" href="#Export-to-netCDF" title="Permalink to this headline">¶</a></h3>
 <p>The netCDF export functionality saves all aggregated variables by replacing the grid dimensions (<code class="docutils literal notranslate"><span class="pre">lat</span></code>, <code class="docutils literal notranslate"><span class="pre">lon</span></code>) with a single location dimension (called <code class="docutils literal notranslate"><span class="pre">poly_idx</span></code>, but this can be changed with the <code class="docutils literal notranslate"><span class="pre">loc_dim=</span></code> argument).</p>
 <p>Other dimensions (e.g. <code class="docutils literal notranslate"><span class="pre">time</span></code>) are kept as they were originally in the grid variable.</p>
@@ -1275,13 +1272,13 @@ Data variables:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Export to netcdf</span>
-<span class="n">aggregated</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="s1">&#39;file_out.nc&#39;</span><span class="p">)</span>
+<span></span># Export to netcdf
+aggregated.to_netcdf(&#39;file_out.nc&#39;)
 </pre></div>
 </div>
 </div>
-</section>
-<section id="Export-to-.csv">
+</div>
+<div class="section" id="Export-to-.csv">
 <h3>Export to .csv<a class="headerlink" href="#Export-to-.csv" title="Permalink to this headline">¶</a></h3>
 <p>The .csv output functionality saves files in a polygon (rows) vs. variables (columns) format. Each aggregated variable and each field in the original inputted polygons are saved as columns. Named attributes in the inputted netcdf file are not included.</p>
 <p>Currently .csvs are only saved “wide” - i.e., a <code class="docutils literal notranslate"><span class="pre">lat</span> <span class="pre">x</span> <span class="pre">lon</span> <span class="pre">x</span> <span class="pre">time</span></code> variable <code class="docutils literal notranslate"><span class="pre">tas</span></code>, aggregated to <code class="docutils literal notranslate"><span class="pre">location</span> <span class="pre">x</span> <span class="pre">time</span></code>, would be reshaped wide so that each timestep is saved in its own column, named <code class="docutils literal notranslate"><span class="pre">tas0</span></code>, <code class="docutils literal notranslate"><span class="pre">tas1</span></code>, and so forth.</p>
@@ -1290,13 +1287,13 @@ Data variables:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Export to csv</span>
-<span class="n">aggregated</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;file_out.csv&#39;</span><span class="p">)</span>
+<span></span># Export to csv
+aggregated.to_csv(&#39;file_out.csv&#39;)
 </pre></div>
 </div>
 </div>
-</section>
-<section id="Export-to-shapefile">
+</div>
+<div class="section" id="Export-to-shapefile">
 <h3>Export to shapefile<a class="headerlink" href="#Export-to-shapefile" title="Permalink to this headline">¶</a></h3>
 <p>The shapefile export functionality keeps the geometry of the originally input polygons, and adds the aggregated variables as fields.</p>
 <p>Similar to .csv export above, if aggregated variables have a dimension beyond their location dimensions (e.g., <code class="docutils literal notranslate"><span class="pre">time</span></code>), each step in that dimension is saved in a separate field, named after the variable and the integer of the index along that dimension (e.g., <code class="docutils literal notranslate"><span class="pre">tas0</span></code>, <code class="docutils literal notranslate"><span class="pre">tas1</span></code>, etc. for a variable <code class="docutils literal notranslate"><span class="pre">tas</span></code>).</p>
@@ -1306,14 +1303,14 @@ Data variables:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Export to csv</span>
-<span class="n">aggregated</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;file_out.shp&#39;</span><span class="p">)</span>
+<span></span># Export to csv
+aggregated.to_csv(&#39;file_out.shp&#39;)
 </pre></div>
 </div>
 </div>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>

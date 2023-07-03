@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Base run &mdash; xagg 2.4 documentation</title>
@@ -14,8 +13,6 @@
   
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -32,13 +29,12 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
         <script src="../../../../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
 
@@ -95,6 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../notebooks/base_run.html">Base run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../notebooks/full_run.html">Detailed code run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_user.html">User API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_backend.html">Backend API</a></li>
 </ul>
@@ -434,7 +431,7 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<section id="Base-run">
+<div class="section" id="Base-run">
 <h1>Base run<a class="headerlink" href="#Base-run" title="Permalink to this headline">¶</a></h1>
 <p>A simple run of <code class="docutils literal notranslate"><span class="pre">xagg</span></code>, aggregating gridded temperature data over US counties. For a deeper dive into <code class="docutils literal notranslate"><span class="pre">xagg</span></code>’s functionality, see the <a class="reference internal" href="full_run.html"><span class="doc">Detailed Code Run</span></a>.</p>
 <div class="nbinput nblast docutils container">
@@ -442,14 +439,14 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">xagg</span> <span class="k">as</span> <span class="nn">xa</span>
-<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span></span>import xagg as xa
+import xarray as xr
+import numpy as np
+import geopandas as gpd
 </pre></div>
 </div>
 </div>
-<section id="Import">
+<div class="section" id="Import">
 <h2>Import<a class="headerlink" href="#Import" title="Permalink to this headline">¶</a></h2>
 <p>The sample data in this example are: - gridded: month-of-year average temperature projections for the end-of-century from a climate model (CCSM4) - shapefiles: US counties</p>
 <div class="nbinput nblast docutils container">
@@ -457,8 +454,8 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load some climate data as an xarray dataset</span>
-<span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s1">&#39;../../data/climate_data/tas_Amon_CCSM4_rcp85_monthavg_20700101-20991231.nc&#39;</span><span class="p">)</span>
+<span></span># Load some climate data as an xarray dataset
+ds = xr.open_dataset(&#39;../../data/climate_data/tas_Amon_CCSM4_rcp85_monthavg_20700101-20991231.nc&#39;)
 </pre></div>
 </div>
 </div>
@@ -467,13 +464,13 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load US counties shapefile as a geopandas GeoDataFrame</span>
-<span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;../../data/geo_data/UScounties.shp&#39;</span><span class="p">)</span>
+<span></span># Load US counties shapefile as a geopandas GeoDataFrame
+gdf = gpd.read_file(&#39;../../data/geo_data/UScounties.shp&#39;)
 </pre></div>
 </div>
 </div>
-</section>
-<section id="Aggregate">
+</div>
+<div class="section" id="Aggregate">
 <h2>Aggregate<a class="headerlink" href="#Aggregate" title="Permalink to this headline">¶</a></h2>
 <p>Now, aggregate the gridded variable in <code class="docutils literal notranslate"><span class="pre">ds</span></code> onto the polygons in <code class="docutils literal notranslate"><span class="pre">gdf</span></code>.</p>
 <div class="nbinput docutils container">
@@ -481,8 +478,8 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Calculate overlaps</span>
-<span class="n">weightmap</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">pixel_overlaps</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">gdf</span><span class="p">)</span>
+<span></span># Calculate overlaps
+weightmap = xa.pixel_overlaps(ds,gdf)
 </pre></div>
 </div>
 </div>
@@ -501,8 +498,8 @@ success!
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Aggregate</span>
-<span class="n">aggregated</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">weightmap</span><span class="p">)</span>
+<span></span># Aggregate
+aggregated = xa.aggregate(ds,weightmap)
 </pre></div>
 </div>
 </div>
@@ -517,8 +514,8 @@ aggregating tas...
 all variables aggregated to polygons!
 </pre></div></div>
 </div>
-</section>
-<section id="Convert">
+</div>
+<div class="section" id="Convert">
 <h2>Convert<a class="headerlink" href="#Convert" title="Permalink to this headline">¶</a></h2>
 <p>Finally, convert the aggregated data back into the format you would like.</p>
 <div class="nbinput docutils container">
@@ -526,9 +523,9 @@ all variables aggregated to polygons!
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Example as an xarray dataset</span>
-<span class="n">ds_out</span> <span class="o">=</span> <span class="n">aggregated</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">()</span>
-<span class="n">ds_out</span>
+<span></span># Example as an xarray dataset
+ds_out = aggregated.to_dataset()
+ds_out
 </pre></div>
 </div>
 </div>
@@ -921,9 +918,9 @@ Data variables:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Example as a pandas dataframe</span>
-<span class="n">df_out</span> <span class="o">=</span> <span class="n">aggregated</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="n">df_out</span>
+<span></span># Example as a pandas dataframe
+df_out = aggregated.to_dataframe()
+df_out
 </pre></div>
 </div>
 </div>
@@ -1204,8 +1201,8 @@ Data variables:
 </pre></div>
 </div>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

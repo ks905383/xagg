@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>xagg &mdash; xagg 2.4 documentation</title>
@@ -14,8 +13,6 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -32,11 +29,12 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -94,6 +92,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/base_run.html">Base run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/full_run.html">Detailed code run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_user.html">User API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_backend.html">Backend API</a></li>
 </ul>
@@ -187,7 +186,7 @@
     text-align: unset;
 }
 </style>
-<section id="xagg">
+<div class="section" id="xagg">
 <h1>xagg<a class="headerlink" href="#xagg" title="Permalink to this headline">¶</a></h1>
 <p>A package to aggregate gridded data in <code class="docutils literal notranslate"><span class="pre">xarray</span></code> to polygons in <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> using area-weighting from the relative area overlaps between pixels and polygons.</p>
 <p>The simplest code run, involving raster data in an <code class="docutils literal notranslate"><span class="pre">xarray</span></code> Dataset <code class="docutils literal notranslate"><span class="pre">ds</span></code> and polygons in a <code class="docutils literal notranslate"><span class="pre">geopandas</span></code> GeoDataFrame <code class="docutils literal notranslate"><span class="pre">gpd</span></code>, is:</p>
@@ -232,26 +231,30 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#silencing-status-updates">Silencing status updates</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api_user.html">User API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api_user.html#core-clases">Core clases</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api_user.html#module-xagg.wrappers">Primary (wrapper) functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api_user.html#module-xagg.aux">Auxiliary functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_user.html#primary-wrapper-functions">Primary (wrapper) functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_user.html#auxiliary-functions">Auxiliary functions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api_backend.html">Backend API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api_backend.html#module-xagg.core">Core functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api_backend.html#module-xagg.export">Export functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_backend.html#core-functions">Core functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_backend.html#export-functions">Export functions</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</section>
-<section id="indices-and-tables">
+</div>
+<div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <p>&#64; -29,4 +106,4 &#64;&#64; Indices and tables
 * <a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a>
 * <a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p>
-</section>
+</div>
 
 
            </div>

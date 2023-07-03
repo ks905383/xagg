@@ -28,6 +28,7 @@ The simplest code run, involving raster data in an ``xarray`` Dataset ``ds`` and
    installation
    notebooks/base_run
    notebooks/full_run.ipynb
+   tips
    api_user
    api_backend
 

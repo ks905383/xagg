@@ -13,7 +13,7 @@
 import os
 import sys
 # To allow it to access the xagg folder
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../xagg'))
 
 
 # -- Project information -----------------------------------------------------

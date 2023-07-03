@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Detailed code run &mdash; xagg 2.4 documentation</title>
@@ -14,8 +13,6 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -32,20 +29,19 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="User API" href="../api_user.html" />
+    <link rel="next" title="Tips" href="../tips.html" />
     <link rel="prev" title="Base run" href="base_run.html" /> 
 </head>
 
@@ -109,6 +105,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_user.html">User API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_backend.html">Backend API</a></li>
 </ul>
@@ -448,7 +445,7 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<section id="Detailed-code-run">
+<div class="section" id="Detailed-code-run">
 <h1>Detailed code run<a class="headerlink" href="#Detailed-code-run" title="Permalink to this headline">¶</a></h1>
 <p>Here is a deep dive in to the <code class="docutils literal notranslate"><span class="pre">xagg</span></code> functionality.</p>
 <div class="nbinput nblast docutils container">
@@ -456,14 +453,14 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">xagg</span> <span class="k">as</span> <span class="nn">xa</span>
-<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span></span>import xagg as xa
+import xarray as xr
+import numpy as np
+import geopandas as gpd
 </pre></div>
 </div>
 </div>
-<section id="Intro">
+<div class="section" id="Intro">
 <h2>Intro<a class="headerlink" href="#Intro" title="Permalink to this headline">¶</a></h2>
 <p>We’ll be aggregating a gridded dataset onto a set of shapefiles, using an extra set of weights. Specifically, we’ll use: - gridded: month-of-year average temperature projections for the end-of-century from a climate model (CCSM4) - shapefiles: US counties - additional weights: global gridded population density (<a class="reference external" href="https://sedac.ciesin.columbia.edu/data/collection/gpw-v4">GPW</a>, 30 min resolution)</p>
 <p>This is a setup that you may for example use if projecting the impact of temperature on some human variable (temperature vs. mortality, for example) for which you have data at the US county level. Since your mortality data is likely at the county level, you need to aggregate the gridded climate model output data to counties - i.e., what is the average temperature over each county? This code will calculate which pixels overlap each county - and by how much - allowing an area-averaged value for
@@ -476,34 +473,34 @@ case, but is used as a sample here</em>)</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load some climate data as an xarray dataset</span>
-<span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s1">&#39;../../data/climate_data/tas_Amon_CCSM4_rcp85_monthavg_20700101-20991231.nc&#39;</span><span class="p">)</span>
+<span></span># Load some climate data as an xarray dataset
+ds = xr.open_dataset(&#39;../../data/climate_data/tas_Amon_CCSM4_rcp85_monthavg_20700101-20991231.nc&#39;)
 </pre></div>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load US counties shapefile as a geopandas GeoDataFrame</span>
-<span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;../../data/geo_data/UScounties.shp&#39;</span><span class="p">)</span>
+<span></span># Load US counties shapefile as a geopandas GeoDataFrame
+gdf = gpd.read_file(&#39;../../data/geo_data/UScounties.shp&#39;)
 </pre></div>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load global gridded population data from GPW</span>
-<span class="n">ds_pop</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="s1">&#39;../../data/pop_data/pop2000.nc&#39;</span><span class="p">)</span>
+<span></span># Load global gridded population data from GPW
+ds_pop = xr.open_dataset(&#39;../../data/pop_data/pop2000.nc&#39;)
 </pre></div>
 </div>
 </div>
 <p><em>NB: the GPW file above has been pre-processed, by subsampling to ``raster=0`` (the 2000 population), and renaming the primary variable to ``pop`` for ease of use.</em></p>
-</section>
-<section id="Calculating-area-weights-between-a-raster-grid-and-polygons">
+</div>
+<div class="section" id="Calculating-area-weights-between-a-raster-grid-and-polygons">
 <h2>Calculating area weights between a raster grid and polygons<a class="headerlink" href="#Calculating-area-weights-between-a-raster-grid-and-polygons" title="Permalink to this headline">¶</a></h2>
 <p>First, <code class="docutils literal notranslate"><span class="pre">xagg</span></code> has to figure out how much each pixel overlaps each polygon. This process requires a few steps:</p>
 <ol class="arabic simple" start="0">
@@ -528,12 +525,12 @@ saved, and their relative area would be 0.5 each). Areas are calculated using th
 </li>
 </ol>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Calculate overlaps</span>
-<span class="n">weightmap</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">pixel_overlaps</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">gdf</span><span class="p">,</span><span class="n">weights</span><span class="o">=</span><span class="n">ds_pop</span><span class="o">.</span><span class="n">pop</span><span class="p">)</span>
+<span></span># Calculate overlaps
+weightmap = xa.pixel_overlaps(ds,gdf,weights=ds_pop.pop)
 </pre></div>
 </div>
 </div>
@@ -566,19 +563,19 @@ calculating overlaps between pixels and output polygons...
 success!
 </pre></div></div>
 </div>
-</section>
-<section id="Aggregating-gridded-data-to-the-polygons-using-the-area-weights-(and-other-weights)-calculated-above">
+</div>
+<div class="section" id="Aggregating-gridded-data-to-the-polygons-using-the-area-weights-(and-other-weights)-calculated-above">
 <h2>Aggregating gridded data to the polygons using the area weights (and other weights) calculated above<a class="headerlink" href="#Aggregating-gridded-data-to-the-polygons-using-the-area-weights-(and-other-weights)-calculated-above" title="Permalink to this headline">¶</a></h2>
 <p>Now that we know which pixels overlap which polygons and by how much (and what the value of the population weight for each pixel is), it’s time to aggregate data to the polygon level. <code class="docutils literal notranslate"><span class="pre">xagg</span></code> will assume that all variables in the original <code class="docutils literal notranslate"><span class="pre">ds</span></code> that have <code class="docutils literal notranslate"><span class="pre">lat</span></code> and <code class="docutils literal notranslate"><span class="pre">lon</span></code> coordinates should be aggregated. These variables may have extra dimensions (3-D variables (i.e. <code class="docutils literal notranslate"><span class="pre">lon</span> <span class="pre">x</span> <span class="pre">lat</span> <span class="pre">x</span> <span class="pre">time</span></code>) are supported; 4-D etc. <em>should</em> be supported but haven’t been tested yet - the biggest issue may be in
 exporting).</p>
 <p>Since we included an additional weighting grid, this dataset is included in <code class="docutils literal notranslate"><span class="pre">weightmap</span></code> from above and is seamlessly integrated into the weighting scheme.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Aggregate</span>
-<span class="n">aggregated</span> <span class="o">=</span> <span class="n">xa</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">weightmap</span><span class="p">)</span>
+<span></span># Aggregate
+aggregated = xa.aggregate(ds,weightmap)
 </pre></div>
 </div>
 </div>
@@ -593,26 +590,26 @@ aggregating tas...
 all variables aggregated to polygons!
 </pre></div></div>
 </div>
-</section>
-<section id="Converting-aggregated-data">
+</div>
+<div class="section" id="Converting-aggregated-data">
 <h2>Converting aggregated data<a class="headerlink" href="#Converting-aggregated-data" title="Permalink to this headline">¶</a></h2>
 <p>Now that the data is aggregated, we want it in a useable format.</p>
 <p>Supported formats for converting include: - <code class="docutils literal notranslate"><span class="pre">xarray</span></code> Dataset (using <code class="docutils literal notranslate"><span class="pre">.to_dataset()</span></code>) - Grid dimensions from the original dataset are replaced with a single dimensions for polygons - by default called “poly_idx” (change this with the <code class="docutils literal notranslate"><span class="pre">loc_dim=...</span></code> option). Aggregated variables keep their non-grid dimensions unchanged; with their grid dimension replaced as above. - All original fields from the <code class="docutils literal notranslate"><span class="pre">geodataframe</span></code> are kept as <code class="docutils literal notranslate"><span class="pre">poly_idx</span> <span class="pre">x</span> <span class="pre">1</span></code> variables. - <code class="docutils literal notranslate"><span class="pre">pandas</span></code> Dataframe (using
 <code class="docutils literal notranslate"><span class="pre">.to_dataframe()</span></code>) - All original fields from the <code class="docutils literal notranslate"><span class="pre">geodataframe</span></code> are kept; the aggregated variables are added as separate columns. If the aggregated variables have a 3rd dimension, they are reshaped long - with procedurally generated column names (just <code class="docutils literal notranslate"><span class="pre">[var]0</span></code>, <code class="docutils literal notranslate"><span class="pre">[var]1</span></code>, … for now).</p>
 <p>(the “raw” form of the geodataframe used to create these can also be directly accessed through <code class="docutils literal notranslate"><span class="pre">aggregated.agg</span></code>)</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Example as a dataset</span>
-<span class="n">ds_out</span> <span class="o">=</span> <span class="n">aggregated</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">()</span>
-<span class="n">ds_out</span>
+<span></span># Example as a dataset
+ds_out = aggregated.to_dataset()
+ds_out
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -978,10 +975,10 @@ Data variables:
     STATE_FIPS  (pix_idx) object &#x27;27&#x27; &#x27;53&#x27; &#x27;53&#x27; &#x27;53&#x27; ... &#x27;02&#x27; &#x27;02&#x27; &#x27;02&#x27; &#x27;08&#x27;
     CNTY_FIPS   (pix_idx) object &#x27;077&#x27; &#x27;019&#x27; &#x27;065&#x27; &#x27;047&#x27; ... &#x27;240&#x27; &#x27;068&#x27; &#x27;014&#x27;
     FIPS        (pix_idx) object &#x27;27077&#x27; &#x27;53019&#x27; &#x27;53065&#x27; ... &#x27;02068&#x27; &#x27;08014&#x27;
-    tas         (pix_idx, month) float64 264.0 268.9 274.0 ... 283.5 276.4 270.4</pre><div class='xr-wrap' hidden><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-61bbd9cd-6f0c-4594-bb01-037ef123d15c' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-61bbd9cd-6f0c-4594-bb01-037ef123d15c' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>month</span>: 12</li><li><span class='xr-has-index'>pix_idx</span>: 3141</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-6e0a2ea6-4710-48d9-b953-a05a28cdadb5' class='xr-section-summary-in' type='checkbox'  checked><label for='section-6e0a2ea6-4710-48d9-b953-a05a28cdadb5' class='xr-section-summary' >Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>pix_idx</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0 1 2 3 4 ... 3137 3138 3139 3140</div><input id='attrs-4d2bb7c0-ad03-47c3-a77c-4e127f6a3980' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-4d2bb7c0-ad03-47c3-a77c-4e127f6a3980' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-94142a70-8981-43f2-9f77-576947cd1c36' class='xr-var-data-in' type='checkbox'><label for='data-94142a70-8981-43f2-9f77-576947cd1c36' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([   0,    1,    2, ..., 3138, 3139, 3140])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>month</span></div><div class='xr-var-dims'>(month)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>1 2 3 4 5 6 7 8 9 10 11 12</div><input id='attrs-5f9c5863-be53-4362-b177-448b403f2706' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-5f9c5863-be53-4362-b177-448b403f2706' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-7a56bf74-9ee2-4db8-8e38-def1602167d6' class='xr-var-data-in' type='checkbox'><label for='data-7a56bf74-9ee2-4db8-8e38-def1602167d6' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-c989583b-6e96-487d-bd9b-3451238cbc26' class='xr-section-summary-in' type='checkbox'  checked><label for='section-c989583b-6e96-487d-bd9b-3451238cbc26' class='xr-section-summary' >Data variables: <span>(6)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>NAME</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;Lake of the Woods&#x27; ... &#x27;Broomfi...</div><input id='attrs-66252898-8590-4be3-b178-752dba91618a' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-66252898-8590-4be3-b178-752dba91618a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-c748084f-0936-452c-b971-b9912ffd315d' class='xr-var-data-in' type='checkbox'><label for='data-c748084f-0936-452c-b971-b9912ffd315d' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;Lake of the Woods&#x27;, &#x27;Ferry&#x27;, &#x27;Stevens&#x27;, ...,
-       &#x27;Southeast Fairbanks&#x27;, &#x27;Denali&#x27;, &#x27;Broomfield&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>STATE_NAME</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;Minnesota&#x27; ... &#x27;Colorado&#x27;</div><input id='attrs-ae5f1bb7-b967-4ea2-8933-e4e9977c528f' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-ae5f1bb7-b967-4ea2-8933-e4e9977c528f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-6f4f0db2-6418-4668-b815-fe77a9ec58a8' class='xr-var-data-in' type='checkbox'><label for='data-6f4f0db2-6418-4668-b815-fe77a9ec58a8' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;Minnesota&#x27;, &#x27;Washington&#x27;, &#x27;Washington&#x27;, ..., &#x27;Alaska&#x27;, &#x27;Alaska&#x27;,
-       &#x27;Colorado&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>STATE_FIPS</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;27&#x27; &#x27;53&#x27; &#x27;53&#x27; ... &#x27;02&#x27; &#x27;02&#x27; &#x27;08&#x27;</div><input id='attrs-4210d0c7-a77c-46b4-ab36-e86d00a51b68' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-4210d0c7-a77c-46b4-ab36-e86d00a51b68' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-2ad423d7-4484-4cf7-aeeb-ae96750d7014' class='xr-var-data-in' type='checkbox'><label for='data-2ad423d7-4484-4cf7-aeeb-ae96750d7014' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;27&#x27;, &#x27;53&#x27;, &#x27;53&#x27;, ..., &#x27;02&#x27;, &#x27;02&#x27;, &#x27;08&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>CNTY_FIPS</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;077&#x27; &#x27;019&#x27; &#x27;065&#x27; ... &#x27;068&#x27; &#x27;014&#x27;</div><input id='attrs-1c2f2ad5-c0b6-4fa5-aa56-59d40b66aebd' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-1c2f2ad5-c0b6-4fa5-aa56-59d40b66aebd' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-322a4c28-93e8-474f-9847-93264bfd99c1' class='xr-var-data-in' type='checkbox'><label for='data-322a4c28-93e8-474f-9847-93264bfd99c1' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;077&#x27;, &#x27;019&#x27;, &#x27;065&#x27;, ..., &#x27;240&#x27;, &#x27;068&#x27;, &#x27;014&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>FIPS</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;27077&#x27; &#x27;53019&#x27; ... &#x27;02068&#x27; &#x27;08014&#x27;</div><input id='attrs-55d940a9-a3c2-4167-87e8-c16603a3a61f' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-55d940a9-a3c2-4167-87e8-c16603a3a61f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-2d6778ad-5dd1-4537-bd20-f96364cfa35e' class='xr-var-data-in' type='checkbox'><label for='data-2d6778ad-5dd1-4537-bd20-f96364cfa35e' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;27077&#x27;, &#x27;53019&#x27;, &#x27;53065&#x27;, ..., &#x27;02240&#x27;, &#x27;02068&#x27;, &#x27;08014&#x27;],
-      dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>tas</span></div><div class='xr-var-dims'>(pix_idx, month)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>264.0 268.9 274.0 ... 276.4 270.4</div><input id='attrs-2cc0790b-1fda-492b-972c-0a1e5f6d59df' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-2cc0790b-1fda-492b-972c-0a1e5f6d59df' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0e2232d4-95a5-46a0-a2a2-4330b086a917' class='xr-var-data-in' type='checkbox'><label for='data-0e2232d4-95a5-46a0-a2a2-4330b086a917' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[263.9780062 , 268.88786769, 274.01215237, ..., 283.81523287,
+    tas         (pix_idx, month) float64 264.0 268.9 274.0 ... 283.5 276.4 270.4</pre><div class='xr-wrap' hidden><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-9cdbfc5d-ae15-4d77-88fd-3a66a36c853b' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-9cdbfc5d-ae15-4d77-88fd-3a66a36c853b' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>month</span>: 12</li><li><span class='xr-has-index'>pix_idx</span>: 3141</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-d7873bd0-fdc7-4ddc-a29d-18ec8e5c3887' class='xr-section-summary-in' type='checkbox'  checked><label for='section-d7873bd0-fdc7-4ddc-a29d-18ec8e5c3887' class='xr-section-summary' >Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>pix_idx</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0 1 2 3 4 ... 3137 3138 3139 3140</div><input id='attrs-8b66a8af-dfaf-44a1-86d9-671c235543ee' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-8b66a8af-dfaf-44a1-86d9-671c235543ee' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-47b70001-9ccb-4f01-aefb-b5f2027649a4' class='xr-var-data-in' type='checkbox'><label for='data-47b70001-9ccb-4f01-aefb-b5f2027649a4' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([   0,    1,    2, ..., 3138, 3139, 3140])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>month</span></div><div class='xr-var-dims'>(month)</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>1 2 3 4 5 6 7 8 9 10 11 12</div><input id='attrs-d8815ad5-8b73-4010-a957-5e0850e7c126' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-d8815ad5-8b73-4010-a957-5e0850e7c126' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-99d2dcb2-f0f8-4dd2-a1ab-d9c1b19d7bc9' class='xr-var-data-in' type='checkbox'><label for='data-99d2dcb2-f0f8-4dd2-a1ab-d9c1b19d7bc9' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-8c485ea2-8c75-48ea-b05b-05dc141d6d5d' class='xr-section-summary-in' type='checkbox'  checked><label for='section-8c485ea2-8c75-48ea-b05b-05dc141d6d5d' class='xr-section-summary' >Data variables: <span>(6)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>NAME</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;Lake of the Woods&#x27; ... &#x27;Broomfi...</div><input id='attrs-4d4a43a7-118b-4bc5-8179-8933e3d69cab' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-4d4a43a7-118b-4bc5-8179-8933e3d69cab' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-129f9da7-c07d-4a1b-b548-446d676a55ea' class='xr-var-data-in' type='checkbox'><label for='data-129f9da7-c07d-4a1b-b548-446d676a55ea' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;Lake of the Woods&#x27;, &#x27;Ferry&#x27;, &#x27;Stevens&#x27;, ...,
+       &#x27;Southeast Fairbanks&#x27;, &#x27;Denali&#x27;, &#x27;Broomfield&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>STATE_NAME</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;Minnesota&#x27; ... &#x27;Colorado&#x27;</div><input id='attrs-28a23f96-d488-4e39-8091-e7f862317c18' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-28a23f96-d488-4e39-8091-e7f862317c18' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-f0329065-2ade-4a55-93c7-bd2321a71050' class='xr-var-data-in' type='checkbox'><label for='data-f0329065-2ade-4a55-93c7-bd2321a71050' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;Minnesota&#x27;, &#x27;Washington&#x27;, &#x27;Washington&#x27;, ..., &#x27;Alaska&#x27;, &#x27;Alaska&#x27;,
+       &#x27;Colorado&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>STATE_FIPS</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;27&#x27; &#x27;53&#x27; &#x27;53&#x27; ... &#x27;02&#x27; &#x27;02&#x27; &#x27;08&#x27;</div><input id='attrs-443cc015-7f63-4412-b285-2d80b02fe7be' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-443cc015-7f63-4412-b285-2d80b02fe7be' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-d6df4d88-7adf-4d7b-8702-8086e428bfdd' class='xr-var-data-in' type='checkbox'><label for='data-d6df4d88-7adf-4d7b-8702-8086e428bfdd' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;27&#x27;, &#x27;53&#x27;, &#x27;53&#x27;, ..., &#x27;02&#x27;, &#x27;02&#x27;, &#x27;08&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>CNTY_FIPS</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;077&#x27; &#x27;019&#x27; &#x27;065&#x27; ... &#x27;068&#x27; &#x27;014&#x27;</div><input id='attrs-b9c8b1dd-6382-451a-8384-2e9dea4f7846' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-b9c8b1dd-6382-451a-8384-2e9dea4f7846' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-b14848f0-b7b2-4904-9abe-fba86ad01537' class='xr-var-data-in' type='checkbox'><label for='data-b14848f0-b7b2-4904-9abe-fba86ad01537' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;077&#x27;, &#x27;019&#x27;, &#x27;065&#x27;, ..., &#x27;240&#x27;, &#x27;068&#x27;, &#x27;014&#x27;], dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>FIPS</span></div><div class='xr-var-dims'>(pix_idx)</div><div class='xr-var-dtype'>object</div><div class='xr-var-preview xr-preview'>&#x27;27077&#x27; &#x27;53019&#x27; ... &#x27;02068&#x27; &#x27;08014&#x27;</div><input id='attrs-86000f3d-4f68-468c-a90d-23bf76eb059b' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-86000f3d-4f68-468c-a90d-23bf76eb059b' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-63d9f1f0-4729-4960-bf7a-32668fb0136a' class='xr-var-data-in' type='checkbox'><label for='data-63d9f1f0-4729-4960-bf7a-32668fb0136a' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;27077&#x27;, &#x27;53019&#x27;, &#x27;53065&#x27;, ..., &#x27;02240&#x27;, &#x27;02068&#x27;, &#x27;08014&#x27;],
+      dtype=object)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>tas</span></div><div class='xr-var-dims'>(pix_idx, month)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>264.0 268.9 274.0 ... 276.4 270.4</div><input id='attrs-5c156676-28bf-47de-97f6-312bbd59a642' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-5c156676-28bf-47de-97f6-312bbd59a642' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-e1a3770c-4c15-4d11-b155-612305b32b83' class='xr-var-data-in' type='checkbox'><label for='data-e1a3770c-4c15-4d11-b155-612305b32b83' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([[263.9780062 , 268.88786769, 274.01215237, ..., 283.81523287,
         275.1416336 , 266.05442984],
        [271.78043992, 275.61848506, 276.93418312, ..., 281.63345613,
         276.71447491, 272.24200396],
@@ -993,21 +990,21 @@ Data variables:
        [265.04959892, 264.79484859, 268.19315553, ..., 273.14260516,
         266.53491609, 265.57515291],
        [270.80386353, 273.4302063 , 275.95550537, ..., 283.54470825,
-        276.38360596, 270.44485474]])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-c1f54a35-eca3-4519-afc0-89fb25925e38' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-c1f54a35-eca3-4519-afc0-89fb25925e38' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div>
+        276.38360596, 270.44485474]])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-92f45a23-7905-437c-a418-efcac959aee8' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-92f45a23-7905-437c-a418-efcac959aee8' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Example as a dataframe</span>
-<span class="n">df_out</span> <span class="o">=</span> <span class="n">aggregated</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
-<span class="n">df_out</span>
+<span></span># Example as a dataframe
+df_out = aggregated.to_dataframe()
+df_out
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1274,12 +1271,12 @@ Data variables:
 <p>3141 rows × 17 columns</p>
 </div></div>
 </div>
-</section>
-<section id="Exporting-aggregated-data">
+</div>
+<div class="section" id="Exporting-aggregated-data">
 <h2>Exporting aggregated data<a class="headerlink" href="#Exporting-aggregated-data" title="Permalink to this headline">¶</a></h2>
 <p>For reproducability and code simplicity, you will likely want to save your aggregated data. In addtion, many researchers use multiple languages or software packages as part of their workflow; for example, STATA or R for regression analysis, or QGIS for spatial analysis, and need to be able to transfer their work to these other environments.</p>
 <p><code class="docutils literal notranslate"><span class="pre">xagg</span></code> has built-in export functions that allow the export of aggregated data to: - NetCDF - csv (for use in STATA, R) - shapefile (for use in GIS applications)</p>
-<section id="Export-to-netCDF">
+<div class="section" id="Export-to-netCDF">
 <h3>Export to netCDF<a class="headerlink" href="#Export-to-netCDF" title="Permalink to this headline">¶</a></h3>
 <p>The netCDF export functionality saves all aggregated variables by replacing the grid dimensions (<code class="docutils literal notranslate"><span class="pre">lat</span></code>, <code class="docutils literal notranslate"><span class="pre">lon</span></code>) with a single location dimension (called <code class="docutils literal notranslate"><span class="pre">poly_idx</span></code>, but this can be changed with the <code class="docutils literal notranslate"><span class="pre">loc_dim=</span></code> argument).</p>
 <p>Other dimensions (e.g. <code class="docutils literal notranslate"><span class="pre">time</span></code>) are kept as they were originally in the grid variable.</p>
@@ -1289,13 +1286,13 @@ Data variables:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Export to netcdf</span>
-<span class="n">aggregated</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="s1">&#39;file_out.nc&#39;</span><span class="p">)</span>
+<span></span># Export to netcdf
+aggregated.to_netcdf(&#39;file_out.nc&#39;)
 </pre></div>
 </div>
 </div>
-</section>
-<section id="Export-to-.csv">
+</div>
+<div class="section" id="Export-to-.csv">
 <h3>Export to .csv<a class="headerlink" href="#Export-to-.csv" title="Permalink to this headline">¶</a></h3>
 <p>The .csv output functionality saves files in a polygon (rows) vs. variables (columns) format. Each aggregated variable and each field in the original inputted polygons are saved as columns. Named attributes in the inputted netcdf file are not included.</p>
 <p>Currently .csvs are only saved “wide” - i.e., a <code class="docutils literal notranslate"><span class="pre">lat</span> <span class="pre">x</span> <span class="pre">lon</span> <span class="pre">x</span> <span class="pre">time</span></code> variable <code class="docutils literal notranslate"><span class="pre">tas</span></code>, aggregated to <code class="docutils literal notranslate"><span class="pre">location</span> <span class="pre">x</span> <span class="pre">time</span></code>, would be reshaped wide so that each timestep is saved in its own column, named <code class="docutils literal notranslate"><span class="pre">tas0</span></code>, <code class="docutils literal notranslate"><span class="pre">tas1</span></code>, and so forth.</p>
@@ -1304,13 +1301,13 @@ Data variables:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Export to csv</span>
-<span class="n">aggregated</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;file_out.csv&#39;</span><span class="p">)</span>
+<span></span># Export to csv
+aggregated.to_csv(&#39;file_out.csv&#39;)
 </pre></div>
 </div>
 </div>
-</section>
-<section id="Export-to-shapefile">
+</div>
+<div class="section" id="Export-to-shapefile">
 <h3>Export to shapefile<a class="headerlink" href="#Export-to-shapefile" title="Permalink to this headline">¶</a></h3>
 <p>The shapefile export functionality keeps the geometry of the originally input polygons, and adds the aggregated variables as fields.</p>
 <p>Similar to .csv export above, if aggregated variables have a dimension beyond their location dimensions (e.g., <code class="docutils literal notranslate"><span class="pre">time</span></code>), each step in that dimension is saved in a separate field, named after the variable and the integer of the index along that dimension (e.g., <code class="docutils literal notranslate"><span class="pre">tas0</span></code>, <code class="docutils literal notranslate"><span class="pre">tas1</span></code>, etc. for a variable <code class="docutils literal notranslate"><span class="pre">tas</span></code>).</p>
@@ -1320,14 +1317,14 @@ Data variables:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Export to csv</span>
-<span class="n">aggregated</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;file_out.shp&#39;</span><span class="p">)</span>
+<span></span># Export to csv
+aggregated.to_csv(&#39;file_out.shp&#39;)
 </pre></div>
 </div>
 </div>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>
@@ -1335,7 +1332,7 @@ Data variables:
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../api_user.html" class="btn btn-neutral float-right" title="User API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../tips.html" class="btn btn-neutral float-right" title="Tips" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="base_run.html" class="btn btn-neutral float-left" title="Base run" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
