@@ -15,8 +15,6 @@ The easiest way to install the latest version of `xagg` is using `conda`:
 ```
 conda install -c conda-forge xagg
 ```
-(There may be a version issue with `numba` - in which case downgrading `numpy` using `pip install numpy==1.21.0` should fix the problem) 
-
 
 Alternatively, you can use `pip`, though current dependency issues (`esmpy` is no longer updated on PyPI) is limiting `pip` to only installing `xagg<=0.1.4`:
 ```
