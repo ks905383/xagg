@@ -63,8 +63,9 @@ Here is a sample code run, using the loaded files from above:
    aggregated = xa.aggregate(ds,weightmap)
 
    # aggregated can now be converted into an xarray dataset (using aggregated.to_dataset()), 
-   # or a geopandas geodataframe (using aggregated.to_dataframe()), or directly exported 
-   # to netcdf, csv, or shp files using aggregated.to_csv()/.to_netcdf()/.to_shp()
+   # or a geopandas geodataframe (using aggregated.to_geodataframe() or aggregated.to_dataframe()
+   # for a pure pandas result), or directly exported to netcdf, csv, or shp files using
+   # aggregated.to_csv()/.to_netcdf()/.to_shp()
 ```
 
 Researchers often need to weight your data by more than just its relative area overlap with a polygon (for example, do you want to weight pixels with more population more?). `xagg` has a built-in support for adding an additional weight grid (another `xarray` DataArray) into `xagg.pixel_overlaps()`. 
