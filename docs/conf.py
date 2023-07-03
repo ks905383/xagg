@@ -13,17 +13,17 @@
 import os
 import sys
 # To allow it to access the xagg folder
-sys.path.insert(0, os.path.abspath('../xagg'))
-
+sys.path.insert(0, os.path.abspath('..'))
+#sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
 project = 'xagg'
-copyright = '2021, Kevin Schwarzwald'
+copyright = '2021-2023, Kevin Schwarzwald'
 author = 'Kevin Schwarzwald'
 
 # The full version, including alpha/beta/rc tags
-release = '2.4'
+release = '3.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -46,7 +46,12 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', '_html', 'Thumbs.db', '.DS_Store','**.ipynb_checkpoints']
+
+# Don't actually build environment for docs (this was the reason why
+# the API in the docs was coming up empty)
+autodoc_mock_imports = ['pytest','xarray','numpy','scipy','shapely',
+'netcdf4','pandas','geopandas','xesmf','cf_xarray','pytables']
 
 
 # -- Options for HTML output -------------------------------------------------
