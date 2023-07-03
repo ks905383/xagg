@@ -85,7 +85,7 @@ def read_wm(path):
     return wm
 
 
-def process_weights(ds,weights=None,target='ds'):
+def process_weights(ds,weights=None,target='ds',silent=False):
     """ Process weights - including regridding
     
     If ``target == 'ds'``, regrid `weights` to `ds`. If ``target == 'weights'``,
@@ -105,6 +105,8 @@ def process_weights(ds,weights=None,target='ds'):
         default) or vice-versa (not yet supported, returns 
         `NotImplementedError`)
 
+    silent : bool, default = `False`
+        if True, then no status updates are printed to std out
 
     Returns
     ---------------
@@ -146,7 +148,8 @@ def process_weights(ds,weights=None,target='ds'):
         if ((not ((ds.sizes['lat'] == weights.sizes['lat']) & (ds.sizes['lon'] == weights.sizes['lon']))) or 
             (not (np.allclose(ds.lat,weights.lat) & np.allclose(ds.lon,weights.lon)))):
             if target == 'ds':
-                print('regridding weights to data grid...')
+                if not silent:
+                    print('regridding weights to data grid...')
                 # Create regridder to the [ds] coordinates
                 rgrd = xe.Regridder(weights,ds,'bilinear')
                 # Regrid [weights] to [ds] grids
@@ -155,7 +158,8 @@ def process_weights(ds,weights=None,target='ds'):
             elif target == 'weights':
                 raise NotImplementedError('The '+target+' variable is not *yet* supported as a target for regridding. Please choose "ds" for now.')
                 # This is because of lack of downstream capability right now... 
-                print('regridding data to weights grid...')
+                if not silent:
+                    print('regridding data to weights grid...')
                 # Create regridder to the [weights] coordinates
                 rgrd = xe.Regridder(ds,weights,'bilinear')
                 # Regrid [ds] to [weights] grid
@@ -461,7 +465,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
     return wm_out
 
 
-def aggregate(ds,wm,impl='for_loop'):
+def aggregate(ds,wm,impl='for_loop',silent=False):
     """ Aggregate raster variable(s) to polygon(s)
     
     Aggregates (N-D) raster variables in `ds` to the polygons
@@ -513,6 +517,9 @@ def aggregate(ds,wm,impl='for_loop'):
             aggregation is calculated using a dot product, 
             requires much more memory (due to broadcasting of
             variables) but may be faster in certain circumstances
+
+    silent : bool, default = `False`
+        if True, then no status updates are printed to std out
                
     Returns
     ---------------
@@ -563,7 +570,8 @@ def aggregate(ds,wm,impl='for_loop'):
             # Process for every variable that has locational information, but isn't a 
             # bound variable
             if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
-                print('aggregating '+var+'...')
+                if not silent:
+                    print('aggregating '+var+'...')
 
                 # select just data for which we have overlaps
                 var_array = ds[var].sel(loc=wm.overlap_da['loc'])
@@ -612,7 +620,8 @@ def aggregate(ds,wm,impl='for_loop'):
             # Process for every variable that has locational information, but isn't a 
             # bound variable
             if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
-                print('aggregating '+var+'...')
+                if not silent:
+                    print('aggregating '+var+'...')
                 # Create the column for the relevant variable
                 wm.agg[var] = None
                 
@@ -668,6 +677,7 @@ def aggregate(ds,wm,impl='for_loop'):
         					 geometry=wm.geometry,ds_in=ds,weights=wm.weights)
 
     # Return
-    print('all variables aggregated to polygons!')
+    if not silent:
+        print('all variables aggregated to polygons!')
     return agg_out
 

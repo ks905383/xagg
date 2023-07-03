@@ -8,7 +8,8 @@ from . core import (create_raster_polygons,get_pixel_overlaps)
 def pixel_overlaps(ds,gdf_in,
                    weights=None,weights_target='ds',
                    subset_bbox = True,
-                   impl='for_loop'):
+                   impl='for_loop',
+                   silent=False):
     """ Wrapper function for determining overlaps between grid and polygon
     
     For a geodataframe `gdf_in`, takes an `xarray` structure `ds` (Dataset or 
@@ -52,8 +53,10 @@ def pixel_overlaps(ds,gdf_in,
       whether to use the ``'for_loop'`` or ``'dot_product'``
       methods for aggregating; the former uses less memory,
       the latter may be faster in certain circumstances
+
+    silent : bool, default = `False`
+        if True, then no status updates are printed to std out
    
-    
     Returns
     ---------------
     wm_out : dict
@@ -73,16 +76,19 @@ def pixel_overlaps(ds,gdf_in,
         ds = ds.to_dataset()
     
     # Create a polygon for each pixel
-    print('creating polygons for each pixel...')
+    if not silent:
+      print('creating polygons for each pixel...')
     if subset_bbox:
         pix_agg = create_raster_polygons(ds,subset_bbox=gdf_in,weights=weights)
     else:
         pix_agg = create_raster_polygons(ds,subset_bbox=None,weights=weights)
     
     # Get overlaps between these pixel polygons and the gdf_in polygons
-    print('calculating overlaps between pixels and output polygons...')
+    if not silent:
+      print('calculating overlaps between pixels and output polygons...')
     wm_out = get_pixel_overlaps(gdf_in,pix_agg,impl=impl)
-    print('success!')
+    if not silent:
+      print('success!')
     
     return wm_out
 

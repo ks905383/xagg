@@ -4,8 +4,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Intro &mdash; xagg 2.4 documentation</title>
@@ -14,8 +13,6 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -32,11 +29,12 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -102,6 +100,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/base_run.html">Base run</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/full_run.html">Detailed code run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_user.html">User API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_backend.html">Backend API</a></li>
 </ul>
@@ -195,9 +194,9 @@
     text-align: unset;
 }
 </style>
-<section id="intro">
+<div class="section" id="intro">
 <h1>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h1>
-<section id="overview">
+<div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>Science often happens on grids - gridded weather products, interpolated pollution data, night time lights, remote sensing all approximate the continuous real world for reasons of data resolution, processing time, or ease of calculation.</p>
 <p>However, living things don’t live on grids, and rarely play, act, or observe data on grids either. Instead, humans tend to work on the county, state, township, okrug, or city level; birds tend to fly along complex migratory corridors; and rain- and watersheds follow valleys and mountains.</p>
@@ -229,7 +228,7 @@
 <span class="c1"># to netcdf, csv, or shp files using aggregated.to_csv()/.to_netcdf()/.to_shp()</span>
 </pre></div>
 </div>
-<p>Researchers often need to weight your data by more than just its relative area overlap with a polygon (for example, do you want to weight pixels with more population more?). <code class="docutils literal notranslate"><span class="pre">xagg</span></code> has a built-in support for adding an additional weight grid (another <cite>xarray</cite> DataArray) into <a class="reference internal" href="api_user.html#xagg.wrappers.pixel_overlaps" title="xagg.wrappers.pixel_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.wrappers.pixel_overlaps()</span></code></a>.</p>
+<p>Researchers often need to weight your data by more than just its relative area overlap with a polygon (for example, do you want to weight pixels with more population more?). <code class="docutils literal notranslate"><span class="pre">xagg</span></code> has a built-in support for adding an additional weight grid (another <cite>xarray</cite> DataArray) into <code class="xref py py-func docutils literal notranslate"><span class="pre">xagg.wrappers.pixel_overlaps()</span></code>.</p>
 <p>Finally, <code class="docutils literal notranslate"><span class="pre">xagg</span></code> allows for direct exporting of the aggregated data in several commonly used data formats (please open issues if you’d like support for something else!):</p>
 <ul class="simple">
 <li><p>NetCDF</p></li>
@@ -237,17 +236,17 @@
 <li><p>Shapefile for QGIS, further spatial processing</p></li>
 </ul>
 <p>Best of all, <code class="docutils literal notranslate"><span class="pre">xagg</span></code> is flexible. Multiple variables in your dataset? <code class="docutils literal notranslate"><span class="pre">xagg</span></code> will aggregate them all, as long as they have at least <code class="docutils literal notranslate"><span class="pre">lat/lon</span></code> dimensions. Fields in your shapefile that you’d like to keep? <code class="docutils literal notranslate"><span class="pre">xagg</span></code> keeps all fields (for example FIPS codes from county datasets) all the way through the final export. Weird dimension names? <code class="docutils literal notranslate"><span class="pre">xagg</span></code> is trained to recognize all versions of “lat”, “Latitude”, “Y”, “nav_lat”, “Latitude_1”… etc. that the author has run into over the years of working with climate data; and this list is easily expandable as a keyword argument if needed.</p>
-</section>
-<section id="use-cases">
+</div>
+<div class="section" id="use-cases">
 <h2>Use cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h2>
-<section id="climate-econometrics">
+<div class="section" id="climate-econometrics">
 <h3>Climate econometrics<a class="headerlink" href="#climate-econometrics" title="Permalink to this headline">¶</a></h3>
 <p>Many climate econometrics studies use societal data (mortality, crop yields, etc.) at a political or administrative level (for example, counties) but climate and weather data on grids. Oftentimes, further weighting by population or agricultural density is needed.</p>
 <p>Area-weighting of pixels onto polygons ensures that aggregating weather and climate data onto polygons occurs in a robust way. Consider a (somewhat contrived) example: an administrative region is in a relatively flat lowlands, but a pixel that slightly overlaps the polygon primarily covers a wholly different climate (mountainous, desert, etc.). Using a simple mask would weight that pixel the same, though its information is not necessarily relevant to the climate of the region. Population-weighting may not always be sufficient either; consider Los Angeles, which has multiple significantly different climates, all with high densities.</p>
 <p><code class="docutils literal notranslate"><span class="pre">xagg</span></code> allows a simple population <em>and</em> area-averaging, in addition to export functions that will turn the aggregated data into output easily used in STATA or R for further calculations.</p>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>
