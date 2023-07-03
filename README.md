@@ -1,7 +1,7 @@
 xagg
 ==============================
 [![Build Status](https://github.com/ks905383/xagg/workflows/Tests/badge.svg)](https://github.com/ks905383/xagg/actions)
-[![codecov](https://codecov.io/gh/ks905383/xagg/branch/master/graph/badge.svg)](https://codecov.io/gh/ks905383/xagg)
+[![codecov](https://codecov.io/gh/ks905383/xagg/branch/main/graph/badge.svg)](https://codecov.io/gh/ks905383/xagg)
 [![pypi](https://img.shields.io/pypi/v/xagg.svg)](https://pypi.org/project/xagg)
 [![conda-forge](https://anaconda.org/conda-forge/xagg/badges/version.svg)](https://anaconda.org/conda-forge/xagg/)
 [![Documentation Status](https://readthedocs.org/projects/xagg/badge/?version=latest)](https://xagg.readthedocs.io/en/latest/?badge=latest)
