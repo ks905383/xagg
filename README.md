@@ -10,10 +10,13 @@ xagg
 A package to aggregate gridded data in `xarray` to polygons in `geopandas` using area-weighting from the relative area overlaps between pixels and polygons.
 
 ## Installation 
-The easiest way to install the latest version of `xagg` is using `conda`:  
+The easiest way to install the latest version of `xagg` is using `conda` or `mamba`:  
 
 ```
-conda install -c conda-forge xagg
+conda install -c conda-forge xagg==0.3.1
+
+# or
+mamba install -c conda-forge xagg==0.3.1
 ```
 
 Alternatively, you can use `pip`, though current dependency issues (`esmpy` is no longer updated on PyPI) is limiting `pip` to only installing `xagg<=0.1.4`:
