@@ -19,6 +19,8 @@ conda install -c conda-forge xagg==0.3.1
 mamba install -c conda-forge xagg==0.3.1
 ```
 
+If you're running into an `ImportError` involving `ESMF`, please see the discussion [here](https://github.com/ks905383/xagg/issues/47) for a workaround until it is fixed. 
+
 Alternatively, you can use `pip`, though current dependency issues (`esmpy` is no longer updated on PyPI) is limiting `pip` to only installing `xagg<=0.1.4`:
 ```
 pip install xagg
