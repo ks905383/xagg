@@ -333,7 +333,8 @@ def subset_find(ds0,ds1):
         latlons0 = list(zip(ds1['lat'].values,ds1['lon'].values))
         
         # Find indices of the used grid for aggregation in the input grid
-        loc_idxs = [latlons.index(i) for i in latlons0]
+        latlons_dict = {latlon: index for index, latlon in enumerate(latlons)}
+        loc_idxs = [latlons_dict[i] for i in latlons0]
         
         if np.allclose(len(loc_idxs),len(latlons0)):
             print('grid adjustment successful')

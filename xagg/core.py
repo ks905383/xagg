@@ -465,7 +465,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
     return wm_out
 
 
-def aggregate(ds,wm,impl='for_loop',silent=False):
+def aggregate(ds,wm,impl='for_loop', skipna=True, silent=False):
     """ Aggregate raster variable(s) to polygon(s)
     
     Aggregates (N-D) raster variables in `ds` to the polygons
@@ -517,6 +517,10 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
             aggregation is calculated using a dot product, 
             requires much more memory (due to broadcasting of
             variables) but may be faster in certain circumstances
+
+    skipna : bool, default = `True`
+        if True, skip missing values (as marked by NaN).Only
+            skips missing values for float dtypes.
 
     silent : bool, default = `False`
         if True, then no status updates are printed to std out
@@ -664,7 +668,7 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
                             # aggregated value for the shapefile
                             wm.agg.loc[poly_idx,var] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*
                                                              normed_areaweights).
-                                                            sum('loc')).values]]
+                                                            sum('loc', skipna =skipna)).values]]
 
                         else:
                             wm.agg.loc[poly_idx,var] = [[(ds[var].isel(loc=0)*np.nan).values]]
