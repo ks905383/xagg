@@ -544,7 +544,9 @@ def aggregate(ds,wm,impl='for_loop', skipna=True, silent=False):
       else:
         ds = ds.to_dataset()
 
-
+    # Chunks
+    #ds = ds.chunk(chunk)
+    
     # Run ds through fix_ds (to fix lat/lon names, lon coords)
     ds = fix_ds(ds)
 
