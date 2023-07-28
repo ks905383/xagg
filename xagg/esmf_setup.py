@@ -13,6 +13,7 @@ def set_esmf_mk_path():
     if env_path:
         if env_path.endswith('/bin'): env_path= env_path[:-4]
         esmf_mk_path = os.path.join(env_path,'lib', 'esmf.mk')
+
         if os.path.isfile(esmf_mk_path):
             os.environ['ESMFMKFILE'] = esmf_mk_path
             print(f"Found esmf.mk at: {esmf_mk_path}")

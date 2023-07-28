@@ -11,6 +11,9 @@ import os
 from . aux import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
 from . classes import (weightmap,aggregated)
 
+
+SUPPORTED_STATISTICS_METHODS = ["mean", "max", "min", "sum", "median", "count", "std"]
+
 def read_wm(path):
     """ Load temporary weightmap files from wm.to_file()
 
@@ -542,6 +545,9 @@ def aggregate(ds,wm,impl='for_loop',stat='mean', skipna=True, silent=False):
         an :class:`xagg.classes.aggregated` object with the aggregated variables 
     
     """
+    
+    assert stat in SUPPORTED_STATISTICS_METHODS, f"You selected {stat}. This statistic is not available. Please choose one of the following: {SUPPORTED_STATISTICS_METHODS}."
+    
     # Make sure pixel_overlaps was correctly run if using dot product
     if (impl=='dot_product') and (wm.overlap_da is None):
         raise ValueError("no 'overlap_da' was found in the `wm` input - since you're using the dot product implementation, "+
@@ -636,8 +642,8 @@ def aggregate(ds,wm,impl='for_loop',stat='mean', skipna=True, silent=False):
         for var in ds:
             # Process for every variable that has locational information, but isn't a 
             # bound variable
-            if stat not in ["mean", "max", "min", "sum", "median", "count", "std"]: 
-                print("You selected "+stat+". This statistic is not available. Please choose one of the following: mean, max, min, sum, median, count, std.")
+            #if stat not in ["mean", "max", "min", "sum", "median", "count", "std"]: 
+            #    print("You selected "+stat+". This statistic is not available. Please choose one of the following: mean, max, min, sum, median, count, std.")
             if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
                 if not silent:
                     print('aggregating '+var+' by '+stat+ '...')
