@@ -465,7 +465,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
     return wm_out
 
 
-def aggregate(ds,wm,impl='for_loop', skipna=True, silent=False):
+def aggregate(ds,wm,impl='for_loop',stat='mean', skipna=True, silent=False):
     """ Aggregate raster variable(s) to polygon(s)
     
     Aggregates (N-D) raster variables in `ds` to the polygons
@@ -517,6 +517,17 @@ def aggregate(ds,wm,impl='for_loop', skipna=True, silent=False):
             aggregation is calculated using a dot product, 
             requires much more memory (due to broadcasting of
             variables) but may be faster in certain circumstances
+    
+    stat : :class:str (def: ``'mean'``)
+        only if impl = for loop
+        which aggregation statistic method to use, either of:
+        - ``'mean'``
+        - ``'max'``
+        - ``'min'``
+        - ``'sum'``
+        - ``'median'``
+        - ``'count'``
+        - ``'std'``         
 
     skipna : bool, default = `True`
         if True, skip missing values (as marked by NaN).Only
@@ -538,11 +549,11 @@ def aggregate(ds,wm,impl='for_loop', skipna=True, silent=False):
 
     # Turn into dataset if dataarray
     if type(ds)==xr.core.dataarray.DataArray:
-      if ds.name is None:
-        warnings.warn('An unnamed xr.DataArray was inputted instead of a xr.Dataset; the output variable will be "var"')
-        ds = ds.to_dataset(name='var')
-      else:
-        ds = ds.to_dataset()
+        if ds.name is None:
+            warnings.warn('An unnamed xr.DataArray was inputted instead of a xr.Dataset; the output variable will be "var"')
+            ds = ds.to_dataset(name='var')
+        else:
+            ds = ds.to_dataset()
 
     # Chunks
     #ds = ds.chunk(chunk)
@@ -625,11 +636,15 @@ def aggregate(ds,wm,impl='for_loop', skipna=True, silent=False):
         for var in ds:
             # Process for every variable that has locational information, but isn't a 
             # bound variable
+            if stat not in ["mean", "max", "min", "sum", "median", "count", "std"]: 
+                print("You selected "+stat+". This statistic is not available. Please choose one of the following: mean, max, min, sum, median, count, std.")
             if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
                 if not silent:
-                    print('aggregating '+var+'...')
+                    print('aggregating '+var+' by '+stat+ '...')
+
                 # Create the column for the relevant variable
-                wm.agg[var] = None
+                var_stat = var+'_'+stat
+                wm.agg[var_stat] = None
                 
                 # Get weighted average of variable based on pixel overlap + other weights
                 for poly_idx in wm.agg.poly_idx:
@@ -668,9 +683,30 @@ def aggregate(ds,wm,impl='for_loop', skipna=True, silent=False):
 
                             # Take the weighted average of all the pixel values to calculate the 
                             # aggregated value for the shapefile
-                            wm.agg.loc[poly_idx,var] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*
-                                                             normed_areaweights).
-                                                            sum('loc', skipna =skipna)).values]]
+                            # wm.agg.loc[poly_idx,var] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*
+                            #                                  normed_areaweights).
+                            #                                 sum('loc', skipna =skipna)).values]]
+                            if stat == "mean":
+                                wm.agg.loc[poly_idx,var_stat] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*normed_areaweights).
+                                                                   mean('loc')).values]]
+                            elif stat == "max":
+                                wm.agg.loc[poly_idx,var_stat] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*normed_areaweights).
+                                                                  max('loc')).values]]
+                            elif stat == "min":
+                                wm.agg.loc[poly_idx,var_stat] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*normed_areaweights).
+                                                                  min('loc')).values]]
+                            elif stat == "sum":
+                                wm.agg.loc[poly_idx,var_stat] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*normed_areaweights).
+                                                                  sum('loc')).values]]
+                            elif stat == "median":
+                                wm.agg.loc[poly_idx,var_stat] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*normed_areaweights).
+                                                                  median('loc')).values]]
+                            elif stat == "count":
+                                wm.agg.loc[poly_idx,var_stat] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*normed_areaweights).
+                                                                  count('loc')).values]]
+                            elif stat == "std":
+                                wm.agg.loc[poly_idx,var_stat] = [[((ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)*normed_areaweights).
+                                                                  std('loc')).values]]
 
                         else:
                             wm.agg.loc[poly_idx,var] = [[(ds[var].isel(loc=0)*np.nan).values]]
