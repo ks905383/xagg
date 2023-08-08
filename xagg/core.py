@@ -469,7 +469,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
     return wm_out
 
 
-def aggregate(ds,wm,impl='for_loop',stat='mean', skipna=True, silent=False):
+def aggregate(ds,wm,impl='for_loop',stat='mean',skipna=True,interpolate_NaN=False,silent=False):
     """ Aggregate raster variable(s) to polygon(s)
     
     Aggregates (N-D) raster variables in `ds` to the polygons
