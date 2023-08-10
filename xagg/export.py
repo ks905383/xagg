@@ -6,6 +6,7 @@ import os
 import re
 import warnings
 import shutil
+from functools import reduce
 
 from . aux import (normalize,fix_ds,get_bnds,subset_find)
 
@@ -94,22 +95,26 @@ def prep_for_nc(agg_obj,loc_dim='poly_idx'):
     # Create xarray dataset with the aggregation polygons (poly_idx) 
     # there. 
     ds_out = xr.Dataset(coords={'poly_idx':(['poly_idx'],agg_obj.agg.poly_idx.values)})
-    
+ 
     # Add other polygon attributes
-    for var in [c for c in agg_obj.agg.columns if c not in ['poly_idx','rel_area','pix_idxs','coords']]:
-        if var not in agg_obj.ds_in.var():
+    for var in [c for c in agg_obj.agg.columns if c not in ['poly_idx','rel_area','poly_area', 'pix_idxs','coords']]:    
+        if (var not in agg_obj.ds_in.var()) and (not any(var_stat in var for var_stat in SUPPORTED_STATISTICS_METHODS) ):
+
             # For auxiliary variables (from the shapefile), just copy them wholesale into the dataset
             ds_out[var] = xr.DataArray(data=agg_obj.agg[var],coords=[agg_obj.agg.poly_idx],dims=['poly_idx'])
         else:
+            original_var = reduce(lambda s, sub: s.replace(sub, ''), SUPPORTED_STATISTICS_METHODS, var)
+            original_var = original_var.replace('_', '')
             # For data variables (from the input grid), create empty array
             ds_out[var] = xr.DataArray(data=np.zeros((len(agg_obj.agg),
-                                                         *[agg_obj.ds_in[var].sizes[k] for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc']]))*np.nan,
-                                       dims=['poly_idx',*[k for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc']]],
-                                       coords=[[k for k in agg_obj.agg.poly_idx],*[agg_obj.ds_in[var][k].values for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc']]])
-        
+                                                         *[agg_obj.ds_in[original_var].sizes[k] for k in agg_obj.ds_in[original_var].sizes.keys() if k not in ['lat','lon','loc']]))*np.nan,
+                                       dims=['poly_idx',*[k for k in agg_obj.ds_in[original_var].sizes.keys() if k not in ['lat','lon','loc']]],
+                                       coords=[[k for k in agg_obj.agg.poly_idx],*[agg_obj.ds_in[original_var][k].values for k in agg_obj.ds_in[original_var].sizes.keys() if k not in ['lat','lon','loc']]])
+
             # Now insert aggregated values 
             for poly_idx in agg_obj.agg.poly_idx:
                 ds_out[var].loc[{'poly_idx':poly_idx}] = np.squeeze(agg_obj.agg.loc[poly_idx,var])
+
     
     # Add non-geographic coordinates for the variables to be aggregated
     for crd in [k for k in agg_obj.ds_in.sizes.keys() if (k not in ['lat','lon','loc','bnds'])]:
@@ -163,34 +168,39 @@ def prep_for_csv(agg_obj,add_geom=False):
     
     """
     # For output into csv, work with existing geopandas data frame
-    csv_out = agg_obj.agg.drop(columns=['rel_area','pix_idxs','coords','poly_idx'])
+    csv_out = agg_obj.agg.drop(columns=['rel_area','poly_area','pix_idxs','coords','poly_idx'])
     
     # Now expand the aggregated variable into multiple columns
-    for var in [c for c in agg_obj.agg.columns if ((c not in ['poly_idx','rel_area','pix_idxs','coords']) & (c in agg_obj.ds_in.var()))]:
-        # NOT YET IMPLEMENTED: dynamic column naming - so if it recognizes 
-        # it as a date, then instead of doing var0, var1, var2,... it does
-        # varYYYYMMDD etc.
-        # These are the coordinates of the variable in the original raster
-        dimsteps = [agg_obj.ds_in[var][d].values for d in agg_obj.ds_in[var].sizes.keys() if d not in ['lat','lon','loc']]
-        # ALSO SHOULD check to see if the variables are multi-D - if they are
-        # there are two options: 
-        # - a multi-index column title (var0-0, var0-1)
-        # - or an error saying csv output is not supported for this
-    
-        # Reshape the variable wide and name the columns [var]0, [var]1,...
-        if len(dimsteps) == 0:
-            # (in this case, all it does is move from one list per row to 
-            # one value per row)
-            expanded_var = (pd.DataFrame(pd.DataFrame(csv_out[var].to_list())[0].to_list(),
-                                     columns=[var]))
-        else:
-            expanded_var = (pd.DataFrame(pd.DataFrame(csv_out[var].to_list())[0].to_list(),
-                                     columns=[var+str(idx) for idx in np.arange(0,len(csv_out[var][0][0]))]))
-        # Append to existing series
-        csv_out = pd.concat([csv_out.drop(columns=(var)),
-                             expanded_var],
-                            axis=1)
-        del expanded_var
+    for var in [c for c in agg_obj.agg.columns if ((c not in ['poly_idx','rel_area','poly_area','pix_idxs','coords']) )]:
+        print(var)
+        original_var = reduce(lambda s, sub: s.replace(sub, ''), SUPPORTED_STATISTICS_METHODS, var)
+        original_var = original_var.replace('_', '')
+        if original_var in agg_obj.ds_in.var():
+            print(original_var)
+            # NOT YET IMPLEMENTED: dynamic column naming - so if it recognizes 
+            # it as a date, then instead of doing var0, var1, var2,... it does
+            # varYYYYMMDD etc.
+            # These are the coordinates of the variable in the original raster
+            dimsteps = [agg_obj.ds_in[original_var][d].values for d in agg_obj.ds_in[original_var].sizes.keys() if d not in ['lat','lon','loc']]
+            # ALSO SHOULD check to see if the variables are multi-D - if they are
+            # there are two options: 
+            # - a multi-index column title (var0-0, var0-1)
+            # - or an error saying csv output is not supported for this
+
+            # Reshape the variable wide and name the columns [var]0, [var]1,...
+            if len(dimsteps) == 0:
+                # (in this case, all it does is move from one list per row to 
+                # one value per row)
+                expanded_var = (pd.DataFrame(pd.DataFrame(csv_out[var].to_list())[0].to_list(),
+                                         columns=[var]))
+            else:
+                expanded_var = (pd.DataFrame(pd.DataFrame(csv_out[var].to_list())[0].to_list(),
+                                         columns=[var+str(idx) for idx in np.arange(0,len(csv_out[var][0][0]))]))
+            # Append to existing series
+            csv_out = pd.concat([csv_out.drop(columns=(var)),
+                                 expanded_var],
+                                axis=1)
+            del expanded_var
 
     if add_geom:
         # Return the geometry from the original geopandas.GeoDataFrame

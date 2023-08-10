@@ -39,7 +39,7 @@ def test_to_dataset(agg=agg):
 
 	# Build reference output dataset
 	ds_ref = xr.Dataset({'name':(['poly_idx'],np.array(['test']).astype(object)),
-						 'test':(['poly_idx','run'],np.array([[1.0,2.0]]))},
+						 'test_mean':(['poly_idx','run'],np.array([[1.0,2.0]]))},
 					coords={'poly_idx':(['poly_idx'],np.array([0])),
 							'run':(['run'],np.array([0,1]))})
 
@@ -52,7 +52,7 @@ def test_to_dataframe(agg=agg):
 	df_out = agg.to_dataframe()
 
 	# Build reference output dataframe
-	df_ref = pd.DataFrame({'poly_idx':[0,0],'run':[0,1],'name':['test','test'],'test':[0.9999,1.9999]})
+	df_ref = pd.DataFrame({'poly_idx':[0,0],'run':[0,1],'name':['test','test'],'test_mean':[0.9999,1.9999]})
 	df_ref = df_ref.set_index(['poly_idx','run'])
 
 	# Assert equal within tolerance, again likely due to very slight 
