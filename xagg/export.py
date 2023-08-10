@@ -10,6 +10,8 @@ from functools import reduce
 
 from . aux import (normalize,fix_ds,get_bnds,subset_find)
 
+SUPPORTED_STATISTICS_METHODS = ["weighted_mean", "weighted_sum","weighted_median", "mean", "max", "min", "sum", "median", "count", "std"]
+
 
 def export_weightmap(wm_obj,fn,overwrite=False):
     """ Save a copy of the weightmap, to avoid recalculating it
@@ -97,8 +99,10 @@ def prep_for_nc(agg_obj,loc_dim='poly_idx'):
     ds_out = xr.Dataset(coords={'poly_idx':(['poly_idx'],agg_obj.agg.poly_idx.values)})
  
     # Add other polygon attributes
-    for var in [c for c in agg_obj.agg.columns if c not in ['poly_idx','rel_area','poly_area', 'pix_idxs','coords']]:    
-        if (var not in agg_obj.ds_in.var()) and (not any(var_stat in var for var_stat in SUPPORTED_STATISTICS_METHODS) ):
+    for var in [c for c in agg_obj.agg.columns if c not in ['poly_idx','rel_area','poly_area', 'pix_idxs','coords']]:  
+        original_var = reduce(lambda s, sub: s.replace(sub, ''), SUPPORTED_STATISTICS_METHODS, var)
+        original_var = original_var.replace('_', '')
+        if (original_var not in agg_obj.ds_in.var()):
 
             # For auxiliary variables (from the shapefile), just copy them wholesale into the dataset
             ds_out[var] = xr.DataArray(data=agg_obj.agg[var],coords=[agg_obj.agg.poly_idx],dims=['poly_idx'])

@@ -12,7 +12,7 @@ from . aux import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_f
 from . classes import (weightmap,aggregated)
 
 
-SUPPORTED_STATISTICS_METHODS = ["mean", "max", "min", "sum", "median", "count", "std"]
+SUPPORTED_STATISTICS_METHODS = ["weighted_mean", "weighted_sum","weighted_median", "mean", "max", "min", "sum", "median", "count", "std"]
 
 def read_wm(path):
     """ Load temporary weightmap files from wm.to_file()
@@ -469,8 +469,8 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
     return wm_out
 
 def check_supported_statistic(stats_list):
-    for stat in stats_list:
-        assert stat in SUPPORTED_STATISTICS_METHODS, f"You selected {stat}. This statistic is not available. Please choose one of the following: {SUPPORTED_STATISTICS_METHODS}."
+    for s in stats_list:
+        assert s in SUPPORTED_STATISTICS_METHODS, f"You selected {s}. This statistic is not available. Please choose one of the following: {SUPPORTED_STATISTICS_METHODS}."
 
  
     
@@ -703,11 +703,17 @@ def aggregate(ds,wm,impl='for_loop',stat=['mean'],skipna=True,interpolate_NaN=Fa
 
                             # Apply aggregation statistic method to the weighted pixel values
                             for i in stat: 
-                                if i == "mean": # weighted average of all the pixel values
-                                    stat_i = "mean"
+                                if i == "weighted_mean": # weighted average of all the pixel values
+                                    stat_i = "weighted_mean"
                                     var_stat = var+'_'+stat_i
                                     wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*normed_areaweights).sum('loc', skipna=skipna).values]]
+                                    continue
+                                elif i == "mean":
+                                    stat_i = "mean"
+                                    var_stat = var+'_'+stat_i
+                                    wm.agg[var_stat] = None
+                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.mean('loc', skipna=skipna)]]
                                     continue
                                 elif i == "max":
                                     stat_i = "max"
@@ -721,8 +727,8 @@ def aggregate(ds,wm,impl='for_loop',stat=['mean'],skipna=True,interpolate_NaN=Fa
                                     wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.min('loc', skipna=skipna)]]
                                     continue
-                                elif i == "sum": # weighted sum
-                                    stat_i = "sum"
+                                elif i == "weighted_sum": # weighted sum 
+                                    stat_i = "weighted_sum"
                                     var_stat = var+'_'+stat_i
                                     wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*areaweights).sum('loc', skipna=skipna).values]]
