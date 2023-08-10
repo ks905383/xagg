@@ -12,7 +12,7 @@ from . aux import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_f
 from . classes import (weightmap,aggregated)
 
 
-SUPPORTED_STATISTICS_METHODS = ["weighted_mean", "weighted_sum","weighted_median", "mean", "max", "min", "sum", "median", "count", "std"]
+SUPPORTED_STATISTICS_METHODS = ["weighted_mean", "weighted_sum","weighted_median","sum", "mean", "max", "min", "sum", "median", "count", "std"]
 
 def read_wm(path):
     """ Load temporary weightmap files from wm.to_file()
@@ -472,7 +472,29 @@ def check_supported_statistic(stats_list):
     for s in stats_list:
         assert s in SUPPORTED_STATISTICS_METHODS, f"You selected {s}. This statistic is not available. Please choose one of the following: {SUPPORTED_STATISTICS_METHODS}."
 
- 
+def comp_weighted_medians(pix_in_poly, weights):
+    weighted_medians = xr.DataArray(np.zeros(pix_in_poly.shape[0]), dims='t')
+    dataset = xr.Dataset({'data': pix_in_poly, 'weights': weights})
+    
+    for step in range(pix_in_poly.shape[0]):
+        step_data = dataset['data'][step].values #.sel(step=step)
+        step_weights = dataset['weights'].values
+
+        # Sort the data by values and calculate cumulative weights
+        sorted_indices = np.argsort(step_data)
+        cumulative_weights = step_weights[sorted_indices].cumsum()
+
+        # Find the index where cumulative weights exceed half of the total weights
+        median_index = np.searchsorted(cumulative_weights, np.sum(step_weights) / 2)
+
+        # Calculate the weighted median value
+        weighted_median = step_data[sorted_indices][median_index]
+
+        # Store the weighted median in the result DataArray
+        weighted_medians[step] = weighted_median
+        
+        return weighted_medians.values
+    
     
 def aggregate(ds,wm,impl='for_loop',stat=['mean'],skipna=True,interpolate_NaN=False,silent=False):
     """ Aggregate raster variable(s) to polygon(s)
@@ -713,19 +735,19 @@ def aggregate(ds,wm,impl='for_loop',stat=['mean'],skipna=True,interpolate_NaN=Fa
                                     stat_i = "mean"
                                     var_stat = var+'_'+stat_i
                                     wm.agg[var_stat] = None
-                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.mean('loc', skipna=skipna)]]
+                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.mean('loc', skipna=skipna).values]]
                                     continue
                                 elif i == "max":
                                     stat_i = "max"
                                     var_stat = var+'_'+stat_i
                                     wm.agg[var_stat] = None
-                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.max('loc', skipna=skipna)]]
+                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.max('loc', skipna=skipna).values]]
                                     continue
                                 elif i == "min":
                                     stat_i = "min"
                                     var_stat = var+'_'+stat_i
                                     wm.agg[var_stat] = None
-                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.min('loc', skipna=skipna)]]
+                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.min('loc', skipna=skipna).values]]
                                     continue
                                 elif i == "weighted_sum": # weighted sum 
                                     stat_i = "weighted_sum"
@@ -734,11 +756,26 @@ def aggregate(ds,wm,impl='for_loop',stat=['mean'],skipna=True,interpolate_NaN=Fa
                                     wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*areaweights).sum('loc', skipna=skipna).values]]
                                     #wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*(pixel_area/pixel_area.max())).sum('loc', skipna=skipna).values]]
                                     continue
+                                    
+                                elif i == "sum":
+                                    stat_i = "sum"
+                                    var_stat = var+'_'+stat_i
+                                    wm.agg[var_stat] = None
+                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.sum('loc', skipna=skipna).values]]
+                                    continue
+                                    
                                 elif i == "median":
                                     stat_i = "median"
                                     var_stat = var+'_'+stat_i
                                     wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.median('loc', skipna=skipna)]]
+                                    continue
+                                    
+                                elif i == "weighted_median":
+                                    stat_i = "weighted_median"
+                                    var_stat = var+'_'+stat_i
+                                    wm.agg[var_stat] = None
+                                    wm.agg.loc[poly_idx,var_stat] = [[comp_weighted_medians(pix_in_poly, normed_areaweights)]]
                                     continue
                                 elif i == "count": # polygon area divided by pixel size gives exact count
                                     stat_i = "count"
