@@ -12,7 +12,7 @@ from . aux import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_f
 from . classes import (weightmap,aggregated)
 
 
-SUPPORTED_STATISTICS_METHODS = ["weighted_mean", "weighted_sum","weighted_median","sum", "mean", "max", "min", "sum", "median", "count", "std"]
+SUPPORTED_STATISTICS_METHODS = ["weighted_mean", "weighted_sum","weighted_median","sum", "mean", "max", "min", "median", "count", "std"]
 
 def read_wm(path):
     """ Load temporary weightmap files from wm.to_file()
