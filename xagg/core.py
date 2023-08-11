@@ -495,6 +495,27 @@ def comp_weighted_medians(pix_in_poly, weights):
         
         return weighted_medians.values
     
+def comp_weighted_medians(pix_in_poly, weights):
+    weighted_medians = xr.DataArray(np.zeros(pix_in_poly.shape[0]), dims='t')
+
+    # for single timestep
+    if pix_in_poly.ndim == 1:
+        df = pd.DataFrame({'pix_values': pix_in_poly, 'weights': weights})
+        df.sort_values(by='pix_values',inplace=True)
+        cumsum = df.weights.cumsum()
+        cutoff = df.weights.sum() / 2.0
+        weighted_medians = np.interp(cutoff, cumsum, df.pix_values.values)
+        return np.array(weighted_medians)
+    # for multiple timesteps
+    else:
+        for step in range(pix_in_poly.shape[0]):
+            df = pd.DataFrame({'pix_values': pix_in_poly[step], 'weights': weights})
+            df.sort_values(by='pix_values',inplace=True)
+            cumsum = df.weights.cumsum()
+            cutoff = df.weights.sum() / 2.0
+            weighted_medians[step] = np.interp(cutoff, cumsum, df.pix_values.values)
+        return weighted_medians.values
+    
     
 def aggregate(ds,wm,impl='for_loop',stat=['weighted_mean'],skipna=True,interpolate_NaN=False,silent=False):
     """ Aggregate raster variable(s) to polygon(s)
@@ -719,6 +740,7 @@ def aggregate(ds,wm,impl='for_loop',stat=['weighted_mean'],skipna=True,interpola
                             # weights for Sum
                             areaweights = tmp_areas*weights[wm.agg.iloc[poly_idx,:].pix_idxs]
 
+
                             # Take the values of all pixel values in the current polygon
                             pix_in_poly = ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)
                             pixel_area = np.atleast_1d(np.squeeze(wm.agg.iloc[poly_idx,:].poly_area))
@@ -753,7 +775,8 @@ def aggregate(ds,wm,impl='for_loop',stat=['weighted_mean'],skipna=True,interpola
                                     stat_i = "weighted_sum"
                                     var_stat = var+'_'+stat_i
                                     wm.agg[var_stat] = None
-                                    wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*areaweights).sum('loc', skipna=skipna).values]]
+                                    wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*weights[wm.agg.iloc[poly_idx,:].pix_idxs]*(pixel_area/pixel_area.max())).sum('loc', skipna=skipna).values]]
+
                                     #wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*(pixel_area/pixel_area.max())).sum('loc', skipna=skipna).values]]
                                     continue
                                     
@@ -763,13 +786,20 @@ def aggregate(ds,wm,impl='for_loop',stat=['weighted_mean'],skipna=True,interpola
                                     wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.sum('loc', skipna=skipna).values]]
                                     continue
+
                                     
                                 elif i == "median":
                                     stat_i = "median"
                                     var_stat = var+'_'+stat_i
                                     wm.agg[var_stat] = None
-                                    wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.median('loc', skipna=skipna)]]
+                                    # wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.median('loc', skipna=skipna)]]                                    
+                                    df = pd.DataFrame({'pix_values': pix_in_poly, 'weights': areaweights})
+                                    df.sort_values(by='pix_values',inplace=True)
+                                    cumsum = df.weights.cumsum()
+                                    cutoff = df.weights.sum() / 2.0
+                                    wm.agg.loc[poly_idx,var_stat] = np.interp(cutoff, cumsum, df.pix_values.values) 
                                     continue
+                                    
                                     
                                 elif i == "weighted_median":
                                     stat_i = "weighted_median"
