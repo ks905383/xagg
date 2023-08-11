@@ -496,7 +496,7 @@ def comp_weighted_medians(pix_in_poly, weights):
         return weighted_medians.values
     
     
-def aggregate(ds,wm,impl='for_loop',stat=['mean'],skipna=True,interpolate_NaN=False,silent=False):
+def aggregate(ds,wm,impl='for_loop',stat=['weighted_mean'],skipna=True,interpolate_NaN=False,silent=False):
     """ Aggregate raster variable(s) to polygon(s)
     
     Aggregates (N-D) raster variables in `ds` to the polygons
@@ -791,9 +791,11 @@ def aggregate(ds,wm,impl='for_loop',stat=['mean'],skipna=True,interpolate_NaN=Fa
                                     wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*weights[wm.agg.iloc[poly_idx,:].pix_idxs]).std('loc', skipna=skipna)]]
 
                         else:
+                            wm.agg[var] = None
                             wm.agg.loc[poly_idx,var] = [[(ds[var].isel(loc=0)*np.nan).values]]
 
                     else:
+                        wm.agg[var] = None
                         wm.agg.loc[poly_idx,var] = [[(ds[var].isel(loc=0)*np.nan).values]]
 
         # Put in class format
