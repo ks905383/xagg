@@ -680,6 +680,10 @@ def aggregate(ds,wm,impl='for_loop',stat=['weighted_mean'],skipna=True,interpola
                 if not silent:
                     all_stat = ', '.join(stat)
                     print('aggregating '+var+' by '+all_stat+ '...')
+                    
+                for i in stat:
+                    var_stat = var+'_'+ i
+                    wm.agg[var_stat] = None
             
                 # Get weighted average of variable based on pixel overlap + other weights
                 for poly_idx in wm.agg.poly_idx:
@@ -724,53 +728,45 @@ def aggregate(ds,wm,impl='for_loop',stat=['weighted_mean'],skipna=True,interpola
                             pixel_area = np.atleast_1d(np.squeeze(wm.agg.iloc[poly_idx,:].poly_area))
 
                             # Apply aggregation statistic method to the weighted pixel values
+                            
                             for i in stat: 
                                 if i == "weighted_mean": # weighted average of all the pixel values
                                     stat_i = "weighted_mean"
                                     var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*normed_areaweights).sum('loc', skipna=skipna).values]]
                                     continue
                                 elif i == "mean":
                                     stat_i = "mean"
                                     var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.mean('loc', skipna=skipna).values]]
                                     continue
                                 elif i == "max":
                                     stat_i = "max"
                                     var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.max('loc', skipna=skipna).values]]
                                     continue
                                 elif i == "min":
                                     stat_i = "min"
                                     var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.min('loc', skipna=skipna).values]]
                                     continue
-                                elif i == "weighted_sum": # weighted sum 
+                                elif i == "weighted_sum": 
                                     stat_i = "weighted_sum"
                                     var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*weights[wm.agg.iloc[poly_idx,:].pix_idxs]*(pixel_area/pixel_area.max())).sum('loc', skipna=skipna).values]]
 
-                                    #wm.agg.loc[poly_idx,var_stat] = [[(pix_in_poly*(pixel_area/pixel_area.max())).sum('loc', skipna=skipna).values]]
                                     continue
                                     
                                 elif i == "sum":
                                     stat_i = "sum"
                                     var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.sum('loc', skipna=skipna).values]]
                                     continue
 
                                     
                                 elif i == "median":
                                     stat_i = "median"
-                                    var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
-                                    # wm.agg.loc[poly_idx,var_stat] = [[pix_in_poly.median('loc', skipna=skipna)]]                                    
+                                    var_stat = var+'_'+stat_i                                
                                     df = pd.DataFrame({'pix_values': pix_in_poly, 'weights': areaweights})
                                     df.sort_values(by='pix_values',inplace=True)
                                     cumsum = df.weights.cumsum()
@@ -782,14 +778,12 @@ def aggregate(ds,wm,impl='for_loop',stat=['weighted_mean'],skipna=True,interpola
                                 elif i == "weighted_median":
                                     stat_i = "weighted_median"
                                     var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
                                     wm.agg.loc[poly_idx,var_stat] = [[comp_weighted_medians(pix_in_poly, normed_areaweights)]]
                                     continue
                                 elif i == "count": # polygon area divided by pixel size gives exact count
                                     stat_i = "count"
                                     var_stat = var+'_'+stat_i
-                                    wm.agg[var_stat] = None
-                                    # wm.agg.loc[poly_idx,var_stat] = [[list(map(sum, list(map(sum, wm.agg.rel_area.values))))[0] / list(map(max, list(map(max, wm.agg.rel_area.values))))[0]]]
+
                                     wm.agg.loc[poly_idx,var_stat] = [[pixel_area.sum()/pixel_area.max()]]
                                     continue
                                 elif "std" in stat:
