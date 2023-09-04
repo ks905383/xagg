@@ -11,7 +11,7 @@ jobs:
         os: ["ubuntu-latest"]
         python-version: ["3.8", "3.10"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Create conda environment
         uses: mamba-org/provision-with-micromamba@main
         with:
