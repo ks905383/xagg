@@ -233,8 +233,9 @@ def get_bnds(ds,
 
             # Assign all non-edge bounds as just half of the distance from the center
             # of each pixel to the center of the next pixel
+            print('HERE IS THE ISSUE PROBABLY')
             bnds_tmp[1:,:] = xr.concat([ds[var]-0.5*ds[var].diff(var),
-                                          ds[var]+0.5*ds[var].diff(var)],dim='bnd').transpose(var,'bnd')
+                                          ds[var]+0.5*ds[var].diff(var)],dim='bnds').transpose(var,'bnds')
 
             # Fill in last missing band before edge cases (the inner band of the 
             # first pixel, which is just equal to the next edge)
