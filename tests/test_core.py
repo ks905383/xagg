@@ -323,7 +323,7 @@ def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=pix_agg):
 	# the pix_agg variable that this whole section has used. Doesn't really 
 	# matter, since this is testing an index error that would've 
 	# happened during aggregate() above. 
-	assert np.allclose([v for v in agg.agg.test.values],2.1666,rtol=1e-4)
+	assert np.allclose([v for v in agg.agg.test_weighted_mean.values],2.1666,rtol=1e-4)
 
 
 ##### aggregate() tests #####
@@ -347,7 +347,7 @@ def test_aggregate_basic(ds=ds):
 	# it's actually 1.499981, whereas multiplying out 
 	# np.sum(agg.agg.rel_area[0]*np.array([0,1,2,3]))gives 1.499963... 
 	# Possibly worth examining more closely later
-	assert np.allclose([v for v in agg.agg.test.values],1.4999,rtol=1e-4)
+	assert np.allclose([v for v in agg.agg.test_weighted_mean.values],1.4999,rtol=1e-4)
 
 def test_aggregate_basic_wdotproduct(ds=ds):
     # Create multiple polygons, to double check, since dot product
@@ -400,7 +400,7 @@ def test_aggregate_with_weights(ds=ds):
 
 	# Since the "test" for the input ds has [0,2] for the two 
 	# equatorial pixels, the average should just be 1.0
-	assert np.allclose([v for v in agg.agg.test.values],1.0)
+	assert np.allclose([v for v in agg.agg.test_weighted_mean.values],1.0)
 
 
 
@@ -432,7 +432,7 @@ def test_aggregate_with_mismatched_grid():
 	agg = aggregate(ds,wm)
 
 	# On change in rtol, see note in test_aggregate_basic
-	assert np.allclose([v for v in agg.agg.test.values],1.4999,rtol=1e-4)
+	assert np.allclose([v for v in agg.agg.test_weighted_mean.values],1.4999,rtol=1e-4)
 
 
 # Should probably test multiple polygons just to be sure... 
