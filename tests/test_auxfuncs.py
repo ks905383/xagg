@@ -10,7 +10,7 @@ def test_normalize():
 	assert np.allclose(normalize(np.array([1,1])),np.array([0.5,0.5]))
 
 
-##### fix_ds tests #####
+##### fix_ds() tests #####
 def test_fix_ds_null():
 	# If lat, lon correctly named, lon as -180:180, bounds correctly named, sorted, that nothing happens
 	ds = xr.Dataset({'test':(['lat','lon'],np.array([[0,1,2],[3,4,5],[6,7,8]])),
@@ -32,8 +32,8 @@ def test_fix_ds_rename():
 	ds = xr.Dataset(coords={'Latitude':(['Latitude'],np.array([0,1,2])),
 							'Longitude':(['Longitude'],np.array([0,1,2]))})
 	ds = fix_ds(ds)
-	assert ('lat' in ds.dims.keys())
-	assert ('lon' in ds.dims.keys())
+	assert ('lat' in ds.sizes)
+	assert ('lon' in ds.sizes)
 
 def test_fix_ds_rename_bnds():
 	# Test whether the bounds are renamed correctly
@@ -79,7 +79,7 @@ def test_fix_ds_coord_sorting():
 
 
 
-###### get_bnds tests #####
+###### get_bnds() tests #####
 def test_get_bnds_null():
 	# If there are bounds already, do nothing
 	ds = xr.Dataset({'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]])),
@@ -106,7 +106,7 @@ def test_get_bnds_basic():
 	
 
 def test_get_bnds_wraparound():
-	# Basic attempt to get the bounds (far away from the wraparound)
+	# Make sure that lons wrap around, but lats don't
 	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-89.4,89.7)),
 							'lon':(['lon'],np.arange(-179.4,179.7))})
 	ds = get_bnds(ds)
@@ -123,10 +123,9 @@ def test_get_bnds_wraparound():
 
 	xr.testing.assert_allclose(ds,ds_compare)
 
-#def test_get_bnds_badwraparound():
+# def test_get_bnds_badwraparound
 	# THERE ARE A LOT OF ISSUES LEFT WITH THIS - 360s showing up somehow, even though it's not in the "edges"... idk man
-	# Try a test taht does some weird subset, like (-178:183). Also make sure that -89.9 gets turned to -90. 
-
+	# Try a test that does some weird subset, like (-178:183). Also make sure that -89.9 gets turned to -90. 
 
 
 ###### subset_find tests #####

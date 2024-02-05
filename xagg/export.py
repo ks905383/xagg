@@ -51,7 +51,8 @@ def export_weightmap(wm_obj,fn,overwrite=False):
             # only affect the testing routines, but setting this here
             # to be explicit 
             wm_obj.weights.astype(object).to_csv(fn+'/'+re.split('\/',fn)[-1]+'_weights.csv')
-    except:
+    except RuntimeError as error:
+        print(error)
         # Remove files that have already been generated, to make 
         # sure no flawed files are floating around. 
         shutil.rmtree(fn)

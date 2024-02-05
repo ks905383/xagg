@@ -227,7 +227,7 @@ def get_bnds(ds,
         print('lat/lon bounds not found in dataset; they will be created.')
         # Build lat / lon bound 
         for var in ['lat','lon']:
-            bnds_tmp = xr.DataArray(data=np.zeros((ds.dims[var],2))*np.nan,
+            bnds_tmp = xr.DataArray(data=np.zeros((ds.sizes[var],2))*np.nan,
                                     dims=[var,'bnds'],
                                     coords=[ds[var],np.arange(0,2)])
 
@@ -260,7 +260,7 @@ def get_bnds(ds,
                     # (to avoid wrapping around if a grid is only -180:45 for example)
                     if np.min(np.abs(bnds_tmp[-1,1].values-edges[var])) <= wrap_around_thresh:
                         if np.min(np.abs(bnds_tmp[-1,1].values-edges[var])) > ds[var].diff(var).max():
-                            warnings.warn('Wrapping around '+[var]+' value of '+bnds_tmp[-1,1].values+', '+
+                            warnings.warn('Wrapping around '+var+' value of '+str(bnds_tmp[-1,1].values)+', '+
                                           'because it is closer to a coordinate edge ('+
                                           ', '.join([str(n) for n in edges[var]])+') than the '+
                                           '[wrap_around_thresh] ('+str(wrap_around_thresh)+'); '+
@@ -272,7 +272,7 @@ def get_bnds(ds,
                 elif (bnds_tmp[0,0] not in edges[var]) & (bnds_tmp[-1,1] in edges[var]):
                     if np.min(np.abs(bnds_tmp[0,0].values-edges[var])) <= wrap_around_thresh:
                         if np.min(np.abs(bnds_tmp[0,0].values-edges[var])) > ds[var].diff(var).max():
-                            warnings.warn('Wrapping around '+[var]+' value of '+bnds_tmp[0,0].values+', '+
+                            warnings.warn('Wrapping around '+var+' value of '+str(bnds_tmp[0,0].values)+', '+
                                           'because it is closer to a coordinate edge ('+
                                           ', '.join([str(n) for n in edges[var]])+') than the '+
                                           '[wrap_around_thresh] ('+str(wrap_around_thresh)+'); '+

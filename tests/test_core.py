@@ -8,7 +8,7 @@ from unittest import TestCase
 from shapely.geometry import Polygon
 import xesmf as xe
 
-from xagg.core import (process_weights,create_raster_polygons,get_pixel_overlaps,aggregate)
+from xagg.core import (process_weights,create_raster_polygons,get_pixel_overlaps,aggregate,NoOverlapError)
 
 
 ##### process_weights() tests #####
@@ -138,6 +138,30 @@ def test_create_raster_polygons_with_weights():
 	#np.testing.assert_allclose(compare_series,pix_agg['gdf_pixels'].weights)
 	#assert np.allclose(compare_series,pix_agg['gdf_pixels'].weights)
 	assert np.allclose([float(v) for v in compare_series],[float(v) for v in pix_agg['gdf_pixels'].weights])
+
+def test_create_raster_polygons_at180():
+	# Make sure raster polygons are correctly built at the 180/-180
+	# edge (to not create one really long pixel)
+	ds = xr.Dataset({'test':(('lat','lon'),np.random.rand(2,3))},
+		coords={'lat':(['lat'],np.array([0,1])),
+							'lon':(['lon'],np.array([179.2,-179.8, -178.8]))})
+
+	# Create polygon far away in lon, but at the same latitude
+	gdf_test = {'name':['test'],
+				'geometry':[Polygon([(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5),(-0.5,-0.5)])]}
+	gdf_test = gpd.GeoDataFrame(gdf_test,crs="EPSG:4326")
+
+	# Create polygon grid from raster grid cells
+	pix_agg = create_raster_polygons(ds,weights=None)
+
+	wm_out = get_pixel_overlaps(gdf_test,pix_agg)
+	print(wm_out.agg)
+
+	# There shouldn't be any overlaps between this dataset and those
+	# pixels, so we expect the NoOverlapError to happen
+	with pytest.raises(NoOverlapError):
+		wm_out = get_pixel_overlaps(gdf_test,pix_agg)
+
 
 
 ##### get_pixel_overlaps() tests #####
