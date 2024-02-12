@@ -154,9 +154,6 @@ def test_create_raster_polygons_at180():
 	# Create polygon grid from raster grid cells
 	pix_agg = create_raster_polygons(ds,weights=None)
 
-	wm_out = get_pixel_overlaps(gdf_test,pix_agg)
-	print(wm_out.agg)
-
 	# There shouldn't be any overlaps between this dataset and those
 	# pixels, so we expect the NoOverlapError to happen
 	with pytest.raises(NoOverlapError):

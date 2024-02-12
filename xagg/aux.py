@@ -162,18 +162,24 @@ def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
 
     # Sort by lon; this should be robust (and necessary to avoid fix_ds(fix_ds(ds)) 
     # from failing)
-    ds = ds.sortby(ds.lon)
+    # PERHAPS THERE SHOULD BE A TEST HERE - like `if ds.lon ~= ds.lon.sortby(ds.lon)`
+    # Because currently this blows up memory use... 
+    if not np.allclose(ds.lon.values,np.sort(ds.lon)):
+        ds = ds.sortby(ds.lon)
     
     # Sort by latitude as well (to make latitude consistent)
-    ds = ds.sortby(ds.lat)
+    if not np.allclose(ds.lat.values,np.sort(ds.lat)):
+        ds = ds.sortby(ds.lat)
         
     # Return fixed ds
     return ds
 
 
-def get_bnds(ds,
-             edges={'lat':[-90,90],'lon':[-180,180]},
-             wrap_around_thresh=5):
+def get_bnds(ds,wrap_around_thresh='dynamic',
+             break_window_width = 3,
+             break_thresh_x = 2,
+             silent=False):
+
     """ Builds vectors of lat/lon bounds if not present in `ds`
     
     Assumes a regular rectangular grid - so each lat/lon bound
@@ -187,20 +193,35 @@ def get_bnds(ds,
       contain variables "lat_bnds" and 
       "lon_bnds"
 
-    wrap_around_thresh : numeric, optional, default = ``5`` (degrees)
-      the minimum distance between the last 
-      pixel edge and the 'edges' of the 
-      coordinate system for which the pixels
-      are 'wrapped around'. For example, given
-      'lon' edges of [-180,180] and a 
-      wrap_around_thresh of 5 (default), if 
-      the calculated edges of pixels match
-      the edge on one side, but not the other
-      (i.e. -180 and 179.4) and this gap 
-      (180-179.4) is less than 5, the -180 
-      edge is changed to 179.4 to allow the pixel
-      to 'wrap around' the edge of the coordinate
-      system.
+    silent : bool, by default False
+      if True, then suppresses standard output
+    
+    wrap_around_thresh : numeric or str, optional, default = ``'dynamic'``
+      the minimum distance between the last grid cell 
+      in longitude and the 'edges' of the coordinate 
+      system for which the pixels are 'wrapped around'. 
+      By default "dynamic", which sets this to twice
+      the median difference between longitude values. 
+
+      In either case, if the lowest and highest `lon`
+      values have opposite sign, and are both within 
+      `wrap_around_thresh` of -180 or 180, then the 
+      grid is assumed to be "wrapping around", and pixels
+      will line up around (or across, depending on the 
+      grid) the anti-meridian.
+
+    break_thresh_x : numeric, default = 2
+      If the difference between consecutive coordinate
+      values is `break_thresh_x` times the surrounding
+      coordinate steps (determined by `break_window_width`), 
+      then a break in the grid is assumed and the corresponding 
+      grid cell is assumed to be as wide as the preceding 
+      one, instead of reaching all the way across the "break". 
+    
+    break_window_width : numeric, default = 3
+      Window used to determine how anomalous a difference
+      between coordinate is when determining the location
+      of breaks in the grid. 
           
     Returns
     ---------------
@@ -209,84 +230,137 @@ def get_bnds(ds,
       already existed, or with new variables "lat_bnds" and "lon_bnds"
       if not.
     """
+    #----------- Setup -----------
+    if (type(wrap_around_thresh) == str) and (wrap_around_thresh != 'dynamic'):
+        raise ValueError('`wrap_around_thresh` must either be numeric or the string "dynamic"; instead, it is '+str(wrap_around_thresh)+'.')
+    
     if ds.lon.max()>180:
         raise ValueError('Longitude seems to be in the 0:360 format.'+
-                         ' -180:180 format required.')
+                         ' -180:180 format required (e.g., run `xa.fix_ds(ds)` before inputting.')
         # Future versions should be able to work with 0:360 as well...
         # honestly, it *may* already work by just changing edges['lon']
         # to [0,360], but it's not tested yet. 
         
     if ('lat' not in ds.keys()) | ('lon' not in ds.keys()):
         raise KeyError('"lat"/"lon" not found in [ds]. Make sure the '+
-                       'geographic dimensions follow this naming convention.')
+                       'geographic dimensions follow this naming convention (e.g., run `xa.fix_ds(ds)` before inputting.')
     
-    
-    if 'lat_bnds' in ds.keys():
+    if 'lat_bounds' in ds.keys():
         return ds
     else:
-        print('lat/lon bounds not found in dataset; they will be created.')
+        if not silent:
+            print('lat/lon bounds not found in dataset; they will be created.')
         # Build lat / lon bound 
         for var in ['lat','lon']:
-            bnds_tmp = xr.DataArray(data=np.zeros((ds.sizes[var],2))*np.nan,
-                                    dims=[var,'bnds'],
-                                    coords=[ds[var],np.arange(0,2)])
+            # Get coordinate spacing
+            diffs = ds[var].diff(var)
 
-            # Assign all non-edge bounds as just half of the distance from the center
-            # of each pixel to the center of the next pixel
-            bnds_tmp[1:,:] = xr.concat([ds[var]-0.5*ds[var].diff(var),
-                                          ds[var]+0.5*ds[var].diff(var)],dim='bnds').transpose(var,'bnds')
-
-            # Fill in last missing band before edge cases (the inner band of the 
-            # first pixel, which is just equal to the next edge)
-            bnds_tmp[0,1] = bnds_tmp[1,0]
-            #print(bnds_tmp)
-            # Now deal with edge cases; basically either use the diff from the last
-            # interval between pixels, or max out at 90. 
-            if ds[var].diff(var)[0]>0:
-                bnds_tmp[0,0] = np.max([edges[var][0],ds[var][0].values-0.5*(ds[var][1]-ds[var][0]).values])
-                bnds_tmp[-1,1] = np.min([edges[var][1],ds[var][-1].values+0.5*(ds[var][-1]-ds[var][-2]).values])
+            if wrap_around_thresh == 'dynamic':
+                wat_tmp = diffs.median().values*2
             else:
-                bnds_tmp[0,0] = np.min([edges[var][1],ds[var][0].values+0.5*(ds[var][1]-ds[var][0]).values])
-                bnds_tmp[-1,1] = np.max([edges[var][0],ds[var][-1].values-0.5*(ds[var][-1]-ds[var][-2]).values])
-            #print(bnds_tmp)
-
-            # Fix crossing-over-360 issues in the lon
+                wat_tmp = wrap_around_thresh
+            
+            # Get edge of grid coordinates 
+            # (this does double duty by checking for antimeridian coordinates
+            # since `xa.fix_ds()` sorts in ascending order by lon)
+            edge_coords = ds[var][[0,-1]]
+            
+            # Figure out if grid wraps around / is continuous
             if var == 'lon':
-                # To be robust to partial grids; setting the rolled over edges equal to
-                # each other if one of the edges is the -180/180 and the other one isn't, 
-                # but 'close enough' (within 5 degrees + warning)
-                if (bnds_tmp[0,0] in edges[var]) & (bnds_tmp[-1,1] not in edges[var]):
-                    # Make sure that the other edge is within the wrap-around threshold
-                    # (to avoid wrapping around if a grid is only -180:45 for example)
-                    if np.min(np.abs(bnds_tmp[-1,1].values-edges[var])) <= wrap_around_thresh:
-                        if np.min(np.abs(bnds_tmp[-1,1].values-edges[var])) > ds[var].diff(var).max():
-                            warnings.warn('Wrapping around '+var+' value of '+str(bnds_tmp[-1,1].values)+', '+
-                                          'because it is closer to a coordinate edge ('+
-                                          ', '.join([str(n) for n in edges[var]])+') than the '+
-                                          '[wrap_around_thresh] ('+str(wrap_around_thresh)+'); '+
-                                          'however, it is farther away from that edge than the '+
-                                          'maximum pixel width in the '+var+' direction. If this is '+
-                                          'intended, no further action is necessary. Otherwise, reduce '+
-                                          'the [wrap_around_thresh].')
-                        bnds_tmp[0,0] = bnds_tmp[-1,1]
-                elif (bnds_tmp[0,0] not in edges[var]) & (bnds_tmp[-1,1] in edges[var]):
-                    if np.min(np.abs(bnds_tmp[0,0].values-edges[var])) <= wrap_around_thresh:
-                        if np.min(np.abs(bnds_tmp[0,0].values-edges[var])) > ds[var].diff(var).max():
-                            warnings.warn('Wrapping around '+var+' value of '+str(bnds_tmp[0,0].values)+', '+
-                                          'because it is closer to a coordinate edge ('+
-                                          ', '.join([str(n) for n in edges[var]])+') than the '+
-                                          '[wrap_around_thresh] ('+str(wrap_around_thresh)+'); '+
-                                          'however, it is farther away from that edge than the '+
-                                          'maximum pixel width in the '+var+' direction. If this is '+
-                                          'intended, no further action is necessary. Otherwise, adjust '+
-                                          'the [wrap_around_thresh].')
-                    bnds_tmp[-1,1] = bnds_tmp[0,0]
+                wrap_flag = (# 1) are they different sign
+                             (np.prod(np.sign(edge_coords)) == -1) and
+                             # 2) are they both within wrap_around_thresh of 180
+                             np.all(np.abs(np.abs(edge_coords) - 180) < wat_tmp))
+            else:
+                wrap_flag = False
+            
+            if wrap_flag:
+                # Wrap around lons
+                ec = edge_coords.copy(deep=True).values
+            
+                # Change edge_lons to 0:360, to get difference
+                # across antimeridian
+                ec[ec<0] = 360+ec[ec<0]
+            
+                diffs = xr.concat([xr.DataArray(data = [np.abs(np.diff(ec))[0]],
+                                     coords = {var:([var],[ds[var][0].values])}),
+                                   diffs],
+                                  dim=var)
+            else:
+                # Just do second diff as the first diff
+                diffs = xr.concat([xr.DataArray(data = [diffs[0].values],
+                                     coords = {var:([var],[ds[var][0].values])}),
+                                   diffs],
+                                  dim=var)
+            
+            
+            
+            # Now, have to identify possible breaks in the coordinate system
+            # i.e., [-179,-178,-177,178,179,180] would have a break between 
+            # -177 and 178, which would create a pixel width of 355 degrees
+            # Identify those breaks, and replace their pixel width with the 
+            # preceding pixel width
+            
+            # Build a rolling filter that gets the average of surrounding 
+            # coordinate steps for each coordinate (but ignores the coordinate's
+            # step itself)
+            break_check = xr.DataArray(np.ones(break_window_width),dims=['window'])
+            break_check[int(np.floor(break_window_width/(break_window_width-1)))] = 0
+            break_check = break_check/break_check.sum()
+            
+            # Figure out if any coordinate steps are more than > break_thresh_x
+            # larger than surrounding coordinate steps
+            breaks = (diffs / 
+                      (diffs.rolling({var:break_window_width},center=True).
+                       construct('window').dot(break_check))) > break_thresh_x
+            
+            # Make those coordinate steps the preceding coordinate step instead
+            nbreaks = breaks.sum().values
+            if (not silent) and nbreaks>0:
+                print('Found '+str(nbreaks)+' break(s)/jump(s) in '+var+" (i.e., grid doesn't cover whole planet); replacing grid cell width(s) with preceding grid cell width(s) at breakpoint.")
+            diffs[np.where(breaks)[0]] = diffs[np.where(breaks)[0]-1].values
+
+
+            # Somewhat hack-y solution to deal with the fact that if only one lon 
+            # value is found east of the anti-meridian, but the grid does wrap 
+            # around, the break is not currently correctly captured
+            if wrap_flag and ((ds[var]>0).sum(var) == 1):
+                diffs[-1] = np.abs(np.diff(ec))[0]
+            
+            
+            # Now, create bounds using those diffs
+            bnds_tmp = xr.concat([ds[var]-0.5*diffs,
+                                  ds[var]+0.5*diffs],dim='bnds').transpose(var,'bnds')
+            
+            # And now, fix lingering issues
+            # 1. lon bounds > 180 / < -180 (which occurs when the grid crosses the antimeridian
+            #    in the step above)
+            # 2. lat bounds not at the right edges
+            # 3. making sure the lon bounds line up right around the antimeridian, if relevant
+            
+            # Change lon_bounds > 180 to lon_bounds > -180
+            if var == 'lon':
+                bnds_tmp = bnds_tmp.where(bnds_tmp<=180,-360 + bnds_tmp.where(bnds_tmp>180))
+                bnds_tmp = bnds_tmp.where(bnds_tmp>=-180,360 + bnds_tmp.where(bnds_tmp<-180))
+            
+            # Curtail lat bands to -90, 90
+            if var == 'lat':
+                bnds_tmp = bnds_tmp.where(bnds_tmp<=90,90)
+                bnds_tmp = bnds_tmp.where(bnds_tmp>=-90,-90)
+            
+            # If wrapping, make sure the bounds line up
+            if wrap_flag: 
+                if ((not bnds_tmp[0,0] == bnds_tmp[-1,-1]) and  
+                    (not ((bnds_tmp[0,0] == -180) and (bnds_tmp[-1,-1] == 180)))):
+                    bnds_tmp[-1,-1] = bnds_tmp[0,0]
             # Add to ds
             ds[var+'_bnds'] = bnds_tmp
             del bnds_tmp
-        
+
     # Return
+    #ds = ds.set_coords([var+'_bnds' for var in ['lat','lon']])
     return ds    
+
 
 
 

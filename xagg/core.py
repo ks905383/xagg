@@ -324,7 +324,6 @@ def create_raster_polygons(ds,
     df_poly = pd.DataFrame(poly_dict, columns=['poly_pts'])
     df_poly['poly'] = df_poly.poly_pts.apply(lambda pts: Polygon(pts))
     # Make MultiPolygons for pixels crossing the antimeridian
-    print(cross_antimeridian_idxs)
     df_poly.loc[np.where(cross_antimeridian_idxs)[0],'poly'] = df_poly.poly_pts.iloc[np.where(cross_antimeridian_idxs)[0]].apply(lambda pts: make_multipoly(pts))
     # Set geometry 
     gdf_pixels['geometry']=df_poly['poly']
