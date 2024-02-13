@@ -176,8 +176,8 @@ def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
 
 
 def get_bnds(ds,wrap_around_thresh='dynamic',
-             break_window_width = 3,
-             break_thresh_x = 2,
+             break_window_width=3,
+             break_thresh_x=2,
              silent=False):
 
     """ Builds vectors of lat/lon bounds if not present in `ds`
@@ -264,7 +264,8 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
             # (this does double duty by checking for antimeridian coordinates
             # since `xa.fix_ds()` sorts in ascending order by lon)
             edge_coords = ds[var][[0,-1]]
-            
+
+            #---------- Wrapping ----------
             # Figure out if grid wraps around / is continuous
             if var == 'lon':
                 wrap_flag = (# 1) are they different sign
@@ -293,8 +294,7 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
                                    diffs],
                                   dim=var)
             
-            
-            
+            #---------- Breaks ----------
             # Now, have to identify possible breaks in the coordinate system
             # i.e., [-179,-178,-177,178,179,180] would have a break between 
             # -177 and 178, which would create a pixel width of 355 degrees
@@ -320,18 +320,18 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
                 print('Found '+str(nbreaks)+' break(s)/jump(s) in '+var+" (i.e., grid doesn't cover whole planet); replacing grid cell width(s) with preceding grid cell width(s) at breakpoint.")
             diffs[np.where(breaks)[0]] = diffs[np.where(breaks)[0]-1].values
 
-
             # Somewhat hack-y solution to deal with the fact that if only one lon 
             # value is found east of the anti-meridian, but the grid does wrap 
             # around, the break is not currently correctly captured
             if wrap_flag and ((ds[var]>0).sum(var) == 1):
                 diffs[-1] = np.abs(np.diff(ec))[0]
             
-            
+            #---------- Create bounds ----------
             # Now, create bounds using those diffs
             bnds_tmp = xr.concat([ds[var]-0.5*diffs,
                                   ds[var]+0.5*diffs],dim='bnds').transpose(var,'bnds')
             
+            #---------- Clean up ----------
             # And now, fix lingering issues
             # 1. lon bounds > 180 / < -180 (which occurs when the grid crosses the antimeridian
             #    in the step above)
@@ -357,11 +357,13 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
             ds[var+'_bnds'] = bnds_tmp
             del bnds_tmp
 
-    # Return
+    # This is the cf_xarray standard, to have them as coordinates
+    # Currently only keeping them as variables instead (which is 
+    # CMIP standard I think?)
     #ds = ds.set_coords([var+'_bnds' for var in ['lat','lon']])
+
+     # Return
     return ds    
-
-
 
 
 def subset_find(ds0,ds1):
