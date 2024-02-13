@@ -1,0 +1,19 @@
+coverage:
+  status:
+    project:
+      default:
+        # basic
+        target: auto #default
+        threshold: 0%
+        base: auto 
+        flags: 
+          - unit
+        paths: 
+          - "src"
+       # advanced settings
+        branches: 
+          - master
+        # always succeed for now
+        if_ci_failed: success #success, failure, error, ignore
+        informational: false
+        only_pulls: false
