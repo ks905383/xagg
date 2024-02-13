@@ -6,7 +6,12 @@ import geopandas as gpd
 from geopandas import testing as gpdt
 from unittest import TestCase
 from shapely.geometry import Polygon
-import xesmf as xe
+try:
+    import xesmf as xe
+    _has_xesmf=True
+except ImportError:
+	# To be able to test the rest with environments without xesmf
+	_has_xesmf=False
 
 from xagg.core import (process_weights,create_raster_polygons,get_pixel_overlaps,aggregate,NoOverlapError)
 
@@ -46,6 +51,7 @@ def test_process_weights_basic():
 	xr.testing.assert_allclose(ds_compare,ds_t)
 	# (weights_info isn't currently used by anything)
 
+
 def test_process_weights_regrid_weights():
 	# Now, test with a weights array twice the resolution as the
 	# ds, so it needs to be regridded
@@ -63,15 +69,20 @@ def test_process_weights_regrid_weights():
 							coords=[np.array([-0.25,0.25,0.75,1.25]),
 									np.array([-0.25,0.25,0.75,1.25])])
 
-	ds_t,weights_info = process_weights(ds,weights=weights)
+	if _has_xesmf:
+		ds_t,weights_info = process_weights(ds,weights=weights)
 
-	ds_compare = xr.Dataset({'weights':(('lat','lon'),np.array([[0,1],[2,3]]))},
-							coords={'lat':(['lat'],np.array([0,1])),
-									'lon':(['lon'],np.array([0,1])),
-							})
+		ds_compare = xr.Dataset({'weights':(('lat','lon'),np.array([[0,1],[2,3]]))},
+								coords={'lat':(['lat'],np.array([0,1])),
+										'lon':(['lon'],np.array([0,1])),
+								})
 
-	# Check if weights were correctly added to ds
-	xr.testing.assert_allclose(ds_compare,ds_t)
+		# Check if weights were correctly added to ds
+		xr.testing.assert_allclose(ds_compare,ds_t)
+	else:
+		# Should raise ImportError in the no-xesmf environment
+		with pytest.raises(ImportError):
+			ds_t,weights_info = process_weights(ds,weights=weights)
 	
 def test_process_weights_close_weights():
 	# Make sure weights that are within `np.allclose` but not exactly
@@ -136,7 +147,7 @@ def test_create_raster_polygons_with_weights():
 							'lon':(['lon'],np.array([0,1])),
 							'bnds':(['bnds'],np.array([0,1]))})
 
-	# Synethetic weights grid
+	# Synthetic weights grid that requires regridding
 	weights = xr.DataArray(data=np.array([[-0.5,0.5,0.5,1.5],
 										  [0.5,-0.5,1.5,0.5],
 										  [1.5,2.5,2.5,3.5],
@@ -145,19 +156,24 @@ def test_create_raster_polygons_with_weights():
 							coords=[np.array([-0.25,0.25,0.75,1.25]),
 									np.array([-0.25,0.25,0.75,1.25])])
 
-	pix_agg = create_raster_polygons(ds,weights=weights)
+	if _has_xesmf:
+		pix_agg = create_raster_polygons(ds,weights=weights)
 
-	compare_series = pd.Series(data=[np.array(v) for v in [0.,1.,2.,3.]],
-								 			index=[0,1,2,3],
-								 			name='weights')
+		compare_series = pd.Series(data=[np.array(v) for v in [0.,1.,2.,3.]],
+									 			index=[0,1,2,3],
+									 			name='weights')
 
 
-	# There's an issue here in pd.testing.assert_series_equal...
-	#pd.testing.assert_series_equal(pix_agg['gdf_pixels'].weights,
-	#							   compare_series)
-	#np.testing.assert_allclose(compare_series,pix_agg['gdf_pixels'].weights)
-	#assert np.allclose(compare_series,pix_agg['gdf_pixels'].weights)
-	assert np.allclose([float(v) for v in compare_series],[float(v) for v in pix_agg['gdf_pixels'].weights])
+		# There's an issue here in pd.testing.assert_series_equal...
+		#pd.testing.assert_series_equal(pix_agg['gdf_pixels'].weights,
+		#							   compare_series)
+		#np.testing.assert_allclose(compare_series,pix_agg['gdf_pixels'].weights)
+		#assert np.allclose(compare_series,pix_agg['gdf_pixels'].weights)
+		assert np.allclose([float(v) for v in compare_series],[float(v) for v in pix_agg['gdf_pixels'].weights])
+	else:
+		# Should raise ImportError in the no-xesmf environment
+		with pytest.raises(ImportError):
+			pix_agg = create_raster_polygons(ds,weights=weights)
 
 def test_create_raster_polygons_at180():
 	# Make sure raster polygons are correctly built at the 180/-180

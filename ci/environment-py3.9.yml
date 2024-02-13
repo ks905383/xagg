@@ -1,0 +1,25 @@
+name: test_env_xagg_38
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  ############## These will have to be adjusted to your specific project
+  - numpy
+  - scipy
+  - xarray
+  - pandas
+  - netcdf4
+  - geopandas >= 0.12.0
+  - shapely
+  - xesmf >= 0.7.0 # These versions and explicit loads are to fix an issue in xesmf's call to cf_xarray (possibly through esmpy) 
+  - cf_xarray >= 0.5.1
+  - esmf >= 8.1.0
+  - esmpy >= 8.1.0 
+  - pytables
+  ##############
+  - pytest
+  - pip:
+    - codecov
+    - pytest-cov
+    - coverage[toml]
+   # - tables >= 3.7.0 # For exporting hd5 files through wm.to_file() (3.6.0 may have issues)
