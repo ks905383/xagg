@@ -8,7 +8,7 @@ import warnings
 import re 
 import os
 
-from . aux import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
+from . auxfuncs import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
 from . classes import (weightmap,aggregated)
 
 class NoOverlapError(Exception):

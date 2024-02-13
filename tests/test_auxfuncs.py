@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import xarray as xr
-from xagg.aux import (normalize,fix_ds,get_bnds,subset_find)
+from xagg.auxfuncs import (normalize,fix_ds,get_bnds,subset_find)
 
 ##### normalize() tests #####
 def test_normalize():
