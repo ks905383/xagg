@@ -155,7 +155,13 @@ def process_weights(ds,weights=None,target='ds',silent=False):
             # Import xesmf here to allow the code to work without it (it 
             # often has dependency issues and isn't necessary for many 
             # features of xagg)
-            import xesmf as xe
+            try:
+                import xesmf as xe
+            except ImportError:
+                raise ImportError('If the `weights` grid and the `ds` grid are different, '+
+                                 '`xesmf` is needed for `xagg` to regrid them to match; however, '+
+                                 '`xesmf` is not installed. Either install `xesmf` or '+
+                                 'manually regrid them to match each other.')
             if target == 'ds':
                 if not silent:
                     print('regridding weights to data grid...')

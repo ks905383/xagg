@@ -47,7 +47,7 @@ class weightmap(object):
         try: 
             from . diag import diag_fig
         except ImportError:
-            raise ImportError('`wm.diag_fig()` separately requires `cartopy` and `matplotlib` to function; make sure these are installed first.')
+            raise ImportError('`wm.diag_fig()` separately requires `cartopy`, `matplotlib`, and `cmocean` to function; make sure these are installed first.')
 
         
         # Plot diagnostic figure
