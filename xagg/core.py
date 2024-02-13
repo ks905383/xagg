@@ -7,6 +7,11 @@ from shapely.geometry import MultiPolygon
 import warnings
 import re 
 import os
+try:
+    import xesmf as xe
+    _has_xesmf=True
+except ImportError:
+    _has_xesmf=False
 
 from . auxfuncs import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
 from . classes import (weightmap,aggregated)
@@ -155,9 +160,7 @@ def process_weights(ds,weights=None,target='ds',silent=False):
             # Import xesmf here to allow the code to work without it (it 
             # often has dependency issues and isn't necessary for many 
             # features of xagg)
-            try:
-                import xesmf as xe
-            except ImportError:
+            if not _has_xesmf:
                 raise ImportError('If the `weights` grid and the `ds` grid are different, '+
                                  '`xesmf` is needed for `xagg` to regrid them to match; however, '+
                                  '`xesmf` is not installed. Either install `xesmf` or '+

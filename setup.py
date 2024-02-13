@@ -31,4 +31,11 @@ setup(
 	    'tables',
         'cf_xarray>=0.5.1',
 	 ],
+     extras_require=[
+        'xesmf>=0.7.1',
+        'esmpy>=8.1.0',
+        'matplotlib',
+        'cmocean',
+        'cartopy',
+     ]
 )

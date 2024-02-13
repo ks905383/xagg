@@ -6,7 +6,12 @@ import geopandas as gpd
 from geopandas import testing as gpdt
 from unittest import TestCase
 from shapely.geometry import Polygon
-import xesmf as xe
+try:
+    import xesmf as xe
+    _has_xesmf=True
+except ImportError:
+	# To be able to test the rest with environments without xesmf
+	_has_xesmf=False
 
 from xagg.core import (process_weights,create_raster_polygons,get_pixel_overlaps,aggregate,NoOverlapError)
 
@@ -46,32 +51,33 @@ def test_process_weights_basic():
 	xr.testing.assert_allclose(ds_compare,ds_t)
 	# (weights_info isn't currently used by anything)
 
-def test_process_weights_regrid_weights():
-	# Now, test with a weights array twice the resolution as the
-	# ds, so it needs to be regridded
-	ds = xr.Dataset(coords={'lat':(['lat'],np.array([0,1])),
-							'lon':(['lon'],np.array([0,1])),
-							})
+if _has_xesmf:
+	def test_process_weights_regrid_weights():
+		# Now, test with a weights array twice the resolution as the
+		# ds, so it needs to be regridded
+		ds = xr.Dataset(coords={'lat':(['lat'],np.array([0,1])),
+								'lon':(['lon'],np.array([0,1])),
+								})
 
-	# Synthetic weights grid, with double the resolution, and shifted
-	# by a half degree. Should regrid to the same weights grid as above
-	weights = xr.DataArray(data=np.array([[-0.5,0.5,0.5,1.5],
-										  [0.5,-0.5,1.5,0.5],
-										  [1.5,2.5,2.5,3.5],
-										  [2.5,1.5,3.5,2.5]]),
-							dims=['lat','lon'],
-							coords=[np.array([-0.25,0.25,0.75,1.25]),
-									np.array([-0.25,0.25,0.75,1.25])])
+		# Synthetic weights grid, with double the resolution, and shifted
+		# by a half degree. Should regrid to the same weights grid as above
+		weights = xr.DataArray(data=np.array([[-0.5,0.5,0.5,1.5],
+											  [0.5,-0.5,1.5,0.5],
+											  [1.5,2.5,2.5,3.5],
+											  [2.5,1.5,3.5,2.5]]),
+								dims=['lat','lon'],
+								coords=[np.array([-0.25,0.25,0.75,1.25]),
+										np.array([-0.25,0.25,0.75,1.25])])
 
-	ds_t,weights_info = process_weights(ds,weights=weights)
+		ds_t,weights_info = process_weights(ds,weights=weights)
 
-	ds_compare = xr.Dataset({'weights':(('lat','lon'),np.array([[0,1],[2,3]]))},
-							coords={'lat':(['lat'],np.array([0,1])),
-									'lon':(['lon'],np.array([0,1])),
-							})
+		ds_compare = xr.Dataset({'weights':(('lat','lon'),np.array([[0,1],[2,3]]))},
+								coords={'lat':(['lat'],np.array([0,1])),
+										'lon':(['lon'],np.array([0,1])),
+								})
 
-	# Check if weights were correctly added to ds
-	xr.testing.assert_allclose(ds_compare,ds_t)
+		# Check if weights were correctly added to ds
+		xr.testing.assert_allclose(ds_compare,ds_t)
 	
 def test_process_weights_close_weights():
 	# Make sure weights that are within `np.allclose` but not exactly
