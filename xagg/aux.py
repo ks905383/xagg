@@ -245,7 +245,7 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
         raise KeyError('"lat"/"lon" not found in [ds]. Make sure the '+
                        'geographic dimensions follow this naming convention (e.g., run `xa.fix_ds(ds)` before inputting.')
     
-    if ('lat_bnds' in ds) and (`lon_bnds` in ds):
+    if ('lat_bnds' in ds) and ('lon_bnds' in ds):
         # `xa.fix_ds()` should rename bounds to `lat/lon_bnds`
         # If bounds present, do nothing
         return ds
