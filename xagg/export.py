@@ -7,7 +7,7 @@ import re
 import warnings
 import shutil
 
-from . auxfuncs import (normalize,fix_ds,get_bnds,subset_find)
+from . auxfuncs import (fix_ds,get_bnds,subset_find)
 
 
 def export_weightmap(wm_obj,fn,overwrite=False):

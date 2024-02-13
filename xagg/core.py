@@ -150,8 +150,8 @@ def process_weights(ds,weights=None,target='ds',silent=False):
 
         # Regrid, if necessary (do nothing if the grids match up to within
         # floating-point precision)
-        if ((not ((ds.sizes['lat'] == weights.sizes['lat']) & (ds.sizes['lon'] == weights.sizes['lon']))) or 
-            (not (np.allclose(ds.lat,weights.lat) & np.allclose(ds.lon,weights.lon)))):
+        if ((not ((ds.sizes['lat'] == weights.sizes['lat']) and (ds.sizes['lon'] == weights.sizes['lon']))) or 
+            (not (np.allclose(ds.lat,weights.lat) and np.allclose(ds.lon,weights.lon)))):
             # Import xesmf here to allow the code to work without it (it 
             # often has dependency issues and isn't necessary for many 
             # features of xagg)
@@ -176,9 +176,20 @@ def process_weights(ds,weights=None,target='ds',silent=False):
 
             else:
                 raise KeyError(target+' is not a supported target for regridding. Choose "weights" or "ds".')
-            
+        else:
+            # Make sure the values are actually identical, not just "close", 
+            # otherwise assigning may not work below 
+            weights['lat'] = ds['lat'].values
+            weights['lon'] = ds['lon'].values
+
         # Add weights to ds
         ds['weights'] = weights
+
+        # Add warnings
+        if np.isnan(ds['weights']).all():
+            warnings.warn('All inputted `weights` are np.nan after regridding.')
+        if (ds['weights'] == 0).all():
+            warnings.warn('All inputted `weights` are 0 after regridding.')
             
     # Return
     return ds,weights_info
@@ -257,7 +268,7 @@ def create_raster_polygons(ds,
                       
     """
     
-    # Standardize inputs
+    # Standardize inputs (including lat/lon order)
     ds = fix_ds(ds)
     ds = get_bnds(ds)
     #breakpoint()

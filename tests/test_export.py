@@ -73,16 +73,8 @@ def test_pixel_overlaps_export_and_import(ds=ds):
 
 	fn = 'wm_export_test'
 
-	# Build sample dataset
-	#ds = xr.Dataset({'test':(['lon','lat'],np.array([[0,1],[2,3]])),
-	#			 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
-	#			 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
-	#			coords={'lat':(['lat'],np.array([0,1])),
-	#					'lon':(['lon'],np.array([0,1])),
-	#					'bnds':(['bnds'],np.array([0,1]))})
-
 	# Add a simple weights grid
-	weights = xr.DataArray(data=np.array([[0.,1.],[2.,3.]]).astype(object),
+	weights = xr.DataArray(data=np.array([[0.,1.],[2.,3.]]),
 								dims=['lat','lon'],
 								coords=[ds.lat,ds.lon])
 
@@ -124,7 +116,10 @@ def test_pixel_overlaps_export_and_import(ds=ds):
 	if (type(wm_out.weights) is str) and (wm_out.weights=='nowghts'):
 		np.testing.assert_string_equal(wm_in.weights,wm_out.weights)
 	else:
-		pd.testing.assert_series_equal(wm_in.weights,wm_out.weights)
+		# `read_wm()` reads in weights as objects (see notes in relevant
+		# section of `read_wm()`... this shouldn't have too big 
+		# of a consequence, but does make this test more complicated
+		pd.testing.assert_series_equal(wm_in.weights,wm_out.weights.astype(object))
 
 	##### clean 
 	shutil.rmtree(fn)

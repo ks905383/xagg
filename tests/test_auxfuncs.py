@@ -9,6 +9,24 @@ def test_normalize():
 	# I'm pretty sure I only use this with numpy arrays - but double-check 
 	assert np.allclose(normalize(np.array([1,1])),np.array([0.5,0.5]))
 
+def test_normalize_all0s():
+	# Should return a vector of nans if all elements of the input vector are 0
+	test_vec = np.array([0,0])
+
+	norm_vec = normalize(test_vec)
+
+	assert np.allclose(norm_vec,np.array([np.nan,np.nan]),
+						equal_nan=True)
+
+def test_normalize_dropnans():
+	# Make sure nans are accurately dropped
+	test_vec = np.array([2,4,np.nan,4])
+
+	norm_vec = normalize(test_vec,drop_na=True)
+
+	assert np.allclose(norm_vec,np.array([0.2,0.4,np.nan,0.4]),
+					   equal_nan=True)
+
 
 ##### fix_ds() tests #####
 def test_fix_ds_null():

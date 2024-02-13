@@ -9,7 +9,8 @@ import re
 def normalize(a,drop_na = False):
     """ Normalizes the vector `a`
 
-    The vector `a` is divided by its sum. 
+    The vector `a` is divided by its sum. If all non-`np.nan` elements of `a` are 0, 
+    then all `np.nan`s are returned.  
 
     Parameters
     ---------------
@@ -32,14 +33,20 @@ def normalize(a,drop_na = False):
   
     """
     
-    if (drop_na) & (np.any(np.isnan(a))):
+    if (drop_na) and (np.any(np.isnan(a))):
         a2 = a[~np.isnan(a)]
-        a2 = a2/a2.sum()
-        a[~np.isnan(a)] = a2
+        if np.all(a2.sum()==0):
+            # Return nans if the vector is only 0s
+            # (/ 0 error)
+            return a*np.nan
 
-        return a
+        else:
+            a2 = a2/a2.sum()
+            a[~np.isnan(a)] = a2
 
-    elif (np.all(~np.isnan(a))) & (a.sum()>0):
+            return a
+
+    elif (np.all(~np.isnan(a))) and (not np.all(a.sum()==0)):
         return a/a.sum()
     else:
         return a*np.nan
@@ -241,7 +248,7 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
         # honestly, it *may* already work by just changing edges['lon']
         # to [0,360], but it's not tested yet. 
         
-    if ('lat' not in ds) | ('lon' not in ds):
+    if ('lat' not in ds) or ('lon' not in ds):
         raise KeyError('"lat"/"lon" not found in [ds]. Make sure the '+
                        'geographic dimensions follow this naming convention (e.g., run `xa.fix_ds(ds)` before inputting.')
     

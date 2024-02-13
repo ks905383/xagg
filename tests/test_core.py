@@ -73,7 +73,27 @@ def test_process_weights_regrid_weights():
 	# Check if weights were correctly added to ds
 	xr.testing.assert_allclose(ds_compare,ds_t)
 	
+def test_process_weights_close_weights():
+	# Make sure weights that are within `np.allclose` but not exactly
+	# the same grid as the input ds are correctly allocated
+	# Robustness against floating point differences in grids)
+	ds = xr.Dataset(coords={'lat':(['lat'],np.array([0,1])),
+							'lon':(['lon'],np.array([0,1]))})
 
+	weights = xr.DataArray(data=np.array([[0,1],[2,3]]),
+							dims=['lat','lon'],
+							coords=[np.array([0,1])+np.random.rand(2)*1e-10,
+									np.array([0,1])+np.random.rand(2)*1e-10])
+
+	ds_t,weights_info = process_weights(ds,weights=weights)
+
+	ds_compare = xr.Dataset({'weights':(('lat','lon'),np.array([[0,1],[2,3]]))},
+							coords={'lat':(['lat'],np.array([0,1])),
+									'lon':(['lon'],np.array([0,1])),
+							})
+
+	# Check if weights were correctly added to ds
+	xr.testing.assert_allclose(ds_compare,ds_t)
 
 
 ##### create_raster_polygons() tests #####
