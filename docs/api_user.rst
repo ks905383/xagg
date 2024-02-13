@@ -23,7 +23,7 @@ Primary (wrapper) functions
 Auxiliary functions 
 =================================
 
-.. automodule:: xagg.aux
+.. automodule:: xagg.auxfuncs
     :members:
 
 

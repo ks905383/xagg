@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'xagg'
-copyright = '2021-2023, Kevin Schwarzwald'
+copyright = '2021-2024, Kevin Schwarzwald'
 author = 'Kevin Schwarzwald'
 
 # The full version, including alpha/beta/rc tags
-release = '3.1'
+release = '0.3.2.0'
 
 
 # -- General configuration ---------------------------------------------------

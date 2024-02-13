@@ -2,7 +2,6 @@
 import xarray as xr
 import numpy as np 
 import geopandas as gpd
-import xagg as xa
 import warnings
 from cartopy import crs as ccrs
 from matplotlib import pyplot as plt

@@ -6,9 +6,9 @@
 xagg
 =======================================
 
-A package to aggregate gridded data in ``xarray`` to polygons in ``geopandas`` using area-weighting from the relative area overlaps between pixels and polygons.
+A package to aggregate gridded data in :py:mod:`xarray` to polygons in :py:mod:`geopandas` using area-weighting from the relative area overlaps between pixels and polygons.
 
-The simplest code run, involving raster data in an ``xarray`` Dataset ``ds`` and polygons in a ``geopandas`` GeoDataFrame ``gpd``, is::
+The simplest code run, involving raster data in an :py:mod:`xarray` :py:class:`Dataset` ``ds`` and polygons in a :py:mod:`geopandas` :py:class:`GeoDataFrame` ``gpd``, is::
 
  import xagg as xa
     
@@ -19,7 +19,7 @@ The simplest code run, involving raster data in an ``xarray`` Dataset ``ds`` and
  aggregated = xa.aggregate(ds,weightmap)
 
 
-``aggregated`` can then be turned into an ``xarray`` Dataset, a ``geopandas`` GeoDataFrame, or directly exported to a CSV (for use in, e.g., STATA), NetCDF, or Shapefile.
+:py:class:`aggregated` can then be turned into an :py:mod:`xarray` :py:class:`Dataset`, a :py:mod:`geopandas` :py:class:`GeoDataFrame`, or directly exported to a CSV (for use in, e.g., STATA), NetCDF, or Shapefile.
 
 .. toctree::
    :caption: Contents

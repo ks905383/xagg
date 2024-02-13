@@ -13,10 +13,10 @@ try:
 except ImportError:
     no_plotting = True
 
-try:
-    import tables
-except ImportError:
-    no_hd5_output = True
+#try:
+#    import tables
+#except ImportError:
+#    no_hd5_output = True
 
 
 # POSSIBLE CHANGE: I'm not quite sure how python deals with memory
