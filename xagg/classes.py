@@ -39,15 +39,19 @@ class weightmap(object):
         self.weights = weights
         self.overlap_da = overlap_da
         
-    def diag_fig(self,poly_idx):
-        """ (NOT YET IMPLEMENTED) a diagnostic figure of the aggregation
+    def diag_fig(self,poly_id,ds):
+        """ Create a diagnostic figure showing overlap between pixels and a given polygon
+
+        See `xagg.diag.diag_fig()` for more info. 
         """
-        raise NotImplementedError('diagnostic figure not yet implemented.')
-        # Eventually, will print a diagnostic figure showing 
-        # - the polygon defined by "poly_idx"
-        # - the pixels overlapping polygon
-        #    - shaded by the amount of overlapping area 
-        #    - or the total weight (area+weight)
+        try: 
+            from . diag import diag_fig
+        except ImportError:
+            raise ImportError('`wm.diag_fig()` separately requires `cartopy` and `matplotlib` to function; make sure these are installed first.')
+
+        
+        # Plot diagnostic figure
+        diag_fig(self,poly_id,ds)
 
     def to_file(self,fn,overwrite=False):
         """ Save a copy of the weightmap, to avoid recalculating it

@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# Test things
+*test*.ipynb
+
 # C extensions
 *.so
 

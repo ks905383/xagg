@@ -3,13 +3,18 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Polygon
+from shapely.geometry import MultiPolygon
 import warnings
-import xesmf as xe
 import re 
 import os
 
 from . aux import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
 from . classes import (weightmap,aggregated)
+
+class NoOverlapError(Exception):
+    """ Exception for when there's no overlap between pixels and polygons """
+    pass
+
 
 def read_wm(path):
     """ Load temporary weightmap files from wm.to_file()
@@ -147,6 +152,10 @@ def process_weights(ds,weights=None,target='ds',silent=False):
         # floating-point precision)
         if ((not ((ds.sizes['lat'] == weights.sizes['lat']) & (ds.sizes['lon'] == weights.sizes['lon']))) or 
             (not (np.allclose(ds.lat,weights.lat) & np.allclose(ds.lon,weights.lon)))):
+            # Import xesmf here to allow the code to work without it (it 
+            # often has dependency issues and isn't necessary for many 
+            # features of xagg)
+            import xesmf as xe
             if target == 'ds':
                 if not silent:
                     print('regridding weights to data grid...')
@@ -175,9 +184,33 @@ def process_weights(ds,weights=None,target='ds',silent=False):
     return ds,weights_info
 
 
+def make_multipoly(pts):
+    ''' Split pixel overlapping the antimeridian into MultiPolygon with 
+        each sub-Polygon in its own hemisphere
+
+    NB: to be used in `create_raster_polygons()`
+        
+    '''
+    pts = np.array(pts)
+    # Get which pixels are east of the antimeridian
+    neg = pts[:,0]<0
+
+    # Get point order for split up pixel 
+    pts = [ # west of antimeridian
+            np.vstack([pts[~neg],np.array([[180,x[1]] for x in pts[~neg][::-1]])]),
+            # east of antimeridian
+           np.vstack([np.array([[-180,x[1]] for x in pts[neg][::-1]]),pts[neg]])]
+    pts = [[tuple(x) for x in pt] for pt in pts]
+
+    # Create multipolygon
+    return MultiPolygon([Polygon(pt) for pt in pts])
+
+
+
 def create_raster_polygons(ds,
                            mask=None,subset_bbox=None,
-                           weights=None,weights_target='ds'):
+                           weights=None,weights_target='ds',
+                           wrap_around_thresh=5):
     """ Create polygons for each pixel in a raster
 
     Note: 
@@ -250,7 +283,7 @@ def create_raster_polygons(ds,
         
     # Create dataset which has a lat/lon bound value for each individual pixel, 
     # broadcasted out over each lat/lon pair
-    (ds_bnds,) = (xr.broadcast(ds.isel({d:0 for d in [k for k in ds.dims.keys() if k not in ['lat','lon','bnds']]}).
+    (ds_bnds,) = (xr.broadcast(ds.isel({d:0 for d in [k for k in ds.sizes if k not in ['lat','lon','bnds']]}).
                               drop_vars([v for v in ds.keys() if v not in ['lat_bnds','lon_bnds']])))
     # Stack so it's just pixels and bounds
     ds_bnds = ds_bnds.stack(loc=('lat','lon'))
@@ -267,9 +300,16 @@ def create_raster_polygons(ds,
     # and convert each of those vertices to tuples. This means every element
     # of pix_poly_coords is the input to shapely.geometry.Polygon of one pixel
     pix_poly_coords = tuple(map(tuple,np.reshape(pix_poly_coords,(np.shape(pix_poly_coords)[0],4,2))))
-    
+
+    # Figure out if any pixels cross the antimeridian; we'll have to deal with 
+    # those separately... Identify them by seeing which pixels have longitudes
+    # that are within the `wrap_around_thresh` (by default 5 degs) of both 
+    # +180 and -180 degrees
+    cross_antimeridian_idxs = ((np.abs(np.array(pix_poly_coords)[:,:,0] - -180) < wrap_around_thresh).any(axis=1) & 
+     (np.abs(np.array(pix_poly_coords)[:,:,0] - 180) < wrap_around_thresh).any(axis=1))
+
     # Create empty geodataframe
-    gdf_pixels = gpd.GeoDataFrame(pd.DataFrame({v:[None]*ds_bnds.dims['loc']
+    gdf_pixels = gpd.GeoDataFrame(pd.DataFrame({v:[None]*ds_bnds.sizes['loc']
                                for v in ['lat','lon','geometry']}),
                               geometry='geometry')
     if weights is not None:
@@ -277,14 +317,17 @@ def create_raster_polygons(ds,
         # NAs with 0s)
         weights = ds.weights.stack(loc=('lat','lon')).fillna(0)
         # Preallocate weights column
-        gdf_pixels['weights'] = [None]*ds_bnds.dims['loc']
+        gdf_pixels['weights'] = [None]*ds_bnds.sizes['loc']
     
-    # Now populate with a polygon for every pixel, and the lat/lon coordinates
-    # of that pixel 
+    # Now populate with a polygon for every pixel
     poly_dict = {'poly_pts': pix_poly_coords}
     df_poly = pd.DataFrame(poly_dict, columns=['poly_pts'])
-    df_poly['poly']=df_poly.poly_pts.apply(lambda pts: Polygon(pts))
+    df_poly['poly'] = df_poly.poly_pts.apply(lambda pts: Polygon(pts))
+    # Make MultiPolygons for pixels crossing the antimeridian
+    df_poly.loc[np.where(cross_antimeridian_idxs)[0],'poly'] = df_poly.poly_pts.iloc[np.where(cross_antimeridian_idxs)[0]].apply(lambda pts: make_multipoly(pts))
+    # Set geometry 
     gdf_pixels['geometry']=df_poly['poly']
+    # Add lat/lons of pixels for identification 
     gdf_pixels['lat']=ds_bnds.lat.values
     gdf_pixels['lon']=ds_bnds.lon.values  
     if weights is not None:
@@ -403,29 +446,32 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
                                pix_agg['gdf_pixels'].to_crs(epsg_set),
                                how='intersection')
     
-    if impl=='dot_product':
-        # Get relative area of each pixel
-        overlaps = overlaps.groupby('poly_idx',group_keys=False).apply(find_rel_area)
-        overlaps['lat'] = overlaps['lat'].astype(float)
-        overlaps['lon'] = overlaps['lon'].astype(float)
+    if overlaps.empty:
+        raise NoOverlapError('No `ds` grid cells overlapped with any polygon in `gdf_in`. Check the input `ds` and `gdf_in`.')
+    else:
+        if impl=='dot_product':
+            # Get relative area of each pixel
+            overlaps = overlaps.groupby('poly_idx',group_keys=False).apply(find_rel_area)
+            overlaps['lat'] = overlaps['lat'].astype(float)
+            overlaps['lon'] = overlaps['lon'].astype(float)
 
-        # Now, group by poly_idx (each polygon in the shapefile)
-        ov_groups = overlaps.groupby('poly_idx')
+            # Now, group by poly_idx (each polygon in the shapefile)
+            ov_groups = overlaps.groupby('poly_idx')
 
-        overlap_info = ov_groups.agg(list_or_first)
+            overlap_info = ov_groups.agg(list_or_first)
 
-        overlap_info = overlap_info.rename(columns={'pix_idx': 'pix_idxs'})
-    elif impl=='for_loop':
-        # Now, group by poly_idx (each polygon in the shapefile)
-        ov_groups = overlaps.groupby('poly_idx')
-        # Calculate relative area of each overlap (so how much of the total 
-        # area of each polygon is taken up by each pixel), the pixels 
-        # corresponding to those areas, and the lat/lon coordinates of 
-        # those pixels
-        overlap_info = ov_groups.agg(rel_area=pd.NamedAgg(column='geometry',aggfunc=lambda ds: [normalize(ds.area)]),
-                                       pix_idxs=pd.NamedAgg(column='pix_idx',aggfunc=lambda ds: [idx for idx in ds]),
-                                       lat=pd.NamedAgg(column='lat',aggfunc=lambda ds: [x for x in ds]),
-                                       lon=pd.NamedAgg(column='lon',aggfunc=lambda ds: [x for x in ds]))
+            overlap_info = overlap_info.rename(columns={'pix_idx': 'pix_idxs'})
+        elif impl=='for_loop':
+            # Now, group by poly_idx (each polygon in the shapefile)
+            ov_groups = overlaps.groupby('poly_idx')
+            # Calculate relative area of each overlap (so how much of the total 
+            # area of each polygon is taken up by each pixel), the pixels 
+            # corresponding to those areas, and the lat/lon coordinates of 
+            # those pixels
+            overlap_info = ov_groups.agg(rel_area=pd.NamedAgg(column='geometry',aggfunc=lambda ds: [normalize(ds.area)]),
+                                           pix_idxs=pd.NamedAgg(column='pix_idx',aggfunc=lambda ds: [idx for idx in ds]),
+                                           lat=pd.NamedAgg(column='lat',aggfunc=lambda ds: [x for x in ds]),
+                                           lon=pd.NamedAgg(column='lon',aggfunc=lambda ds: [x for x in ds]))
 
     # Zip lat, lon columns into a list of (lat,lon) coordinates
     # (separate from above because as of 12/20, named aggs with 
@@ -569,7 +615,7 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
         for var in ds:
             # Process for every variable that has locational information, but isn't a 
             # bound variable
-            if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
+            if ('bnds' not in ds[var].sizes) & ('loc' in ds[var].sizes):
                 if not silent:
                     print('aggregating '+var+'...')
 
@@ -607,7 +653,7 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
 
         wm.agg = pd.merge(wm.agg, df_combined, on='poly_idx')
         for var in ds:
-            if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
+            if ('bnds' not in ds[var].sizes) & ('loc' in ds[var].sizes):
                 # convert to list of arrays - NOT SURE THIS IS THE RIGHT THING TO
                 # DO, JUST TRYING TO MATCH ORIGINAL FORMAT
                 wm.agg[var] = wm.agg[var].apply(np.array).apply(lambda x: [x])
@@ -619,7 +665,7 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
         for var in ds:
             # Process for every variable that has locational information, but isn't a 
             # bound variable
-            if ('bnds' not in ds[var].dims) & ('loc' in ds[var].dims):
+            if ('bnds' not in ds[var].sizes) & ('loc' in ds[var].sizes):
                 if not silent:
                     print('aggregating '+var+'...')
                 # Create the column for the relevant variable
@@ -637,14 +683,14 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
                     # in both cases; the "aggregated variable" is just a vector of nans. 
                     if not np.isnan(wm.agg.iloc[poly_idx,:].pix_idxs).all():
                         # Get the dimensions of the variable that aren't "loc" (location)
-                        other_dims = [k for k in np.atleast_1d(ds[var].dims) if k != 'loc']
+                        other_dims = [k for k in np.atleast_1d(ds[var].sizes) if k != 'loc']
                         # Check first if any nans are "complete" (meaning that a pixel 
                         # either has values for each step, or nans for each step - if
                         # there are random nans within a pixel, throw a warning)
                         if not xr.Dataset.equals(np.isnan(ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)).any(other_dims),
                                                   np.isnan(ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)).all(other_dims)):
                             warnings.warn('One or more of the pixels in variable '+var+' have nans in them in the dimensions '+
-                                           ', '.join([k for k in ds[var].dims if k != 'loc'])+
+                                           ', '.join([k for k in ds[var].sizes if k != 'loc'])+
                                            '. The code can currently only deal with pixels for which the '+
                                            '*entire* pixel has nan values in all dimensions, however there is currently no '+
                                            ' support for data in which pixels have only some nan values. The aggregation '+

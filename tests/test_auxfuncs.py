@@ -10,7 +10,7 @@ def test_normalize():
 	assert np.allclose(normalize(np.array([1,1])),np.array([0.5,0.5]))
 
 
-##### fix_ds tests #####
+##### fix_ds() tests #####
 def test_fix_ds_null():
 	# If lat, lon correctly named, lon as -180:180, bounds correctly named, sorted, that nothing happens
 	ds = xr.Dataset({'test':(['lat','lon'],np.array([[0,1,2],[3,4,5],[6,7,8]])),
@@ -32,8 +32,8 @@ def test_fix_ds_rename():
 	ds = xr.Dataset(coords={'Latitude':(['Latitude'],np.array([0,1,2])),
 							'Longitude':(['Longitude'],np.array([0,1,2]))})
 	ds = fix_ds(ds)
-	assert ('lat' in ds.dims.keys())
-	assert ('lon' in ds.dims.keys())
+	assert ('lat' in ds.sizes)
+	assert ('lon' in ds.sizes)
 
 def test_fix_ds_rename_bnds():
 	# Test whether the bounds are renamed correctly
@@ -79,14 +79,13 @@ def test_fix_ds_coord_sorting():
 
 
 
-###### get_bnds tests #####
+###### get_bnds() tests #####
 def test_get_bnds_null():
 	# If there are bounds already, do nothing
 	ds = xr.Dataset({'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]])),
 					 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]]))},
 					coords={'lat':(['lat'],np.array([0,1,2])),
-							'lon':(['lon'],np.array([0,1,2])),
-							'bnds':(['bnds'],np.array([0,1]))})
+							'lon':(['lon'],np.array([0,1,2]))})
 
 	xr.testing.assert_allclose(ds,get_bnds(ds))
 
@@ -99,33 +98,119 @@ def test_get_bnds_basic():
 	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]])),
 					 		 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]]))},
 							coords={'lat':(['lat'],np.array([0,1,2])),
-									'lon':(['lon'],np.array([0,1,2])),
-									'bnds':(['bnds'],np.array([0,1]))})
+									'lon':(['lon'],np.array([0,1,2]))})
 
 	xr.testing.assert_allclose(ds,ds_compare)
 	
 
-def test_get_bnds_wraparound():
-	# Basic attempt to get the bounds (far away from the wraparound)
-	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-89.4,89.7)),
-							'lon':(['lon'],np.arange(-179.4,179.7))})
+def test_get_bnds_fullgrid():
+	# -179.5:179.5, with bounds exactly at 180/-180
+	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-89.5,89.51)), 
+	                    	'lon':(['lon'],np.arange(-179.5,179.51))})
 	ds = get_bnds(ds)
 
-	lats = np.array(list(zip(np.arange(-89.9,89.91),np.arange(-88.9,90.9))))
-	lats[-1,1] = 90.0
-	lons = np.array(list(zip(np.arange(-179.9,179.91),np.arange(-178.9,180.9))))
-	lons[-1,1] = -179.9
-	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],lats),
-					 		 'lon_bnds':(['lon','bnds'],lons)},
-							coords={'lat':(['lat'],np.arange(-89.4,89.7)),
-									'lon':(['lon'],np.arange(-179.4,179.7)),
-									'bnds':(['bnds'],np.array([0,1]))})
+	lat_bnds = np.array(list(zip(np.arange(-90,89.91),np.arange(-89,90.1))))
+	lon_bnds = np.array(list(zip(np.arange(-180,179.01),np.arange(-179,180.01))))
+	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],lat_bnds),
+	                         'lon_bnds':(['lon','bnds'],lon_bnds)},
+	                        coords={'lat':(['lat'],np.arange(-89.5,89.51)),
+	                                'lon':(['lon'],np.arange(-179.5,179.51))})
 
 	xr.testing.assert_allclose(ds,ds_compare)
 
-#def test_get_bnds_badwraparound():
-	# THERE ARE A LOT OF ISSUES LEFT WITH THIS - 360s showing up somehow, even though it's not in the "edges"... idk man
-	# Try a test taht does some weird subset, like (-178:183). Also make sure that -89.9 gets turned to -90. 
+def test_get_bnds_truncatedlats():
+	# Tests to make sure grids are truncated to 90/-90 when needed
+	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-90,90.01)), 
+	                    	'lon':(['lon'],np.arange(-180,179.01))})
+	ds = get_bnds(ds)
+
+	lat_bnds = np.array(list(zip(np.arange(-90.5,89.51),np.arange(-89.5,90.51))))
+	lat_bnds[0,0] = -90; lat_bnds[-1,-1] = 90
+	lon_bnds = np.array(list(zip(np.arange(-180.5,178.51),np.arange(-179.5,179.51))))
+	lon_bnds[0,0] = 179.5
+	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],lat_bnds),
+	                         'lon_bnds':(['lon','bnds'],lon_bnds)},
+	                        coords={'lat':(['lat'],np.arange(-90,90.01)),
+	                                'lon':(['lon'],np.arange(-180,179.01))})
+
+	xr.testing.assert_allclose(ds,ds_compare)
+
+def test_get_bnds_partialgrid():
+	# Partial grid, that should _not_ be wrapped around (farther
+	# than the dynamic wrap_around limit = 2*median lon diff)
+	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-89.5,89.51)), 
+	                    	'lon':(['lon'],np.arange(-179.5,177.51))})
+	ds = get_bnds(ds)
+
+	lat_bnds = np.array(list(zip(np.arange(-90,89.91),np.arange(-89,90.1))))
+	lon_bnds = np.array(list(zip(np.arange(-180,177.01),np.arange(-179,178.01))))
+	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],lat_bnds),
+	                         'lon_bnds':(['lon','bnds'],lon_bnds)},
+	                        coords={'lat':(['lat'],np.arange(-89.5,89.51)),
+	                                'lon':(['lon'],np.arange(-179.5,177.51))})
+
+	xr.testing.assert_allclose(ds,ds_compare)
+
+def test_get_bnds_offsetgrid():
+	# Full planetary grid, but with pixels crossing the antimeridian
+	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-89.4,89.7)), #  -180:180, offset
+                        	'lon':(['lon'],np.arange(-179.4,179.7))})
+
+	ds = get_bnds(ds)
+
+	lat_bnds = np.array(list(zip(np.arange(-89.9,89.11),np.arange(-88.9,90.11))))
+	lat_bnds[-1,-1] = 90 # Truncate at 90
+	lon_bnds = np.array(list(zip(np.arange(-179.9,179.11),np.arange(-178.9,180.11))))
+	lon_bnds[-1,-1] = -179.9 # Wrap around across antimeridian
+	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],lat_bnds),
+	                         'lon_bnds':(['lon','bnds'],lon_bnds)},
+	                        coords={'lat':(['lat'],np.arange(-89.4,89.7)),
+	                                'lon':(['lon'],np.arange(-179.4,179.7))})
+
+	xr.testing.assert_allclose(ds,ds_compare)
+
+def test_get_bnds_1pixelinEH():
+	# Crossing the antimeridian, with just one pixel that is on the
+	# other side of the antimeridian, EH version (this can be an 
+	# issue with the code)
+	ds = xr.Dataset(coords={'lat':(['lat'],np.array([0,1])),
+	                        'lon':(['lon'],np.array([-179.8, -178.8,179.2]))})
+
+	ds = get_bnds(ds)
+
+	lat_bnds = np.array(list(zip(np.arange(-0.5,0.51),np.arange(0.5,1.51))))
+	lon_bnds = np.array([[179.7,-179.3],
+	                      [-179.3,-178.3],
+	                      [178.7,179.7]])
+	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],lat_bnds),
+	                         'lon_bnds':(['lon','bnds'],lon_bnds)},
+	                        coords={'lat':(['lat'],np.array([0,1])),
+	                        'lon':(['lon'],np.array([-179.8, -178.8,179.2]))})
+
+	xr.testing.assert_allclose(ds,ds_compare)
+
+
+
+def test_get_bnds_1pixelinWH():
+	# Crossing the antimeridian, with just one pixel that is on the
+	# other side of the antimeridian, WH version (this can be an 
+	# issue with the code)
+	ds = xr.Dataset(coords={'lat':(['lat'],np.array([0,1])),
+	                        'lon':(['lon'],np.array([-179.8, 178.2,179.2]))})
+
+	ds = get_bnds(ds)
+
+	lat_bnds = np.array(list(zip(np.arange(-0.5,0.51),np.arange(0.5,1.51))))
+	lon_bnds = np.array(list(zip(np.arange(176.7,178.71),np.arange(177.7,179.71))))
+	lon_bnds[0,0] = 179.7
+	lon_bnds[0,1] = -179.3
+	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],lat_bnds),
+	                         'lon_bnds':(['lon','bnds'],lon_bnds)},
+	                        coords={'lat':(['lat'],np.array([0,1])),
+	                        'lon':(['lon'],np.array([-179.8, 178.2,179.2]))})
+
+	xr.testing.assert_allclose(ds,ds_compare)
+
 
 
 

@@ -35,13 +35,22 @@ def export_weightmap(wm_obj,fn,overwrite=False):
         with warnings.catch_warnings():
             # Catch performance warning about pickling
             warnings.filterwarnings('ignore')
-            df_out.to_hdf(fn+'/'+re.split('\/',fn)[-1]+'.h5','wm')
+            df_out.to_hdf(fn+'/'+re.split('/',fn)[-1]+'.h5','wm')
 
         ###### Save source grid
         for k in wm_obj.source_grid:
             # Adding v to variable (i.e., 'latv', 'lonv') needed 
             # because of the multi-index being used here 
-            wm_obj.source_grid[k].reset_index('loc').to_dataset(name=k+'v').to_netcdf(fn+'/'+re.split('\/',fn)[-1]+'_'+k+'.nc')
+            source_grid_tmp = wm_obj.source_grid[k].reset_index('loc').to_dataset(name=k+'v')
+
+            # Replicate dataset, to avoid xarray bug stemming from 
+            # Pandas MultiIndex testing... 
+            source_grid_tmp = source_grid_tmp.reset_coords()
+            source_grid_tmp = xr.Dataset({k:([d for d in v.sizes],v.values) for k,v in source_grid_tmp.items()})
+            source_grid_tmp = source_grid_tmp.set_coords([d for d in source_grid_tmp if d not in ['loc', k+'v']])
+
+            # Save
+            source_grid_tmp.to_netcdf(fn+'/'+re.split('/',fn)[-1]+'_'+k+'.nc')
 
         ###### Save weights
         # (If weights == 'nowghts', then no file to load)
@@ -50,8 +59,9 @@ def export_weightmap(wm_obj,fn,overwrite=False):
             # don't change the general type of the frame. This may
             # only affect the testing routines, but setting this here
             # to be explicit 
-            wm_obj.weights.astype(object).to_csv(fn+'/'+re.split('\/',fn)[-1]+'_weights.csv')
-    except:
+            wm_obj.weights.astype(object).to_csv(fn+'/'+re.split('/',fn)[-1]+'_weights.csv')
+    except RuntimeError as error:
+        print(error)
         # Remove files that have already been generated, to make 
         # sure no flawed files are floating around. 
         shutil.rmtree(fn)
