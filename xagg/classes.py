@@ -91,27 +91,60 @@ class aggregated(object):
         return df_out
 
     # Export functions
-    def to_netcdf(self,fn,loc_dim='poly_idx'):
+    def to_netcdf(self,fn,loc_dim='poly_idx',silent=False):
         """ Save as netcdf
+
+        Parameters
+        -----------------
+        
+        fn : str
+            The target filename
+
+        loc_dim : str, by default `'poly_idx'`
+            What to name the polygon dimension
+
+        silent : bool, by default False
+            If `True`, silences standard out
+
         """
         output_data(self,
                    output_format = 'netcdf',
                    output_fn = fn,
-                   loc_dim = loc_dim)
+                   loc_dim = loc_dim,
+                   silent = silent)
         
-    def to_csv(self,fn):
+    def to_csv(self,fn,silent=False):
         """ Save as csv
+
+        Parameters
+        -----------------
+        
+        fn : str
+            The target filename
+
+        silent : bool, by default False
+            If `True`, silences standard out
+
         """
         output_data(self,
                    output_format = 'csv',
-                   output_fn = fn)
+                   output_fn = fn,
+                   silent=silent)
         
-    def to_shp(self,fn):
+    def to_shp(self,fn,silent=False):
         """ Save as shapefile
+
+        fn : str
+            The target filename
+
+        silent : bool, by default False
+            If `True`, silences standard out
+            
         """
         output_data(self,
                    output_format = 'shp',
-                   output_fn = fn)
+                   output_fn = fn,
+                   silent=silent)
 
 
 

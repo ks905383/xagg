@@ -221,7 +221,8 @@ def make_multipoly(pts):
 def create_raster_polygons(ds,
                            mask=None,subset_bbox=None,
                            weights=None,weights_target='ds',
-                           wrap_around_thresh=5):
+                           wrap_around_thresh=5,
+                          silent=False):
     """ Create polygons for each pixel in a raster
 
     Note: 
@@ -270,7 +271,7 @@ def create_raster_polygons(ds,
     
     # Standardize inputs (including lat/lon order)
     ds = fix_ds(ds)
-    ds = get_bnds(ds)
+    ds = get_bnds(ds,silent=silent)
     #breakpoint()
     # Subset by shapefile bounding box, if desired
     if subset_bbox is not None:
