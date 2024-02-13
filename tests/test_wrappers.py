@@ -7,7 +7,6 @@ import copy
 from geopandas import testing as gpdt
 from unittest import TestCase
 from shapely.geometry import Polygon
-import xesmf as xe
 
 from xagg.wrappers import (pixel_overlaps)
 
