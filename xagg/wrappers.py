@@ -79,12 +79,12 @@ def pixel_overlaps(ds,gdf_in,
     if not silent:
       print('creating polygons for each pixel...')
     if subset_bbox:
-        pix_agg = create_raster_polygons(ds,subset_bbox=gdf_in,weights=weights)
+        pix_agg = create_raster_polygons(ds,subset_bbox=gdf_in,weights=weights,silent=silent)
         if not silent:
           if pix_agg['gdf_pixels'].empty:
             warnings.warning('Bounding box around polygon(s) from `gdf_in` includes no grid cells in `ds`...')
     else:
-        pix_agg = create_raster_polygons(ds,subset_bbox=None,weights=weights)
+        pix_agg = create_raster_polygons(ds,subset_bbox=None,weights=weights,silent=silent)
     
     # Get overlaps between these pixel polygons and the gdf_in polygons
     if not silent:

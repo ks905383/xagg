@@ -119,6 +119,8 @@ def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
     # List of variables that represent bounds
     if type(ds) == xr.core.dataset.Dataset:
         bnd_vars = [k for k in list(ds) if 'bnds' in k]
+        # Ignore time bounds, since not needed for xagg
+        bnd_vars = [k for k in bnd_vars if 'time' not in k]
     elif type(ds) == xr.core.dataarray.DataArray:
         bnd_vars = []
     else:
@@ -130,7 +132,7 @@ def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
         if len(test_dims) == 0:
             raise NameError('No valid lat/lon variables found in the dataset.')
         else:
-            # shoudl there be a elif len()>1? If there are multiple things found?
+            # should there be a elif len()>1? If there are multiple things found?
             # Could be an issue in terms of ones where x/y are the coordinates of a 
             # non-rectangular grid with variables lat, lon, which is problematic,
             # or just duplicate dimension names, which is weird. 
@@ -375,7 +377,7 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
     return ds    
 
 
-def subset_find(ds0,ds1):
+def subset_find(ds0,ds1,silent=False):
     """ Finds the grid of `ds1` in `ds0`, and subsets `ds0` to the grid in `ds1`
     
     Parameters
@@ -389,6 +391,9 @@ def subset_find(ds0,ds1):
       IMPORTANT: `ds1` HAS TO BE BROADCAST - i.e. one value of lat, lon 
       each coordinate, with lat and lon vectors of equal length. This can 
       be done e.g. using ``ds1.stack(loc=('lat','lon'))``. 
+
+    silent : bool, by default False
+      if True, then suppresses standard output
         
     Returns
     ---------------
@@ -410,7 +415,8 @@ def subset_find(ds0,ds1):
     # and just keep the pix_idxs
     if (not np.allclose(len(ds0.lat),len(ds1['lat'])) or (not np.allclose(len(ds0.lon),len(ds1['lon']))) or
          (not np.allclose(ds1['lat'],ds0.lat)) or (not np.allclose(ds1['lon'],ds0.lon))):
-        print('adjusting grid... (this may happen because only a subset of pixels '+
+        if not silent:
+            print('adjusting grid... (this may happen because only a subset of pixels '+
               'were used for aggregation for efficiency - i.e. [subset_bbox=True] in '+
              'xa.pixel_overlaps())') #(this also happens because ds and ds_bnds above was already subset)
         # Zip up lat,lon pairs to allow comparison
@@ -421,7 +427,8 @@ def subset_find(ds0,ds1):
         loc_idxs = [latlons.index(i) for i in latlons0]
         
         if np.allclose(len(loc_idxs),len(latlons0)):
-            print('grid adjustment successful')
+            if not silent:
+                print('grid adjustment successful')
             # Subset by those indices
             ds0 = ds0.isel(loc=loc_idxs)
         else:
