@@ -19,7 +19,7 @@ setup(
         "License :: OSI Approved :: GNU General Public License (GPL)",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=[
         'numpy',
         'scipy',
@@ -28,9 +28,7 @@ setup(
         'netcdf4',
         'geopandas>=0.12.0',
         'shapely',
-	'tables',
-        'xesmf>=0.7.1',
+	    'tables',
         'cf_xarray>=0.5.1',
-        'esmpy>=8.1.0',
 	 ],
 )
