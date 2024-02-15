@@ -81,7 +81,7 @@ def prep_for_nc(agg_obj,loc_dim='poly_idx'):
     ---------------
     agg_obj : :class:`xagg.classes.aggregated`
 
-    loc_dim : str, optional
+    loc_dim : :py:class:`str`, optional
         the name of the location dimension; by definition 
         'poly_idx'. Values of that dimension are currently
         only an integer index (with further information given
@@ -219,11 +219,11 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx',silent=False)
     agg_obj : :class:`xagg.classes.aggregated` 
         object to be exported   
 
-    output_format : str
+    output_format : :py:class:`str`
         'netcdf', 'csv', or 'shp'
-    output_fn: str
+    output_fn: :py:class:`str`
         the output filename   
-    loc_dim : str, optional. default = ``'poly_idx'``
+    loc_dim : :py:class:`str`, optional. default = ``'poly_idx'``
         the name of the
         dimension with location indices; used
         by :func:`xagg.export.prep_for_nc` for nc, 

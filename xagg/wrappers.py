@@ -54,12 +54,12 @@ def pixel_overlaps(ds,gdf_in,
       methods for aggregating; the former uses less memory,
       the latter may be faster in certain circumstances
 
-    silent : bool, default = `False`
+    silent : :py:class:`bool`, default = `False`
         if True, then no status updates are printed to std out
    
     Returns
     ---------------
-    wm_out : dict
+    wm_out : :py:class:`dict`
       the output of :func:`xagg.core.get_pixel_overlaps`  which gives the mapping of pixels to polygon aggregation; to be
       input into :func:`xagg.core.aggregate`. 
     

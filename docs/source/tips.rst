@@ -46,7 +46,7 @@ At the expense of increased memory usage, processing may be sped up using an alt
 
 Create diagnostic figure to inspect raster/polygon overlaps 
 ------------------------------------------------------------
-Once you have created a :py:class:`weightmap`, the following code will create a diagnostic figure, showing a particular polygon (or groups of polygons) + the grid cells that overlap it, colored by the relative overlap of each grid cell with the polygon ::
+Once you have created a :py:class:`weightmap`, the following code will create a diagnostic figure, showing a particular polygon (or groups of polygons) + the grid cells that overlap it, colored by the relative overlap of each grid cell with the polygon (NB: this currently only works if :py:meth:`xa.pixel_overlaps` is run with `subset_to_bbox=False`, or using `subset_find` as detailed in `Detailed Code Run <./full_run.ipynb>`_)::
 
    # Querying polygon by column of the polygon `gdf`
    weightmap.diag_fig({'name':'Alaska'},ds)

@@ -22,31 +22,28 @@ class NoOverlapError(Exception):
 
 
 def read_wm(path):
-    """ Load temporary weightmap files from wm.to_file()
+    """ Load temporary weightmap files from :py:meth:`wm.to_file()`
 
     Builds a weightmap out of saved weightmap component 
     files. Particularly useful if the weightmap took a 
     particularly long time to calculated (i.e., if the 
     grid is particularly high resolution). 
 
-    Assumes the files are generated from `wm.to_file()`; 
+    Assumes the files are generated from :py:meth:`wm.to_file()`; 
     i.e., the files are all in a directory `name`: 
 
-    `name/name.shp` : the geometry of the input polygons
-    `name/name.agg` : the dataframe with the pixel overlap
-                      data
-    `name/name_lat.nc`, `name/name_lon.nc` : 
-                      the source grid of the raster data
-    `name/name_weights.nc` :
-                      the additional weights grid, if used
-                      (this file is optional; if no file
-                      with this name is found, no weights 
-                      are assumed, and 
-                      `wm.weights='noweights'`)
+    - `name/name.shp` : 
+        the geometry of the input polygons
+    - `name/name.agg` : 
+        the dataframe with the pixel overlap data
+    - `name/name_lat.nc`, `name/name_lon.nc` : 
+        the source grid of the raster data
+    - `name/name_weights.nc` :
+       the additional weights grid, if used (this file is optional; if no file with this name is found, no weights are assumed, and `wm.weights='noweights'`)
 
     Parameters
     ---------------
-    path : str 
+    path : :py:class:`str` 
         The directory in which the files are stored. They
         are assumed to follow the filename convention of
         sharing the name of the directory (i.e., the last
@@ -110,12 +107,12 @@ def process_weights(ds,weights=None,target='ds',silent=False):
         an :class:`xarray.DataArray` containing a weight (numeric) 
         at each location
     
-    target : str, optional, default = ``'ds'``
+    target : :py:class:`str`, optional, default = ``'ds'``
         whether weights should be regridded to the `ds` grid (by
         default) or vice-versa (not yet supported, returns 
-        `NotImplementedError`)
+        ``NotImplementedError``)
 
-    silent : bool, default = `False`
+    silent : :py:class:`bool`, default = `False`
         if True, then no status updates are printed to std out
 
     Returns
@@ -124,7 +121,7 @@ def process_weights(ds,weights=None,target='ds',silent=False):
         the input :class:`xarray.Dataset`/:class:`xarray.DataArray`, with a new variable 
         `weights` specifying weights for each pixel
 
-    weights_info : dict 
+    weights_info : :py:class:`dict` 
         a dictionary storing information about the 
         weights regridding process, with the fields:
 
@@ -205,10 +202,9 @@ def process_weights(ds,weights=None,target='ds',silent=False):
 
 
 def make_multipoly(pts):
-    ''' Split pixel overlapping the antimeridian into MultiPolygon with 
-        each sub-Polygon in its own hemisphere
+    ''' Split pixel overlapping the antimeridian into MultiPolygon with each sub-Polygon in its own hemisphere
 
-    NB: to be used in `create_raster_polygons()`
+    NB: to be used in :py:meth:`create_raster_polygons()`
         
     '''
     pts = np.array(pts)
@@ -262,7 +258,7 @@ def create_raster_polygons(ds,
           
     Returns
     ---------------
-    pix_agg: dict
+    pix_agg: :py:class:`dict`
         a dictionary containing:
 
         - ``'gdf_pixels'`` 
@@ -386,7 +382,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
         the variables should be aggregated. Can be just a read
         shapefile (with the added column of "poly_idx", which 
         is just the index as a column).
-    pix_agg : dict
+    pix_agg : :py:class:`dict`
         the output of :func:`xagg.core.create_raster_polygons`; a dict containing:
 
         - ``'gdf_pixels'``
@@ -397,7 +393,8 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
         - ``'source_grid'``
             ``[da.lat,da.lon]`` of the grid used to create
             the pixel polygons
-    impl : str
+
+    impl : :py:class:`str`
         whether the output will be used for the dot-product aggregation 
         calculation (needs a slightly different format), either of: 
         - ``'for_loop'`` (default behavior)
@@ -407,27 +404,28 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
 
     Returns
     ---------------
-    wm_out: dict
+    wm_out: :py:class:`dict`
         A dictionary containing: 
         
-        - ``'agg'``
-            a dataframe containing all the fields of `gdf_in` (except
+        - ``'agg'``:
+            a dataframe containing all the fields of ``gdf_in`` (except
             geometry) and the additional columns: 
 
-            - `coords`:  the lat/lon coordiates of all pixels that overlap
+            - ``coords``:  the lat/lon coordiates of all pixels that overlap
              the polygon of that row
-            - `pix_idxs`: the linear indices of those pixels within the 
-             `gdf_pixels` grid
-            - `rel_area`: the relative area of each of the overlaps between
+            - ``pix_idxs``: the linear indices of those pixels within the 
+             ``gdf_pixels`` grid
+            - ``rel_area``: the relative area of each of the overlaps between
              the pixels and the polygon (summing to 1 - e.g. 
              if the polygon is exactly the size and location of
              two pixels, their rel_areas would be 0.5 each)
-        - ``'source_grid'``: 
+
+        - ``'source_grid'``
             a dictionary with keys 'lat' and 'lon' giving the 
             original lat/lon grid whose overlaps with the polygons
             was calculated
-        - ``'geometry'``: 
-            just the polygons from `gdf_in` 
+        - ``'geometry'`` 
+            just the polygons from ``gdf_in``
 
 
     """
@@ -585,7 +583,7 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
             requires much more memory (due to broadcasting of
             variables) but may be faster in certain circumstances
 
-    silent : bool, default = `False`
+    silent : :py:class:`bool`, default = `False`
         if True, then no status updates are printed to std out
                
     Returns
