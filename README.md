@@ -34,7 +34,7 @@ See the latest documentation at https://xagg.readthedocs.io/en/latest/index.html
 
 Science often happens on grids - gridded weather products, interpolated pollution data, night time lights, remote sensing all approximate the continuous real world for reasons of data resolution, processing time, or ease of calculation.
 
-However, living things don't live on grids, and rarely play, act, or observe data on grids either. Instead, humans tend to work on the county, state, township, okrug, or city level; birds tend to fly along complex migratory corridors; and rain- and watersheds follow valleys and mountains. 
+However, living things don't live on grids, and rarely play, act, or observe data on grids either. Instead, humans tend to work on the county, state, township, Bezirk, or city level; birds tend to fly along complex migratory corridors; and rain- and watersheds follow valleys and mountains. 
 
 So, whenever we need to work with both gridded and geographic data products, we need ways of getting them to match up. We may be interested for example what the average temperature over a county is, or the average rainfall rate over a watershed. 
 
