@@ -8,7 +8,7 @@ build:
     python: "3.12"
 
 conda:
-    file: docs/docenvironment.yml
+    environment: docs/docenvironment.yml
 
 #python:
 #   version: 3.12
