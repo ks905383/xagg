@@ -1,0 +1,9 @@
+name: xagg_docs
+channels:
+  - conda-forge
+dependencies:
+  - sphinx==7.2.6
+  - nbsphinx==0.9.3
+  - pip:
+    - sphinx_rtd_theme==2.0.0
+    - numpydoc==1.6.0
