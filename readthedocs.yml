@@ -3,8 +3,14 @@ version: 2
 
 # Set OS, python versions 
 build:
+  # This is just taken from the RTD template, they
+  # use ubuntu under the hood. 
   os: ubuntu-22.04
   tools:
+    # Mamba version needed for the build to create a 
+    # Conda/mamba environment (as required by the 
+    # docenvironment.yml below instead of a requirements.txt
+    # which would be needed to use a venv instead)
     python: "mambaforge-22.9"
 
 conda:
@@ -17,4 +23,4 @@ conda:
 #        path: package
 sphinx:
   fail_on_warning: False
-  configuration: docs/conf.py
+  configuration: docs/source/conf.py
