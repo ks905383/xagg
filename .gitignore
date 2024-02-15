@@ -2,8 +2,12 @@
 __pycache__/
 *.py[cod]
 
-# Test things
+# Internal test notebooks
 *test*.ipynb
+
+# xagg /wm/ directories created during docs processing
+wm/
+docs/notebooks/wm/
 
 # C extensions
 *.so
