@@ -19,31 +19,30 @@ def diag_fig(wm,poly_id,pix_overlap_info,
 
 	Parameters
     ---------------
-    wm : :class:`xagg.classes.weightmap`
+    wm : :py:class:`xagg.classes.weightmap`
         the output to :func:`xagg.core.get_pixel_overlaps`
 
-    poly_id : int, list, or dict
+    poly_id : :py:class:`int`, :py:class:`list`, or :py:class:`dict`
       	which polygon to plot. If `int`, then just the polygon in that indexed row of `wm.agg`
       	is plotted. If `list` of `int`s, then those polygons are plotted. If dict, then all
       	matches in the geodataframe are plotted (e.g., `poly_id = {'adm1_code':'URY-8'}`). 
 
-    pix_overlap_info : `xarray.classes.dataset.Dataset`, `xarray.classes.dataarray.DataArray`, 
-    				   or the output to `xa.core.create_raster_polygons`
-    	if `ds` or `da`: the original dataset used to calculate the `wm`; needs to be re-entered 
-    					 here because `wm` does not keep the original pixel polygons 
-    	Otherwise, put in the output to `xa.core.create_raster_polygons(ds)`
+    pix_overlap_info : :py:class:`xarray.dataset.Dataset`, :py:class:`xarray.dataarray.DataArray`, or the output to :py:meth:`xa.core.create_raster_polygons()`
+    	If `ds` or `da`, the original dataset used to calculate the `wm`; needs to be re-entered 
+    	here because `wm` does not keep the original pixel polygons. Otherwise, put in the output 
+    	to :py:meth:`xa.core.create_raster_polygons(ds)`
 
-    cmap : str, by default 'magma_r'
+    cmap : str, by default `'magma_r'`
     	colormap, must be the name of a matplotlib-recognized colormap
 
-	max_title_depth : int, by default 5
+	max_title_depth : int, by default `5`
 		if only showing one polygon, then the plot title is `', '.join()`, called on the 
 		first `max_title_depth` columns of `wm.agg` that aren't added by `xagg`
 
-	fig : `mpl.figure.Figure` or None, by default None
+	fig : `mpl.figure.Figure` or `None`, by default `None`
 		if not None, then this figure handle is used
 
-	ax : `mpl.axis.Axis` or None, by default None
+	ax : `mpl.axis.Axis` or `None`, by default `None`
 		if not None, then this axis handle is used
     
     Returns

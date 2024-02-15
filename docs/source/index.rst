@@ -1,5 +1,5 @@
-.. xagg_new documentation master file, created by
-   sphinx-quickstart on Thu Apr 15 21:20:54 2021.
+.. xagg documentation master file, created by
+   sphinx-quickstart on Thu Feb 15 16:33:56 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -29,12 +29,11 @@ The simplest code run, involving raster data in an :py:mod:`xarray` :py:class:`D
    notebooks/base_run
    notebooks/full_run.ipynb
    tips
-   api_user
-   api_backend
+   modules
 
 
 Indices and tables
 =================================
-@ -29,4 +106,4 @@ Indices and tables
+* :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

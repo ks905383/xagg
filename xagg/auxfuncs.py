@@ -10,7 +10,7 @@ def normalize(a,drop_na = False):
     """ Normalizes the vector `a`
 
     The vector `a` is divided by its sum. If all non-`np.nan` elements of `a` are 0, 
-    then all `np.nan`s are returned.  
+    then a vector with only `np.nan` elements is returned.  
 
     Parameters
     ---------------
