@@ -6,6 +6,8 @@ import geopandas as gpd
 from geopandas import testing as gpdt
 from unittest import TestCase
 from shapely.geometry import Polygon
+from unittest.mock import patch
+from io import StringIO
 try:
     import xesmf as xe
     _has_xesmf=True
@@ -14,7 +16,7 @@ except ImportError:
 	_has_xesmf=False
 
 from xagg.core import (process_weights,create_raster_polygons,get_pixel_overlaps,aggregate,NoOverlapError)
-
+from xagg.options import set_options
 
 ##### process_weights() tests #####
 def test_process_weights_null():
@@ -568,7 +570,35 @@ def test_aggregate_with_some_nans():
 
 
 
+##### aggregate() silencing tests #####
+# Create polygon covering multiple pixels
+gdf = {'name':['test'],
+			'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
+gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+
+# Get pixel overlaps
+with set_options(silent=True):
+	wm = get_pixel_overlaps(gdf,pix_agg)
 
 
+@patch('sys.stdout', new_callable=StringIO)
+def test_aggregate_silent_true(mock_stdout):
+	with set_options(silent=True):
+		# Get aggregate
+		agg = aggregate(ds,wm)
+
+
+	# Check that nothing was printed
+	assert mock_stdout.getvalue() == ''
+
+@patch('sys.stdout', new_callable=StringIO)
+def test_aggregate_silent_false(mock_stdout):
+	with set_options(silent=False):
+		# Get aggregate
+		agg = aggregate(ds,wm)
+
+
+	# Check that nothing was printed
+	assert mock_stdout.getvalue() != ''
 
 
