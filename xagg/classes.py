@@ -2,6 +2,7 @@ from .export import (prep_for_nc,prep_for_csv,output_data,export_weightmap)
 import warnings
 import os
 import re
+from .options import get_options
 
 try:
     import cartopy 
@@ -91,56 +92,63 @@ class aggregated(object):
         return df_out
 
     # Export functions
-    def to_netcdf(self,fn,loc_dim='poly_idx',silent=False):
+    def to_netcdf(self,fn,loc_dim='poly_idx',silent=None):
         """ Save as netcdf
 
         Parameters
         -----------------
         
-        fn : str
+        fn : :py:class:`str`
             The target filename
 
-        loc_dim : str, by default `'poly_idx'`
+        loc_dim : :py:class:`str`, by default `'poly_idx'`
             What to name the polygon dimension
 
-        silent : bool, by default False
+        silent : :py:class:`bool`, by default False
             If `True`, silences standard out
 
         """
+        if silent is None:
+            silent = get_options()['silent']
+
         output_data(self,
                    output_format = 'netcdf',
                    output_fn = fn,
                    loc_dim = loc_dim,
                    silent = silent)
         
-    def to_csv(self,fn,silent=False):
+    def to_csv(self,fn,silent=None):
         """ Save as csv
 
         Parameters
         -----------------
         
-        fn : str
+        fn : :py:class:`str`
             The target filename
 
-        silent : bool, by default False
+        silent : :py:class:`bool`, by default False
             If `True`, silences standard out
 
         """
+        if silent is None:
+            silent = get_options()['silent']
         output_data(self,
                    output_format = 'csv',
                    output_fn = fn,
                    silent=silent)
         
-    def to_shp(self,fn,silent=False):
+    def to_shp(self,fn,silent=None):
         """ Save as shapefile
 
-        fn : str
+        fn : :py:class:`str`
             The target filename
 
-        silent : bool, by default False
+        silent : :py:class:`bool`, by default False
             If `True`, silences standard out
             
         """
+        if silent is None:
+            silent = get_options()['silent']
         output_data(self,
                    output_format = 'shp',
                    output_fn = fn,

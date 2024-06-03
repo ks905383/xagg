@@ -15,6 +15,7 @@ except ImportError:
 
 from . auxfuncs import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
 from . classes import (weightmap,aggregated)
+from . options import get_options
 
 class NoOverlapError(Exception):
     """ Exception for when there's no overlap between pixels and polygons """
@@ -92,7 +93,7 @@ def read_wm(path):
     return wm
 
 
-def process_weights(ds,weights=None,target='ds',silent=False):
+def process_weights(ds,weights=None,target='ds',silent=None):
     """ Process weights - including regridding
     
     If ``target == 'ds'``, regrid `weights` to `ds`. If ``target == 'weights'``,
@@ -112,7 +113,7 @@ def process_weights(ds,weights=None,target='ds',silent=False):
         default) or vice-versa (not yet supported, returns 
         ``NotImplementedError``)
 
-    silent : :py:class:`bool`, default = `False`
+    silent : :py:class:`bool`, default = `False` (set by :py:meth:`xa.set_options`)
         if True, then no status updates are printed to std out
 
     Returns
@@ -129,6 +130,10 @@ def process_weights(ds,weights=None,target='ds',silent=False):
         - ``ds_grid``: a dictionary with the grid ``{"lat":ds.lat,"lon",ds.lon}``
         - ``weights_grid``: a dictionary with the grid ``{"lat":weights.lat,"lon":weights.lon}``
     """
+
+    if silent is None:
+        silent = get_options()['silent']
+
     
     if weights is None:
         # (for robustness against running this without an extra if statement
@@ -227,7 +232,7 @@ def create_raster_polygons(ds,
                            mask=None,subset_bbox=None,
                            weights=None,weights_target='ds',
                            wrap_around_thresh=5,
-                          silent=False):
+                          silent=None):
     """ Create polygons for each pixel in a raster
 
     Note: 
@@ -273,6 +278,9 @@ def create_raster_polygons(ds,
             the input `ds`)
                       
     """
+
+    if silent is None:
+        silent = get_options()['silent']
     
     # Standardize inputs (including lat/lon order)
     ds = fix_ds(ds)
@@ -366,7 +374,7 @@ def create_raster_polygons(ds,
     return pix_agg
 
 
-def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
+def get_pixel_overlaps(gdf_in,pix_agg,impl=None):
     """ Get, for each polygon, the pixels that overlap and their area of overlap
     
     Finds, for each polygon in `gdf_in`, which pixels intersect it, and by how much. 
@@ -394,13 +402,11 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
             ``[da.lat,da.lon]`` of the grid used to create
             the pixel polygons
 
-    impl : :py:class:`str`
+    impl : :py:class:`str` (set by :py:meth:`xa.set_options`)
         whether the output will be used for the dot-product aggregation 
         calculation (needs a slightly different format), either of: 
         - ``'for_loop'`` (default behavior)
-        - ``'dot_product'`` (to set up for ``impl='dot_product'`` in 
-            ``xagg.core.aggregate``)
-    
+        - ``'dot_product'`` (to set up for ``impl='dot_product'`` in ``xagg.core.aggregate``)
 
     Returns
     ---------------
@@ -411,24 +417,19 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
             a dataframe containing all the fields of ``gdf_in`` (except
             geometry) and the additional columns: 
 
-            - ``coords``:  the lat/lon coordiates of all pixels that overlap
-             the polygon of that row
-            - ``pix_idxs``: the linear indices of those pixels within the 
-             ``gdf_pixels`` grid
-            - ``rel_area``: the relative area of each of the overlaps between
-             the pixels and the polygon (summing to 1 - e.g. 
-             if the polygon is exactly the size and location of
-             two pixels, their rel_areas would be 0.5 each)
+            - ``coords``:  the lat/lon coordiates of all pixels that overlap the polygon of that row
+            - ``pix_idxs``: the linear indices of those pixels within the ``gdf_pixels`` grid
+            - ``rel_area``: the relative area of each of the overlaps between the pixels and the polygon (summing to 1 - e.g. if the polygon is exactly the size and location of two pixels, their rel_areas would be 0.5 each)
 
         - ``'source_grid'``
-            a dictionary with keys 'lat' and 'lon' giving the 
-            original lat/lon grid whose overlaps with the polygons
-            was calculated
+            a dictionary with keys 'lat' and 'lon' giving the original lat/lon grid whose overlaps with the polygons was calculated
         - ``'geometry'`` 
             just the polygons from ``gdf_in``
 
-
     """
+
+    if impl is None:
+        impl = get_options()['impl']
     
     # Add an index for each polygon as a column to make indexing easier
     #if 'poly_idx' not in gdf_in.columns:
@@ -530,7 +531,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl='for_loop'):
     return wm_out
 
 
-def aggregate(ds,wm,impl='for_loop',silent=False):
+def aggregate(ds,wm,impl=None,silent=None):
     """ Aggregate raster variable(s) to polygon(s)
     
     Aggregates (N-D) raster variables in `ds` to the polygons
@@ -572,7 +573,7 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
             were calculated (and on which the linear indices 
             are based)
 
-    impl : :class:str (def: ``'for_loop'``)
+    impl : :class:str (def: ``'for_loop'``) (set by :py:meth:`xa.set_options`)
         which aggregation calculation method to use, either of: 
 
         - ``'for_loop'`` 
@@ -583,7 +584,7 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
             requires much more memory (due to broadcasting of
             variables) but may be faster in certain circumstances
 
-    silent : :py:class:`bool`, default = `False`
+    silent : :py:class:`bool`, default = `False` (set by :py:meth:`xa.set_options`)
         if True, then no status updates are printed to std out
                
     Returns
@@ -592,6 +593,11 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
         an :class:`xagg.classes.aggregated` object with the aggregated variables 
     
     """
+    if impl is None:
+        impl = get_options()['impl']
+    if silent is None:
+        silent = get_options()['silent']
+
     # Make sure pixel_overlaps was correctly run if using dot product
     if (impl=='dot_product') and (wm.overlap_da is None):
         raise ValueError("no 'overlap_da' was found in the `wm` input - since you're using the dot product implementation, "+
@@ -613,7 +619,7 @@ def aggregate(ds,wm,impl='for_loop',silent=False):
     ds = ds.stack(loc=('lat','lon'))
     
     # Adjust grid of [ds] if necessary to match 
-    ds = subset_find(ds,wm.source_grid)
+    ds = subset_find(ds,wm.source_grid,silent=silent)
     
     # Set weights; or replace with ones if no additional weight information
     #if wm.weights != 'nowghts':

@@ -16,11 +16,6 @@ build:
 conda:
     environment: docs/docenvironment.yml
 
-#python:
-#   version: 3.12
-#   install:
-#      - method: setuptools
-#        path: package
 sphinx:
   fail_on_warning: False
   configuration: docs/source/conf.py

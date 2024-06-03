@@ -8,6 +8,8 @@ __pycache__/
 # xagg /wm/ directories created during docs processing
 wm/
 docs/notebooks/wm/
+wm_export_test/
+
 
 # C extensions
 *.so

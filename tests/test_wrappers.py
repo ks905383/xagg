@@ -7,8 +7,11 @@ import copy
 from geopandas import testing as gpdt
 from unittest import TestCase
 from shapely.geometry import Polygon
+from unittest.mock import patch
+from io import StringIO
 
-from xagg.wrappers import (pixel_overlaps)
+from xagg.wrappers import pixel_overlaps
+from xagg.options import set_options
 
 
 ##### pixel_overlaps() tests #####
@@ -92,3 +95,48 @@ def test_pixel_overlaps_dataarray_wname():
 	assert np.allclose([v for v in df0.rel_area],[v for v in df_compare.rel_area])
 	assert np.allclose([v for v in df0.pix_idxs],[v for v in df_compare.pix_idxs])
 	assert np.allclose([v for v in df0.coords],[v for v in df_compare.coords])
+
+##### pixel_overlaps() silent tests #####
+@patch('sys.stdout', new_callable=StringIO)
+def test_pixel_overlaps_silent_true(mock_stdout):
+
+	# Create dataarray
+	da = xr.DataArray(data=np.array([[0,1],[2,3]]),
+					  coords={'lat':(['lat'],np.array([0,1])),
+							'lon':(['lon'],np.array([0,1]))},
+					  dims=['lon','lat'],
+					  name='tas')
+
+	# Create polygon covering one pixel
+	gdf_test = {'name':['test'],
+				'geometry':[Polygon([(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5),(-0.5,-0.5)])]}
+	gdf_test = gpd.GeoDataFrame(gdf_test,crs="EPSG:4326")
+
+	# Calculate pixel_overlaps through the wrapper function
+	with set_options(silent=True):
+		wm = pixel_overlaps(da,gdf_test)
+
+	# Check that nothing was printed
+	assert mock_stdout.getvalue() == ''
+
+
+@patch('sys.stdout', new_callable=StringIO)
+def test_pixel_overlaps_silent_false(mock_stdout):
+	# Create dataarray
+	da = xr.DataArray(data=np.array([[0,1],[2,3]]),
+					  coords={'lat':(['lat'],np.array([0,1])),
+							'lon':(['lon'],np.array([0,1]))},
+					  dims=['lon','lat'],
+					  name='tas')
+
+	# Create polygon covering one pixel
+	gdf_test = {'name':['test'],
+				'geometry':[Polygon([(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5),(-0.5,-0.5)])]}
+	gdf_test = gpd.GeoDataFrame(gdf_test,crs="EPSG:4326")
+
+	# Calculate pixel_overlaps through the wrapper function
+	with set_options(silent=False):
+		wm = pixel_overlaps(da,gdf_test)
+
+	# Check that nothing was printed
+	assert mock_stdout.getvalue() != ''
