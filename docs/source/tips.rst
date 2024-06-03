@@ -4,15 +4,20 @@ Tips
 Silencing status updates
 ---------------------------------------
 
-To silence status updates to standard out, use the ``silent=True`` flag::
+To silence status updates to standard out, set ``silent=True``::
 
    import xagg as xa
+   xa.set_defaults(silent=True)
 
-   # Get overlap between pixels and polygons
-   weightmap = xa.pixel_overlaps(ds,gdf,silent=True)
+You can also silence a single operation using ``with``::
 
-   # Aggregate data in [ds] onto polygons
-   aggregated = xa.aggregate(ds,weightmap,silent=True)
+   # Calculate weightmaps without status updates
+   with xa.set_defaults(silent=True):
+      weightmap = xa.pixel_overlaps(ds,gdf)
+
+Note that the `silent=True` option in individual functions will be
+slowly deprecated over the next few versions in favor of using one of
+the two options above.
 
 Saving weights file 
 ---------------------------------------
@@ -38,11 +43,13 @@ Speed up overlap calculation
 ---------------------------------------
 At the expense of increased memory usage, processing may be sped up using an alternate calculation method (``impl='dot_product'``) :: 
 
-   # Get overlap between pixels and polygons
-   weightmap = xa.pixel_overlaps(ds,gdf,impl='dot_product')
+   import xagg as xa
+   # Set dot_product as default backend implementation 
+   xa.set_defaults(impl='dot_product')
 
-   # Aggregate data in [ds] onto polygons
-   aggregated = xa.aggregate(ds,weightmap,impl='dot_product')
+Note that the `impl=dot_product` option in individual functions will be
+slowly deprecated over the next few versions in favor of using the option
+setting approach above (or using ``with xa.set_defaults(impl='dot_product'):`` ).
 
 Create diagnostic figure to inspect raster/polygon overlaps 
 ------------------------------------------------------------
