@@ -3,13 +3,14 @@ import xarray as xr
 import copy
 
 from . core import (create_raster_polygons,get_pixel_overlaps)
+from . options import get_options
 
 
 def pixel_overlaps(ds,gdf_in,
                    weights=None,weights_target='ds',
                    subset_bbox = True,
-                   impl='for_loop',
-                   silent=False):
+                   impl=None,
+                   silent=None):
     """ Wrapper function for determining overlaps between grid and polygon
     
     For a geodataframe `gdf_in`, takes an `xarray` structure `ds` (Dataset or 
@@ -50,11 +51,12 @@ def pixel_overlaps(ds,gdf_in,
       a `NotImplementedError`)
 
     impl : :class:`str`, optional, default = ``'for_loop'``
+      (set by :py:meth:`xa.set_options`)
       whether to use the ``'for_loop'`` or ``'dot_product'``
       methods for aggregating; the former uses less memory,
       the latter may be faster in certain circumstances
 
-    silent : :py:class:`bool`, default = `False`
+    silent : :py:class:`bool`, default = `False` (set by :py:meth:`xa.set_options`)
         if True, then no status updates are printed to std out
    
     Returns
@@ -64,6 +66,11 @@ def pixel_overlaps(ds,gdf_in,
       input into :func:`xagg.core.aggregate`. 
     
     """
+    if impl is None:
+      impl = get_options()['impl']
+    if silent is None:
+      silent = get_options()['silent']
+
     # Create deep copy of gdf to ensure the input gdf doesn't 
     # get modified
     gdf_in = copy.deepcopy(gdf_in)

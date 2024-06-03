@@ -5,3 +5,4 @@
 from .wrappers import pixel_overlaps
 from .auxfuncs import (normalize,fix_ds,get_bnds,subset_find)
 from .core import (aggregate,read_wm)
+from .options import get_options, set_options
