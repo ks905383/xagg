@@ -4,6 +4,8 @@ xagg
 [![codecov](https://codecov.io/gh/ks905383/xagg/branch/main/graph/badge.svg)](https://codecov.io/gh/ks905383/xagg)
 [![pypi](https://img.shields.io/pypi/v/xagg.svg)](https://pypi.org/project/xagg)
 [![conda-forge](https://anaconda.org/conda-forge/xagg/badges/version.svg)](https://anaconda.org/conda-forge/xagg/)
+[![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/xagg.svg)](https://anaconda.org/conda-forge/xagg)
+[![DOI](https://zenodo.org/badge/367399550.svg)](https://zenodo.org/doi/10.5281/zenodo.11476311)
 [![Documentation Status](https://readthedocs.org/projects/xagg/badge/?version=latest)](https://xagg.readthedocs.io/en/latest/?badge=latest)
 
 
@@ -13,10 +15,10 @@ A package to aggregate gridded data in `xarray` to polygons in `geopandas` using
 The easiest way to install the latest version of `xagg` is using `conda` or `mamba`:  
 
 ```
-conda install -c conda-forge xagg==0.3.2.0
+conda install -c conda-forge xagg==0.3.2.1
 
 # or
-mamba install -c conda-forge xagg==0.3.2.0
+mamba install -c conda-forge xagg==0.3.2.1
 ```
 
 We recommend installing `xagg` in a new environment whenever possible, to ensure all (sub)dependencies are correctly loaded. 
