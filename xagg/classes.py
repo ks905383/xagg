@@ -74,18 +74,28 @@ class aggregated(object):
     # Conversion functions
     def to_dataset(self,loc_dim='poly_idx'):
         """ Convert to xarray dataset.
+
+        Parameters
+        -----------------
+        loc_dim : :py:class:`str`, by default `'poly_idx'`
+            What to name the polygon dimension (e.g., 'county')
         """
         ds_out = prep_for_nc(self,loc_dim=loc_dim)
         return ds_out
 
     def to_geodataframe(self):
-        """ Convert to geopandas geodataframe.
+        """ Convert to wide geopandas geodataframe.
         """
         df_out = prep_for_csv(self,add_geom=True)
         return df_out
 
     def to_dataframe(self,loc_dim='poly_idx'):
         """ Convert to pandas dataframe.
+
+        Parameters
+        -----------------
+        loc_dim : :py:class:`str`, by default `'poly_idx'`
+            What to name the polygon dimension (e.g., 'county')
         """
         df_out = prep_for_nc(self,loc_dim=loc_dim)
         df_out = df_out.to_dataframe()
@@ -97,7 +107,6 @@ class aggregated(object):
 
         Parameters
         -----------------
-        
         fn : :py:class:`str`
             The target filename
 
@@ -105,7 +114,7 @@ class aggregated(object):
             What to name the polygon dimension
 
         silent : :py:class:`bool`, by default False
-            If `True`, silences standard out
+            If `True`, silences status update
 
         """
         if silent is None:
@@ -127,7 +136,7 @@ class aggregated(object):
             The target filename
 
         silent : :py:class:`bool`, by default False
-            If `True`, silences standard out
+            If `True`, silences status update
 
         """
         if silent is None:
@@ -144,7 +153,7 @@ class aggregated(object):
             The target filename
 
         silent : :py:class:`bool`, by default False
-            If `True`, silences standard out
+            If `True`, silences status update
             
         """
         if silent is None:

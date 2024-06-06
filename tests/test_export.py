@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import xarray as xr
 import shutil
+import os
 import geopandas as gpd
 from geopandas import testing as gpdt
 from unittest import TestCase
@@ -10,6 +11,7 @@ from shapely.geometry import Polygon
 
 from xagg.core import (process_weights,create_raster_polygons,get_pixel_overlaps,aggregate,read_wm)
 from xagg.wrappers import (pixel_overlaps)
+from xagg.export import (prep_for_csv)
 
 
 ##### to_dataset() tests #####
@@ -38,8 +40,7 @@ def test_to_dataset(agg=agg):
 	ds_out = agg.to_dataset()
 
 	# Build reference output dataset
-	ds_ref = xr.Dataset({'name':(['poly_idx'],np.array(['test']).astype(object)),
-						 'test':(['poly_idx','run'],np.array([[1.0,2.0]]))},
+	ds_ref = xr.Dataset({'test':(['poly_idx','run'],np.array([[1.0,2.0]]))},
 					coords={'poly_idx':(['poly_idx'],np.array([0])),
 							'run':(['run'],np.array([0,1]))})
 
@@ -47,22 +48,139 @@ def test_to_dataset(agg=agg):
 	# variation off from actual 1.0, 2.0 due to crs
 	xr.testing.assert_allclose(ds_out,ds_ref,atol=0.0001)
 
+def test_to_dataset_renamelocdim(agg=agg):
+	# Change to dataset, renaming `poly_idx`
+	ds_out = agg.to_dataset(loc_dim = 'county_id')
+
+	# Build reference output dataset
+	ds_ref = xr.Dataset({'test':(['county_id','run'],np.array([[1.0,2.0]]))},
+					coords={'county_id':(['county_id'],np.array([0])),
+							'run':(['run'],np.array([0,1]))})
+
+	# Assert equal within tolerance, again likely due to very slight 
+	# variation off from actual 1.0, 2.0 due to crs
+	xr.testing.assert_allclose(ds_out,ds_ref,atol=0.0001)
+
+##### to_dataframe() tests #####
 def test_to_dataframe(agg=agg):
 	# Change to dataframe
 	df_out = agg.to_dataframe()
 
 	# Build reference output dataframe
-	df_ref = pd.DataFrame({'poly_idx':[0,0],'run':[0,1],'name':['test','test'],'test':[0.9999,1.9999]})
+	df_ref = pd.DataFrame({'poly_idx':[0,0],'run':[0,1],'test':[0.9999,1.9999]})
 	df_ref = df_ref.set_index(['poly_idx','run'])
 
 	# Assert equal within tolerance, again likely due to very slight 
 	# variation off from actual 1.0, 2.0 due to crs
 	pd.testing.assert_frame_equal(df_out,df_ref,atol=0.0001)
 
+def test_to_dataframe_renamelocdim(agg=agg):
+	# Change to dataframe, with a new name for the location dimension
+	df_out = agg.to_dataframe(loc_dim='county_id')
+
+	# Build reference output dataframe
+	df_ref = pd.DataFrame({'county_id':[0,0],'run':[0,1],'test':[0.9999,1.9999]})
+	df_ref = df_ref.set_index(['county_id','run'])
+
+	# Assert equal within tolerance
+	pd.testing.assert_frame_equal(df_out,df_ref,atol=0.0001)
+
+##### to_geodataframe() tests #####
+def test_to_geodataframe(agg=agg):
+	# Change to geodatafarme
+	df_out = agg.to_geodataframe()
+
+	# Build reference output geodataframe
+	gdf_ref = gpd.GeoDataFrame({'name':['test'],
+	                  				'test0':[0.9999629411369734],
+	                  				'test1':[1.9999629411369735]},
+	                 				geometry = [Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])],
+	                 				crs = 'EPSG:4326')
+
+	# Assert equal within tolerance, again likely due to very slight 
+	# variation off from actual 1.0, 2.0 due to crs
+	gpdt.assert_geodataframe_equal(df_out,gdf_ref,check_less_precise=True)
+
+def test_prep_for_csv_multd():
+	# Test to make sure .prep_for_csv() (for .to_geodataframe()
+	# and .to_csv()) fails if you have a variable with more than one
+	# non-location dimension
+	
+	# Have a 4-D variable (run and time in addition to geographic data)
+	ds_extrad = xr.Dataset({'test':(['lon','lat','run','time'],np.random.rand(2,2,2,5)),
+					 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
+					 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
+					coords={'lat':(['lat'],np.array([0,1])),
+							'lon':(['lon'],np.array([0,1])),
+							'run':(['run'],np.array([0,1])),
+	                        'time':(['time'],pd.date_range('2001-01-01','2001-01-05')),
+							'bnds':(['bnds'],np.array([0,1]))})
+
+	# Create polygon covering multiple pixels
+	gdf = {'name':['test'],
+				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
+	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+
+	# Get pixel overlaps
+	wm_extrad = pixel_overlaps(ds_extrad,gdf)
+
+	# Get aggregate
+	agg_extrad = aggregate(ds_extrad,wm_extrad)
+
+	with pytest.raises(NotImplementedError):
+		# Make sure 
+		prep_for_csv(agg_extrad)
+
+##### to_netcdf() tests #####
+def test_to_netcdf(agg=agg):
+	# Export to netcdf
+	agg.to_netcdf('test.nc')
+
+	# Make reference dataset
+	ds_ref = xr.Dataset({'test':(('poly_idx','run'),[[0.9999629411369734,1.9999629411369735]])},
+               			coords = {'poly_idx':(('poly_idx'),[0]),
+                         'run':(('run'),[0,1])})
+
+	# Load
+	ds_out = xr.open_dataset('test.nc')
+
+	# Test
+	xr.testing.assert_allclose(ds_ref,ds_out)
+
+	# Remove test export file 
+	os.remove('test.nc')
 
 ##### pixel_overlaps() export tests #####
+## Create weightmap to export
+# Add a simple weights grid
+weights = xr.DataArray(data=np.array([[0.,1.],[2.,3.]]),
+							dims=['lat','lon'],
+							coords=[ds.lat,ds.lon])
 
-def test_pixel_overlaps_export_and_import(ds=ds):
+# Create polygon covering one pixel
+gdf = {'name':['test'],
+			'geometry':[Polygon([(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5),(-0.5,-0.5)])]}
+gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+
+# Calculate weightmap
+wm_out = pixel_overlaps(ds,gdf,weights=weights)
+
+def test_export_wm_nooverwrite(wm_out=wm_out):
+	# Test to make sure FileExistsError is thrown if the target 
+	# directory already exists and overwrite=False
+	fn = 'wm_export_test'
+
+	# Create temporary directory 
+	os.mkdir(fn)
+
+	# Try to save with overwrite=False
+	with pytest.raises(FileExistsError):
+		wm_out.to_file(fn,overwrite=False)
+
+	# Clean
+	shutil.rmtree(fn)
+
+def test_export_wm_standard(wm_out=wm_out):
 	# Testing the .to_file() --> read_wm() workflow. 
 	# Rather complex because of the many different components of wm. 
 	# wm.agg in particular is a dataframe with lists in it (which is 
@@ -72,19 +190,6 @@ def test_pixel_overlaps_export_and_import(ds=ds):
 	# have any geographic information anyways) 
 
 	fn = 'wm_export_test'
-
-	# Add a simple weights grid
-	weights = xr.DataArray(data=np.array([[0.,1.],[2.,3.]]),
-								dims=['lat','lon'],
-								coords=[ds.lat,ds.lon])
-
-	# Create polygon covering one pixel
-	gdf = {'name':['test'],
-				'geometry':[Polygon([(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5),(-0.5,-0.5)])]}
-	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
-
-	# Calculate weightmap
-	wm_out = pixel_overlaps(ds,gdf,weights=weights)
 
 	# Export weightmap
 	wm_out.to_file(fn,overwrite=True)
