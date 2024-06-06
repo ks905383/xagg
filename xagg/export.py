@@ -270,7 +270,7 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx',silent=False)
         if not output_fn.endswith('.nc'):
             output_fn = output_fn+'.nc'
         ds_out.to_netcdf(output_fn)
-        if silent:
+        if not silent:
             print(output_fn+' saved!')
 
         # Return
@@ -285,7 +285,7 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx',silent=False)
         if not output_fn.endswith('.csv'):
             output_fn = output_fn+'.csv'
         csv_out.to_csv(output_fn)
-        if silent:
+        if not silent:
             print(output_fn+' saved!')
 
         # Return 
@@ -306,7 +306,7 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx',silent=False)
         if not output_fn.endswith('.shp'):
             output_fn = output_fn+'.shp'
         shp_out.to_file(output_fn)
-        if silent:
+        if not silent:
             print(output_fn+' saved!')
 
         # Return
