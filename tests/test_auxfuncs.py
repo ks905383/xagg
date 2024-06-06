@@ -107,6 +107,27 @@ def test_get_bnds_null():
 
 	xr.testing.assert_allclose(ds,get_bnds(ds))
 
+def test_get_bnds_badlons():
+	# Test to make sure > 180 lons throws an error
+	ds = xr.Dataset({'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]])),
+					 'lon_bnds':(['lon','bnds'],np.array([[179.5,180.5],[180.5,181.5],[181.5,182.5]]))},
+					coords={'lat':(['lat'],np.array([0,1,2])),
+							'lon':(['lon'],np.array([180,181,182]))})
+	
+	with pytest.raises(ValueError):
+		get_bnds(ds)
+
+def test_get_bnds_missingdims():
+	# Test to make sure missing lat/lon throws an error
+	ds = xr.Dataset({'latitude_bnds':(['latitude','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]])),
+					 'longitude_bnds':(['longitude','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]]))},
+					coords={'latitude':(['latitude'],np.array([0,1,2])),
+							'longitude':(['longitude'],np.array([0,1,2]))})
+
+	
+	with pytest.raises(KeyError):
+		get_bnds(ds)
+
 def test_get_bnds_basic():
 	# Basic attempt to get the bounds (far away from the wraparound)
 	ds = xr.Dataset(coords={'lat':(['lat'],np.array([0,1,2])),
@@ -159,6 +180,22 @@ def test_get_bnds_partialgrid():
 	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-89.5,89.51)), 
 	                    	'lon':(['lon'],np.arange(-179.5,177.51))})
 	ds = get_bnds(ds)
+
+	lat_bnds = np.array(list(zip(np.arange(-90,89.91),np.arange(-89,90.1))))
+	lon_bnds = np.array(list(zip(np.arange(-180,177.01),np.arange(-179,178.01))))
+	ds_compare = xr.Dataset({'lat_bnds':(['lat','bnds'],lat_bnds),
+	                         'lon_bnds':(['lon','bnds'],lon_bnds)},
+	                        coords={'lat':(['lat'],np.arange(-89.5,89.51)),
+	                                'lon':(['lon'],np.arange(-179.5,177.51))})
+
+	xr.testing.assert_allclose(ds,ds_compare)
+
+def test_get_bnds_partialgrid_customwat():
+	# Partial grid, that should _not_ be wrapped around, with a 
+	# manual wraparoundthreshold
+	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-89.5,89.51)), 
+	                    	'lon':(['lon'],np.arange(-179.5,177.51))})
+	ds = get_bnds(ds,wrap_around_thresh=1)
 
 	lat_bnds = np.array(list(zip(np.arange(-90,89.91),np.arange(-89,90.1))))
 	lon_bnds = np.array(list(zip(np.arange(-180,177.01),np.arange(-179,178.01))))
@@ -229,8 +266,15 @@ def test_get_bnds_1pixelinWH():
 
 	xr.testing.assert_allclose(ds,ds_compare)
 
+def test_get_bnds_badwraparoundthresh():
+	# If there are bounds already, do nothing
+	ds = xr.Dataset({'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]])),
+					 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]]))},
+					coords={'lat':(['lat'],np.array([0,1,2])),
+							'lon':(['lon'],np.array([0,1,2]))})
 
-
+	with pytest.raises(ValueError):
+		get_bnds(ds,wrap_around_thresh='bad_option')
 
 ###### subset_find tests #####
 def test_subset_find_basic():
@@ -247,6 +291,23 @@ def test_subset_find_basic():
 									'lon':(['lon'],np.array([-1,0]))})
 
 	xr.testing.assert_allclose(subset_find(ds0,ds1),ds_compare)
+
+def test_subset_find_nomatch():
+	# Test that it breaks if it can't find one within the other
+	# Create two grids, with one offset by a half degree lat from the other
+	ds0 = xr.Dataset({'test':(['lat','lon'],np.array([[0,1,2],[3,4,5],[6,7,8]]))},
+					 coords={'lat':(['lat'],np.array([0.5,1.5,2.5])),
+							'lon':(['lon'],np.array([-1,0,1]))})
+
+	ds1 = xr.Dataset({'lat':(['lat'],np.array([0,1])),
+					  'lon':(['lon'],np.array([-1,0]))})
+	ds1 = ds1.stack(loc=('lat','lon'))
+
+	ds_compare = xr.Dataset({'test':(['lat','lon'],np.array([[0,1],[3,4]]))},
+							coords={'lat':(['lat'],np.array([0,1])),
+									'lon':(['lon'],np.array([-1,0]))})
+	with pytest.raises(ValueError):
+		subset_find(ds0,ds1)
 
 
 
