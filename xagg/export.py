@@ -127,7 +127,13 @@ def prep_for_nc(agg_obj,loc_dim='poly_idx'):
                                    data=agg_obj.ds_in[crd].values,
                                    coords=[agg_obj.ds_in[crd].values])
         
-        
+    # Remove "name" variable created in get_pixel_overlaps
+    if 'name' in ds_out:
+        if ((ds_out['name'].dims == ('poly_idx',)) and 
+            (len(np.unique(ds_out['name'])) == 1) and
+            np.unique(ds_out['name'])[0] in ds_out):
+            ds_out = ds_out.drop_vars(['name'])
+
     # Rename poly_idx if desired
     if loc_dim != 'poly_idx':
         ds_out = ds_out.rename({'poly_idx':loc_dim})
@@ -140,11 +146,13 @@ def prep_for_csv(agg_obj,add_geom=False):
     """ Preps aggregated data for output as a csv
     
     Concretely, aggregated data is placed in a new pandas dataframe
-    and expanded wide - each aggregated variable is placed in new 
+    and expanded **wide** - each aggregated variable is placed in new 
     columns; one column per coordinate in each dimension that isn't
     the location (poolygon). So, for example, a lat x lon x time
     variable "tas", aggregated to location x time, would be reshaped 
     long to columns "tas0", "tas1", "tas2",... for timestep 0, 1, etc.
+
+    For data **long**, use ``agg_obj.to_dataframe().to_csv()`` instead. 
     
     Note: 
     Currently no support for variables with more than one extra dimension
@@ -168,10 +176,19 @@ def prep_for_csv(agg_obj,add_geom=False):
         a pandas dataframe containing all the fields from the original 
         location polygons + columns containing the values of the aggregated
         variables at each location. This can then easily be exported as a 
-        csv directly (using ``df.to_csv``) or to shapefiles by first turning into
+        csv directly (using ``df.to_csv()``) or to shapefiles by first turning into
         a geodataframe. 
     
     """
+    # Test to make sure there's only one non-location dimension
+    var_dims = {var:[d for d in agg_obj.ds_in[var].sizes if d != 'loc'] for var in agg_obj.ds_in}
+    var_ndims = {var:len(dims) for var,dims in var_dims.items()}
+    if np.max([n for d,n in var_ndims.items()]) > 1:
+        raise NotImplementedError('The `agg` object has variables with more than 1 non-location dimension; '+
+                                  'agg.to_csv() and agg.to_geodataframe() return wide arrays, but the code can not yet create wide arrays spanning data with multiple `wide` dimensions. '+
+                                  'Try agg.to_dataframe() instead. (the offending variables with their non-location dimensions are '+
+                                  str({var:dims for var,dims in var_dims.items() if var_ndims[var]>1})+')')
+
     # For output into csv, work with existing geopandas data frame
     csv_out = agg_obj.agg.drop(columns=['rel_area','pix_idxs','coords','poly_idx'])
     
@@ -191,11 +208,15 @@ def prep_for_csv(agg_obj,add_geom=False):
         if len(dimsteps) == 0:
             # (in this case, all it does is move from one list per row to 
             # one value per row)
-            expanded_var = (pd.DataFrame(pd.DataFrame(csv_out[var].to_list())[0].to_list(),
-                                     columns=[var]))
+            #expanded_var = (pd.DataFrame(pd.DataFrame(csv_out[var].to_list())[0].to_list(),
+            #                         columns=[var]))
+            expanded_var = pd.DataFrame(csv_out[var].apply(np.squeeze).to_list(),
+                                        columns=[var])
         else:
-            expanded_var = (pd.DataFrame(pd.DataFrame(csv_out[var].to_list())[0].to_list(),
-                                     columns=[var+str(idx) for idx in np.arange(0,len(csv_out[var][0][0]))]))
+            #expanded_var = (pd.DataFrame(pd.DataFrame(csv_out[var].to_list())[0].to_list(),
+            #                         columns=[var+str(idx) for idx in np.arange(0,len(csv_out[var][0][0]))]))
+            expanded_var = pd.DataFrame(csv_out[var].apply(np.squeeze).to_list(),
+                                        columns = [var+str(idx) for idx in range(len(csv_out[var].apply(np.squeeze))+1)])
         # Append to existing series
         csv_out = pd.concat([csv_out.drop(columns=(var)),
                              expanded_var],
@@ -204,7 +225,8 @@ def prep_for_csv(agg_obj,add_geom=False):
 
     if add_geom:
         # Return the geometry from the original geopandas.GeoDataFrame
-        csv_out.geometry = agg_obj.geometry
+        csv_out['geometry'] = agg_obj.geometry
+        csv_out = csv_out.set_geometry('geometry')
         
     # Return 
     return csv_out
@@ -248,7 +270,7 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx',silent=False)
         if not output_fn.endswith('.nc'):
             output_fn = output_fn+'.nc'
         ds_out.to_netcdf(output_fn)
-        if silent:
+        if not silent:
             print(output_fn+' saved!')
 
         # Return
@@ -263,7 +285,7 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx',silent=False)
         if not output_fn.endswith('.csv'):
             output_fn = output_fn+'.csv'
         csv_out.to_csv(output_fn)
-        if silent:
+        if not silent:
             print(output_fn+' saved!')
 
         # Return 
@@ -284,7 +306,7 @@ def output_data(agg_obj,output_format,output_fn,loc_dim='poly_idx',silent=False)
         if not output_fn.endswith('.shp'):
             output_fn = output_fn+'.shp'
         shp_out.to_file(output_fn)
-        if silent:
+        if not silent:
             print(output_fn+' saved!')
 
         # Return

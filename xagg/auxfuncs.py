@@ -243,6 +243,10 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
     if (type(wrap_around_thresh) == str) and (wrap_around_thresh != 'dynamic'):
         raise ValueError('`wrap_around_thresh` must either be numeric or the string "dynamic"; instead, it is '+str(wrap_around_thresh)+'.')
     
+    if ('lat' not in ds) or ('lon' not in ds):
+        raise KeyError('"lat"/"lon" not found in [ds]. Make sure the '+
+                       'geographic dimensions follow this naming convention (e.g., run `xa.fix_ds(ds)` before inputting.')
+
     if ds.lon.max()>180:
         raise ValueError('Longitude seems to be in the 0:360 format.'+
                          ' -180:180 format required (e.g., run `xa.fix_ds(ds)` before inputting.')
@@ -250,9 +254,6 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
         # honestly, it *may* already work by just changing edges['lon']
         # to [0,360], but it's not tested yet. 
         
-    if ('lat' not in ds) or ('lon' not in ds):
-        raise KeyError('"lat"/"lon" not found in [ds]. Make sure the '+
-                       'geographic dimensions follow this naming convention (e.g., run `xa.fix_ds(ds)` before inputting.')
     
     if ('lat_bnds' in ds) and ('lon_bnds' in ds):
         # `xa.fix_ds()` should rename bounds to `lat/lon_bnds`

@@ -408,6 +408,29 @@ def test_aggregate_basic(ds=ds):
 	# Possibly worth examining more closely later
 	assert np.allclose([v for v in agg.agg.test.values],1.4999,rtol=1e-4)
 
+def test_aggregate_wdataarray(ds=ds):
+	da = ds['test'].copy()
+	# Create polygon covering multiple pixels
+	gdf = {'name':['test'],
+				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
+	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+
+	# calculate the pix_agg variable tested above, to be used in the 
+	# tests below
+	pix_agg = create_raster_polygons(ds)
+
+	# Get pixel overlaps
+	wm = get_pixel_overlaps(gdf,pix_agg)
+
+	# Get aggregate
+	agg = aggregate(da,wm)
+
+	# This requires shifting rtol to 1e-4 for some reason, in that 
+	# it's actually 1.499981, whereas multiplying out 
+	# np.sum(agg.agg.rel_area[0]*np.array([0,1,2,3]))gives 1.499963... 
+	# Possibly worth examining more closely later
+	assert np.allclose([v for v in agg.agg.test.values],1.4999,rtol=1e-4)
+
 def test_aggregate_basic_wdotproduct(ds=ds):
     # Create multiple polygons, to double check, since dot product
     # implementation takes a slightly different approach to indices 
