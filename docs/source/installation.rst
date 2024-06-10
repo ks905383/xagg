@@ -3,10 +3,10 @@ Installation
 The easiest and recommended way to install :py:mod:`xagg` is through ``conda`` or ``mamba``::
 
    # Mamba
-   mamba install -c conda-forge xagg==0.3.2.0
+   mamba install -c conda-forge xagg==0.3.2.1
 
    # Conda
-   conda install -c conda-forge xagg==0.3.2.0
+   conda install -c conda-forge xagg==0.3.2.1
 
 
 ``xagg`` can also be installed through ``pip``::
