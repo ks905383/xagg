@@ -10,6 +10,9 @@ from typing import TypedDict
 class T_Options(TypedDict):
 	silent : bool
 	impl : str
+	rgrd_alg : str
+	nan_to_zero_regridding : bool
+
 
 # Set default options. Defining it in
 # the module makes it global to the module
@@ -17,12 +20,16 @@ class T_Options(TypedDict):
 # it should only be local to the function)
 OPTIONS: T_Options = {
 	'silent' : False,
-	'impl' : 'for_loop'
+	'impl' : 'for_loop',
+	'rgrd_alg' : 'conservative',
+	'nan_to_zero_regridding' : True
 }
 
 
 # Options for the backend implementation
 _IMPL_OPTIONS = frozenset(['for_loop','dot_product'])
+# Options for regridding
+_RGRD_OPTIONS = frozenset(['bilinear','conservative'])
 
 # Each item of this dictionary is a test for whether a
 # modification for the corresponding option was correctly
@@ -31,6 +38,8 @@ _IMPL_OPTIONS = frozenset(['for_loop','dot_product'])
 _VALIDATORS = {
 	'silent': lambda value: isinstance(value, bool),
 	'impl': _IMPL_OPTIONS.__contains__,
+	'rgrd_alg': _RGRD_OPTIONS.__contains__,
+	'nan_to_zero_regridding': lambda value: isinstance(value,bool)
 }
 
 # Define options class

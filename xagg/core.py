@@ -155,6 +155,13 @@ def process_weights(ds,weights=None,target='ds',silent=None):
                         'ds_grid':{'lat':ds.lat,'lon':ds.lon},
                         'weights_grid':{'lat':weights.lat,'lon':weights.lon}}
 
+        # Change nans to 0; often files used for weights (pop density, etc.)
+        # have open water labeled as nan instead of 0 - but for the purposes of
+        # calculating a weight, "0" is more accurate (conservative regridding 
+        # algorithms will otherwise miss coastal pixels)
+        if get_options()['nan_to_zero_regridding']:
+            weights = weights.where(~np.isnan(weights),0)
+
         # Regrid, if necessary (do nothing if the grids match up to within
         # floating-point precision)
         if ((not ((ds.sizes['lat'] == weights.sizes['lat']) and (ds.sizes['lon'] == weights.sizes['lon']))) or 
@@ -171,7 +178,7 @@ def process_weights(ds,weights=None,target='ds',silent=None):
                 if not silent:
                     print('regridding weights to data grid...')
                 # Create regridder to the [ds] coordinates
-                rgrd = xe.Regridder(weights,ds,'bilinear')
+                rgrd = xe.Regridder(weights,ds,get_options()['rgrd_alg'])
                 # Regrid [weights] to [ds] grids
                 weights = rgrd(weights)
 
@@ -181,7 +188,7 @@ def process_weights(ds,weights=None,target='ds',silent=None):
                 if not silent:
                     print('regridding data to weights grid...')
                 # Create regridder to the [weights] coordinates
-                rgrd = xe.Regridder(ds,weights,'bilinear')
+                rgrd = xe.Regridder(ds,weights,get_options()['rgrd_alg'])
                 # Regrid [ds] to [weights] grid
                 ds = rgrd(ds)
 
