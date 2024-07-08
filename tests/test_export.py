@@ -188,11 +188,10 @@ def test_to_netcdf(agg=agg):
 	               			coords = {'poly_idx':(('poly_idx'),[0]),
 	                         'run':(('run'),[0,1])})
 
-		# Load
-		ds_out = xr.open_dataset('test.nc')
-
-		# Test
-		xr.testing.assert_allclose(ds_ref,ds_out)
+		# Load and Test
+		with xr.open_dataset('test.nc') as ds_out:
+			xr.testing.assert_allclose(ds_ref,ds_out)
+		
 	finally:
 		# Remove test export file 
 		os.remove('test.nc')
