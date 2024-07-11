@@ -62,9 +62,15 @@ def diag_fig(wm,poly_id,pix_overlap_info,
 	        raise TypeError('If using list polygon ids, all list members must be integers corresponding to polygon idxs in `wm.agg`.')
 	    poly_idx = poly_id
 
+    # Turn into dataset if dataarray
+    if type(pix_overlap_info)==xr.core.dataarray.DataArray:
+      if pix_overlap_info.name is None:
+        pix_overlap_info = pix_overlap_info.to_dataset(name='var')
+      else:
+        pix_overlap_info = pix_overlap_info.to_dataset()
+
 	# Get pixel polygons/overlaps, if necessary
-	if ((type(pix_overlap_info) == xr.core.dataset.Dataset)
-	     or (type(pix_overlap_info) == xr.core.dataarray.DataArray)):
+	if ((type(pix_overlap_info) == xr.core.dataset.Dataset):
 	    pix_polys = create_raster_polygons(pix_overlap_info)
 	else:
 	    pix_polys = pix_overlap_info
