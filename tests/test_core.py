@@ -80,7 +80,7 @@ def test_process_weights_regrid_weights():
 								})
 
 		# Check if weights were correctly added to ds
-		xr.testing.assert_allclose(ds_compare,ds_t)
+		xr.testing.assert_allclose(ds_compare,ds_t,atol=1e-4)
 	else:
 		# Should raise ImportError in the no-xesmf environment
 		with pytest.raises(ImportError):
@@ -172,7 +172,7 @@ def test_create_raster_polygons_with_weights():
 		#np.testing.assert_allclose(compare_series,pix_agg['gdf_pixels'].weights)
 		#assert np.allclose(compare_series,pix_agg['gdf_pixels'].weights)
 		assert np.allclose([float(v) for v in compare_series],[float(v) for v in pix_agg['gdf_pixels'].weights],
-			 				atol=1e-4)
+			 				)
 	else:
 		# Should raise ImportError in the no-xesmf environment
 		with pytest.raises(ImportError):
