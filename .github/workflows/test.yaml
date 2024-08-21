@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.12.noxesmf"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.12.noxesmf","3.12.plotfuncs"]
     steps:
       - uses: actions/checkout@v4
       - name: Create conda environment
