@@ -2,7 +2,8 @@ from .export import (prep_for_nc,prep_for_csv,output_data,export_weightmap)
 import warnings
 import os
 import re
-from .options import get_options
+from .options import get_options,set_options
+from .auxfuncs import subset_find
 
 try:
     import cartopy 
@@ -40,7 +41,7 @@ class weightmap(object):
         self.weights = weights
         self.overlap_da = overlap_da
         
-    def diag_fig(self,poly_id,ds):
+    def diag_fig(self,poly_id,ds,fig=None,ax=None):
         """ Create a diagnostic figure showing overlap between pixels and a given polygon
 
         See `xagg.diag.diag_fig()` for more info. 
@@ -50,9 +51,14 @@ class weightmap(object):
         except ImportError:
             raise ImportError('`wm.diag_fig()` separately requires `cartopy`, `matplotlib`, and `cmocean` to function; make sure these are installed first.')
 
+        # Adjust grids between the input ds and the weightmap grid (in case subset to 
+        # bbox was used)
+        with set_options(silent=True):
+            ds = subset_find(ds,self.source_grid)
         
         # Plot diagnostic figure
-        diag_fig(self,poly_id,ds)
+        fig,ax=diag_fig(self,poly_id,ds,fig=fig,ax=ax)
+        return fig,ax
 
     def to_file(self,fn,overwrite=False):
         """ Save a copy of the weightmap, to avoid recalculating it
