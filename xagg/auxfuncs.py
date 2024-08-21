@@ -5,6 +5,7 @@ import geopandas as gpd
 import warnings
 import os
 import re
+from .options import get_options
 
 def normalize(a,drop_na = False):
     """ Normalizes the vector `a`
@@ -187,7 +188,7 @@ def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
 def get_bnds(ds,wrap_around_thresh='dynamic',
              break_window_width=3,
              break_thresh_x=2,
-             silent=False):
+             silent=None):
 
     """ Builds vectors of lat/lon bounds if not present in `ds`
     
@@ -239,6 +240,9 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
       already existed, or with new variables "lat_bnds" and "lon_bnds"
       if not.
     """
+    if silent is None:
+        silent = get_options()['silent']
+
     #----------- Setup -----------
     if (type(wrap_around_thresh) == str) and (wrap_around_thresh != 'dynamic'):
         raise ValueError('`wrap_around_thresh` must either be numeric or the string "dynamic"; instead, it is '+str(wrap_around_thresh)+'.')
@@ -378,7 +382,7 @@ def get_bnds(ds,wrap_around_thresh='dynamic',
     return ds    
 
 
-def subset_find(ds0,ds1,silent=False):
+def subset_find(ds0,ds1,silent=None):
     """ Finds the grid of `ds1` in `ds0`, and subsets `ds0` to the grid in `ds1`
     
     Parameters
@@ -402,6 +406,8 @@ def subset_find(ds0,ds1,silent=False):
       The input `ds0`, subset to the locations in `ds1`. 
     
     """
+    if silent is None:
+        silent = get_options()['silent']
     
     if 'loc' not in ds0.sizes:
         ds0 = ds0.stack(loc = ('lat','lon'))

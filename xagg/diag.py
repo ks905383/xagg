@@ -144,3 +144,5 @@ def diag_fig(wm,poly_id,pix_overlap_info,
 	# Gridlines
 	gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=['x','y','bottom','left'],
 	                  linewidth=1, color='gray', alpha=0.5, linestyle=':')
+
+	return fig,ax
