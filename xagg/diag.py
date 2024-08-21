@@ -53,27 +53,27 @@ def diag_fig(wm,poly_id,pix_overlap_info,
 
 	#---------- Setup ----------
 	if type(poly_id) == int:
-	    poly_idx = [poly_id]
+		poly_idx = [poly_id]
 	elif type(poly_id) == dict:
-	    poly_idx = list((wm.agg.loc[np.prod(np.array([wm.agg[k] == v for k,v in poly_id.items()]),axis=0).astype(bool),:].
+		poly_idx = list((wm.agg.loc[np.prod(np.array([wm.agg[k] == v for k,v in poly_id.items()]),axis=0).astype(bool),:].
 	                index.values))
 	elif type(poly_id) == list:
-	    if not np.all([type(k) == int for k in poly_id]):
-	        raise TypeError('If using list polygon ids, all list members must be integers corresponding to polygon idxs in `wm.agg`.')
-	    poly_idx = poly_id
+		if not np.all([type(k) == int for k in poly_id]):
+			raise TypeError('If using list polygon ids, all list members must be integers corresponding to polygon idxs in `wm.agg`.')
+		poly_idx = poly_id
 
     # Turn into dataset if dataarray
-    if type(pix_overlap_info)==xr.core.dataarray.DataArray:
-      if pix_overlap_info.name is None:
-        pix_overlap_info = pix_overlap_info.to_dataset(name='var')
-      else:
-        pix_overlap_info = pix_overlap_info.to_dataset()
+	if type(pix_overlap_info)==xr.core.dataarray.DataArray:
+		if pix_overlap_info.name is None:
+			pix_overlap_info = pix_overlap_info.to_dataset(name='var')
+		else:
+			pix_overlap_info = pix_overlap_info.to_dataset()
 
 	# Get pixel polygons/overlaps, if necessary
-	if ((type(pix_overlap_info) == xr.core.dataset.Dataset):
-	    pix_polys = create_raster_polygons(pix_overlap_info)
+	if (type(pix_overlap_info) == xr.core.dataset.Dataset):
+		pix_polys = create_raster_polygons(pix_overlap_info)
 	else:
-	    pix_polys = pix_overlap_info
+		pix_polys = pix_overlap_info
 
 	# Get which polygon to plot
 	plot_poly = [wm.geometry[idx] for idx in poly_idx]
@@ -85,27 +85,27 @@ def diag_fig(wm,poly_id,pix_overlap_info,
 
 	# Get colors for relative overlap
 	for idx in np.arange(0,len(pix_polys)):
-	    pix_polys[idx]['rel_area'] = plot_overlap[idx]['rel_area'][0].values
-	    pix_polys[idx]['color'] = [tuple(x) for x in plt.get_cmap(cmap)(pix_polys[idx]['rel_area'] / 
+		pix_polys[idx]['rel_area'] = plot_overlap[idx]['rel_area'][0].values
+		pix_polys[idx]['color'] = [tuple(x) for x in plt.get_cmap(cmap)(pix_polys[idx]['rel_area'] / 
 	                                                               pix_polys[idx]['rel_area'].max())]
 
 
 	#---------- Plot ----------
 	if fig == None:
-	    fig = plt.figure()
+		fig = plt.figure()
 
 	if ax == None:
 	    # Create sample figure, centered on polygon centroid
-	    ax = plt.subplot(projection=ccrs.PlateCarree(central_longitude=[k for k in 
+		ax = plt.subplot(projection=ccrs.PlateCarree(central_longitude=[k for k in 
 	                                                                    gpd.GeoDataFrame(geometry=[poly.centroid for poly in plot_poly]).dissolve().centroid.values[0].coords][0][0]))
 
 	# Plot polygon
 	for idx in np.arange(0,len(plot_poly)):
-	    if type(plot_poly[idx]) == shapely.geometry.polygon.Polygon:
-	        plt.plot(*plot_poly[idx].exterior.xy,transform=ccrs.PlateCarree(),
+		if type(plot_poly[idx]) == shapely.geometry.polygon.Polygon:
+			plt.plot(*plot_poly[idx].exterior.xy,transform=ccrs.PlateCarree(),
 	                  color='tab:green',linewidth=1)
-	    else:
-	         [plt.plot(*k.exterior.xy,transform=ccrs.PlateCarree(),
+		else:
+			[plt.plot(*k.exterior.xy,transform=ccrs.PlateCarree(),
 	                  color='tab:green',linewidth=1) for k in plot_poly[idx].geoms] #.geoms
 
 	# Add reference coastlines
@@ -113,25 +113,25 @@ def diag_fig(wm,poly_id,pix_overlap_info,
 
 	# Add pixels, transparent, but colored by overlap
 	for idx in np.arange(0,len(plot_poly)):
-	    pix_polys[idx].plot(color=pix_polys[idx].color,transform=ccrs.PlateCarree(),ax=ax,
+		pix_polys[idx].plot(color=pix_polys[idx].color,transform=ccrs.PlateCarree(),ax=ax,
 	    					alpha=0.8)
 
 	#------- Annotate -------
 	# Title
 	if len(plot_overlap) == 1:
-	    ax.set_title('Poly #'+str(poly_idx[0])+': '+
+		ax.set_title('Poly #'+str(poly_idx[0])+': '+
 	             '; '.join([str(plot_overlap[0][k]) for k in plot_overlap[0].index 
 	                        if k not in ['poly_idx','rel_area','pix_idxs','coords']][0:max_title_depth]))
 	else:
-	    ax.set_title('Poly #s: '+', '.join([str(k) for k in poly_idx]))
+		ax.set_title('Poly #s: '+', '.join([str(k) for k in poly_idx]))
 
 	# Colorbar
 	fig.subplots_adjust(right=0.825)
 	cax = fig.add_axes([0.875, 0.15, 0.025, 0.7])
 	if len(plot_overlap) == 1:
-	    clabel = 'Overlap area (relative to largest pixel overlap)'
+		clabel = 'Overlap area (relative to largest pixel overlap)'
 	else:
-	    clabel = ('Overlap area (relative to largest pixel overlap,\n'+
+		clabel = ('Overlap area (relative to largest pixel overlap,\n'+
 	              'recalculated for each polygon; so they may not be\ndirectly comparable'+
 	              ' across polygons)')
 	    
