@@ -1,3 +1,4 @@
+---
 title: 'xagg: A Python package to aggregate gridded data onto polygons'
 tags:
   - Python
@@ -23,7 +24,7 @@ affiliations:
    index: 3
 date: 22 August 2024
 bibliography: paper.bib
-
+---
 
 # Summary
 Scientific data is often stored on grids or rasters: gridded weather observations, interpolated pollution data, night-time lights, or other remote sensing products all approximate the continuous real world for ease of calculation, standardization, or technical limiations. However, living things don't live on grids, and rarely act or observe data on grids either. Instead, demographic or agricultural data is often collected on the county or city level, birds fly along complex migratory corridors, and rain- and watersheds follow valleys and mountains, in other words, along areas that can be described using geographic polygons. 
