@@ -19,6 +19,8 @@ affiliations:
    index: 1
  - name: International Research Institute for Climate and Society, Palisades, NY, USA
    index: 2
+ - name: Mississippi State University, Mississippi State, MS
+   index: 3
 date: 22 August 2024
 bibliography: paper.bib
 
