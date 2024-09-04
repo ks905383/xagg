@@ -48,6 +48,6 @@ Though other `python` packages facilitate the aggregation of raster data, to the
 `xagg` has already been used in peer-reviewed (e.g., @pulla_grace_2023-1; @mastrantonas_forecasting_2022; @schwarzwald_importance_2022) and upcoming (e.g., @sichone_assessment_2024; @peard_combining_2023) scientific publications, has reached over 15,000 cumulative downloads across versions, and is a key component of a how-to guide for climate econometrics [@rising_practical_2024]. 
 
 # Acknowledgements
-The authors would like to thank Ryan Abernathy, Julius Busecke, Tom Nicholas, and James Rising for help in getting this project across the ground, in addition to anyone who contributed to GitHub issues or the codebase over the years. 
+The authors would like to thank Ryan Abernathy, Julius Busecke, Tom Nicholas, and James Rising for help in getting this project off the ground, in addition to anyone who contributed to GitHub issues or the codebase over the years. 
 
 # References
