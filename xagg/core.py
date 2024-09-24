@@ -670,7 +670,7 @@ def aggregate(ds,wm,impl=None,silent=None):
                 normed_weights = normed_weights.fillna(0)
 
                 # finally we do the dot product to get the weighted averages
-                aggregated_array = normed_weights.dot(var_array_filled)
+                aggregated_array = normed_weights.dot(var_array_filled, dim='loc')
 
                 # if the original gridded values were all nan, make the final
                 # aggregation nan
@@ -679,17 +679,13 @@ def aggregate(ds,wm,impl=None,silent=None):
 
                 data_dict[var] = aggregated_array
 
-        ds_combined = xr.Dataset(data_dict)    
-        df_combined = ds_combined.to_dataframe().reset_index()
-        df_combined = df_combined.groupby('poly_idx').agg(list_or_first)
+        ds_combined = xr.Dataset(data_dict)  
 
-        wm.agg = pd.merge(wm.agg, df_combined, on='poly_idx')
         for var in ds:
             if ('bnds' not in ds[var].sizes) & ('loc' in ds[var].sizes):
                 # convert to list of arrays - NOT SURE THIS IS THE RIGHT THING TO
                 # DO, JUST TRYING TO MATCH ORIGINAL FORMAT
-                wm.agg[var] = wm.agg[var].apply(np.array).apply(lambda x: [x])
-
+                wm.agg[var]=pd.Series([[[ds_combined[var].isel(poly_idx=i).values]] for i in range(len(ds_combined.poly_idx))])
         # Put in class format
         agg_out = aggregated(agg=wm.agg,source_grid=wm.source_grid,
                             geometry=wm.geometry,ds_in=ds_combined,weights=wm.weights)
