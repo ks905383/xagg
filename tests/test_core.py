@@ -381,11 +381,9 @@ def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=pix_agg):
 	# The index error for an incorrectly-indexed gdf is thrown in aggregate()
 	agg = aggregate(ds,wm_out)
 
-	# this assert uses 2.1666 because of the weighting that creates 
-	# the pix_agg variable that this whole section has used. Doesn't really 
-	# matter, since this is testing an index error that would've 
-	# happened during aggregate() above. 
-	assert np.allclose([v for v in agg.agg.test.values],2.1666,rtol=1e-4)
+	pd.testing.assert_series_equal(agg.agg.test,
+									pd.Series([[[[7.4999,8.4999,9.4999]]]],
+										name='test'),atol=1e-4)
 
 
 ##### aggregate() tests #####
