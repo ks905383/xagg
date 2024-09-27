@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Create conda environment
-        uses: mamba-org/provision-with-micromamba@main
+        uses: mamba-org/setup-micromamba@v1
         with:
           cache-downloads: true
-          cache-env: true
+          cache-environment: true
           micromamba-version: 'latest'
           #mamba-version: "*" # activate this to build with mamba.
           channels: conda-forge #, defaults # These need to be specified to use mamba
