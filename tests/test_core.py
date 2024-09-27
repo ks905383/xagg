@@ -1,4 +1,5 @@
 import pytest
+import copy
 import pandas as pd
 import numpy as np
 import xarray as xr
@@ -223,7 +224,7 @@ pix_agg = create_raster_polygons(ds,weights=weights)
 
 
 # Test if the shapefile completely covers one pixel
-def test_get_pixel_overlaps_one_pixel(pix_agg=pix_agg):
+def test_get_pixel_overlaps_one_pixel(pix_agg=copy.deepcopy(pix_agg)):
 	# Create polygon covering one pixel
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5),(-0.5,-0.5)])]}
@@ -251,7 +252,7 @@ def test_get_pixel_overlaps_one_pixel(pix_agg=pix_agg):
 
 
 # Test if the shapefile is a fraction of one pixel
-def test_get_pixel_overlaps_fraction_of_pixel(pix_agg=pix_agg):
+def test_get_pixel_overlaps_fraction_of_pixel(pix_agg=copy.deepcopy(pix_agg)):
 	# Create polygon covering less than one pixel
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(-0.5,-0.5),(-0.5,0),(0,0),(0,-0.5),(-0.5,-0.5)])]}
@@ -278,7 +279,7 @@ def test_get_pixel_overlaps_fraction_of_pixel(pix_agg=pix_agg):
 	assert np.allclose([v for v in df0.coords],[v for v in df_compare.coords])
 
 # Test if the shapefile perfectly covers several complete pixels
-def test_get_pixel_overlaps_multiple_pixels_complete(pix_agg=pix_agg):
+def test_get_pixel_overlaps_multiple_pixels_complete(pix_agg=copy.deepcopy(pix_agg)):
 	# Create polygon covering multiple pixels
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(-0.5,-0.5),(-0.5,1.5),(1.5,1.5),(1.5,-0.5),(-0.5,-0.5)])]}
@@ -308,7 +309,7 @@ def test_get_pixel_overlaps_multiple_pixels_complete(pix_agg=pix_agg):
 
 
 # Test if the shapefile covers parts of several complete pixels
-def test_get_pixel_overlaps_multiple_pixels_partial(pix_agg=pix_agg):
+def test_get_pixel_overlaps_multiple_pixels_partial(pix_agg=copy.deepcopy(pix_agg)):
 	# Create polygon covering multiple pixels
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
@@ -337,7 +338,7 @@ def test_get_pixel_overlaps_multiple_pixels_partial(pix_agg=pix_agg):
 	assert np.allclose([v for v in df0.coords],[v for v in df_compare.coords])
 
 # Make sure the source_grid is passed without change
-def test_get_pixel_overlaps_passthru_source_grid(pix_agg=pix_agg):
+def test_get_pixel_overlaps_passthru_source_grid(pix_agg=copy.deepcopy(pix_agg)):
 	# Create polygon covering multiple pixels
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
@@ -368,7 +369,8 @@ def test_get_pixel_overlaps_passthru_weights(pix_agg=pix_agg):
 
 
 ###### get_pixel_overlaps() and aggregate() coupling tests #####
-def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=pix_agg):
+def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=copy.deepcopy(pix_agg),
+	 											   ds=copy.deepcopy(ds)):
 	# Test to make sure it works with pre-existing indices in the gdf
 	# Create polygon covering multiple pixels
 	gdf_test = {'name':['test'],
@@ -381,6 +383,8 @@ def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=pix_agg):
 	# The index error for an incorrectly-indexed gdf is thrown in aggregate()
 	agg = aggregate(ds,wm_out)
 
+	print(agg.agg.test)
+	print(agg.agg.test.values)
 	pd.testing.assert_series_equal(agg.agg.test,
 									pd.Series([[[[7.4999,8.4999,9.4999]]]],
 										name='test'),atol=1e-4)
