@@ -296,8 +296,6 @@ def create_raster_polygons(ds,
     # Subset by shapefile bounding box, if desired
     if subset_bbox is not None:
         if type(subset_bbox) == gpd.geodataframe.GeoDataFrame:
-            # Change to 4326 first, which is implicitly what ds is in 
-            subset_bbox = subset_bbox.to_crs('EPSG:4326')
             # Using the biggest difference in lat/lon to make sure that the pixels are subset
             # in a way that the bounding box is fully filled out
             # bbox_thresh = np.max([ds.lat.diff('lat').max(),ds.lon.diff('lon').max()])+0.1 
