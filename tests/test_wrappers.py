@@ -140,3 +140,26 @@ def test_pixel_overlaps_silent_false(mock_stdout):
 
 	# Check that nothing was printed
 	assert mock_stdout.getvalue() != ''
+
+##### pixel_overlaps() CRS tests #####
+def test_pixel_overlaps_altcrs():
+	# Test to make sure pixel_overlaps standardizes crs'es before
+	# calling `create_raster_polygons` and `get_pixel_overlaps`
+	ds = xr.Dataset({'test':(['lon','lat','time'],np.reshape(np.arange(1,28),(3,3,3))),
+				 'lat_bnds':(['lat','bnds'],np.array([[-1.5,-0.5],[-0.5,0.5],[0.5,1.5]])),
+				 'lon_bnds':(['lon','bnds'],np.array([[-1.5,-0.5],[-0.5,0.5],[0.5,1.5]]))},
+				coords={'lat':(['lat'],np.array([-1,0,1])),
+						'lon':(['lon'],np.array([-1,0,1])),
+						'bnds':(['bnds'],np.array([0,1])),
+						'time':(['time'],pd.date_range('2019-01-01','2019-01-03'))})
+
+
+	# Create polygon covering multiple pixels
+	gdf = {'name':['test'],
+	            'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
+	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+
+	try:
+		pix_agg = pixel_overlaps(ds,gdf.to_crs('EPSG:26916'))
+	except Exception as e:
+		pytest.fail(f"Exception raised: {e}")
