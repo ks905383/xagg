@@ -8,6 +8,6 @@ authors:
   given-names: "Kerrie"
 title: "xagg: A Python package to aggregate gridded data onto polygons"
 version: 0.3.2.3
-doi: https://zenodo.org/doi/10.5281/zenodo.11476311
+doi: 10.5281/zenodo.11476311
 date-released: 2024-08-10
 url: "https://github.com/ks905383/xagg"
