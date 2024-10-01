@@ -1,6 +1,5 @@
 import warnings
 import xarray as xr
-import numpy as np
 import copy
 
 from . core import (create_raster_polygons,get_pixel_overlaps)
@@ -76,24 +75,6 @@ def pixel_overlaps(ds,gdf_in,
     # get modified
     gdf_in = copy.deepcopy(gdf_in)
 
-    # Choose a common crs for both, just to minimize the chance
-    # of geographic shenanigans
-    # (using the EASE grid https://nsidc.org/data/ease)
-    if np.all(gdf_in.total_bounds[[1,3]]>0):
-        # If min/max lat are both in NH, use North grid
-        #epsg_set = {'init':'EPSG:6931'} (change to below bc of depreciation of {'init':...} format in geopandas)
-        epsg_set = 'EPSG:6931'
-    elif np.all(gdf_in.total_bounds[[1,3]]<0):
-        # If min/max lat are both in SH, use South grid
-        #epsg_set = {'init':'EPSG:6932'}
-        epsg_set = 'EPSG:6932'
-    else:
-        # Otherwise, use the global/temperate grid
-        #epsg_set = {'init':'EPSG:6933'}
-        epsg_set = 'EPSG:6933'
-    # Set CRS
-    gdf_in = gdf_in.to_crs(epsg_set)
-
     # Turn into dataset if dataarray
     if type(ds)==xr.core.dataarray.DataArray:
       if ds.name is None:
@@ -111,10 +92,6 @@ def pixel_overlaps(ds,gdf_in,
             warnings.warning('Bounding box around polygon(s) from `gdf_in` includes no grid cells in `ds`...')
     else:
         pix_agg = create_raster_polygons(ds,subset_bbox=None,weights=weights,silent=silent)
-
-
-    # Ensure pix_agg is also set to the default CRS
-    pix_agg['gdf_pixels'] = pix_agg['gdf_pixels'].to_crs(epsg_set)
     
     # Get overlaps between these pixel polygons and the gdf_in polygons
     if not silent:
