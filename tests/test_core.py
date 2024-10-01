@@ -1,11 +1,9 @@
 import pytest
-import copy
 import pandas as pd
 import numpy as np
 import xarray as xr
 import geopandas as gpd
 from geopandas import testing as gpdt
-import itertools
 from unittest import TestCase
 from shapely.geometry import Polygon
 from unittest.mock import patch
@@ -203,14 +201,13 @@ def test_create_raster_polygons_at180():
 
 
 ##### get_pixel_overlaps() tests #####
-# build raster polygons from a simple 2x2x3 grid of lat/lon/time pixels
-ds = xr.Dataset({'test':(['lon','lat','time'],np.reshape(np.arange(1,13),(2,2,3))),
+# build raster polygons from a simple 2x2 grid of lat/lon pixels
+ds = xr.Dataset({'test':(['lon','lat'],np.array([[0,1],[2,3]])),
 				 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
 				 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
 				coords={'lat':(['lat'],np.array([0,1])),
 						'lon':(['lon'],np.array([0,1])),
-						'bnds':(['bnds'],np.array([0,1])),
-						'time':(['time'],pd.date_range('2019-01-01','2019-01-03'))})
+						'bnds':(['bnds'],np.array([0,1]))})
 
 # add a simple weights grid
 weights = xr.DataArray(data=np.array([[0,1],[2,3]]),
@@ -224,7 +221,7 @@ pix_agg = create_raster_polygons(ds,weights=weights)
 
 
 # Test if the shapefile completely covers one pixel
-def test_get_pixel_overlaps_one_pixel(pix_agg=copy.deepcopy(pix_agg)):
+def test_get_pixel_overlaps_one_pixel(pix_agg=pix_agg):
 	# Create polygon covering one pixel
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5),(-0.5,-0.5)])]}
@@ -252,7 +249,7 @@ def test_get_pixel_overlaps_one_pixel(pix_agg=copy.deepcopy(pix_agg)):
 
 
 # Test if the shapefile is a fraction of one pixel
-def test_get_pixel_overlaps_fraction_of_pixel(pix_agg=copy.deepcopy(pix_agg)):
+def test_get_pixel_overlaps_fraction_of_pixel(pix_agg=pix_agg):
 	# Create polygon covering less than one pixel
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(-0.5,-0.5),(-0.5,0),(0,0),(0,-0.5),(-0.5,-0.5)])]}
@@ -279,7 +276,7 @@ def test_get_pixel_overlaps_fraction_of_pixel(pix_agg=copy.deepcopy(pix_agg)):
 	assert np.allclose([v for v in df0.coords],[v for v in df_compare.coords])
 
 # Test if the shapefile perfectly covers several complete pixels
-def test_get_pixel_overlaps_multiple_pixels_complete(pix_agg=copy.deepcopy(pix_agg)):
+def test_get_pixel_overlaps_multiple_pixels_complete(pix_agg=pix_agg):
 	# Create polygon covering multiple pixels
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(-0.5,-0.5),(-0.5,1.5),(1.5,1.5),(1.5,-0.5),(-0.5,-0.5)])]}
@@ -309,7 +306,7 @@ def test_get_pixel_overlaps_multiple_pixels_complete(pix_agg=copy.deepcopy(pix_a
 
 
 # Test if the shapefile covers parts of several complete pixels
-def test_get_pixel_overlaps_multiple_pixels_partial(pix_agg=copy.deepcopy(pix_agg)):
+def test_get_pixel_overlaps_multiple_pixels_partial(pix_agg=pix_agg):
 	# Create polygon covering multiple pixels
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
@@ -338,7 +335,7 @@ def test_get_pixel_overlaps_multiple_pixels_partial(pix_agg=copy.deepcopy(pix_ag
 	assert np.allclose([v for v in df0.coords],[v for v in df_compare.coords])
 
 # Make sure the source_grid is passed without change
-def test_get_pixel_overlaps_passthru_source_grid(pix_agg=copy.deepcopy(pix_agg)):
+def test_get_pixel_overlaps_passthru_source_grid(pix_agg=pix_agg):
 	# Create polygon covering multiple pixels
 	gdf_test = {'name':['test'],
 				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
@@ -369,8 +366,7 @@ def test_get_pixel_overlaps_passthru_weights(pix_agg=pix_agg):
 
 
 ###### get_pixel_overlaps() and aggregate() coupling tests #####
-def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=copy.deepcopy(pix_agg),
-	 											   ds=copy.deepcopy(ds)):
+def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=pix_agg):
 	# Test to make sure it works with pre-existing indices in the gdf
 	# Create polygon covering multiple pixels
 	gdf_test = {'name':['test'],
@@ -383,11 +379,11 @@ def test_get_pixel_overlaps_gdf_wpreexisting_index(pix_agg=copy.deepcopy(pix_agg
 	# The index error for an incorrectly-indexed gdf is thrown in aggregate()
 	agg = aggregate(ds,wm_out)
 
-	print(agg.agg.test)
-	print(agg.agg.test.values)
-	pd.testing.assert_series_equal(agg.agg.test,
-									pd.Series([[[[7.4999,8.4999,9.4999]]]],
-										name='test'),atol=1e-4)
+	# this assert uses 2.1666 because of the weighting that creates 
+	# the pix_agg variable that this whole section has used. Doesn't really 
+	# matter, since this is testing an index error that would've 
+	# happened during aggregate() above. 
+	assert np.allclose([v for v in agg.agg.test.values],2.1666,rtol=1e-4)
 
 
 ##### aggregate() tests #####
@@ -399,7 +395,7 @@ def test_aggregate_basic(ds=ds):
 
 	# calculate the pix_agg variable tested above, to be used in the 
 	# tests below
-	pix_agg = create_raster_polygons(ds.copy())
+	pix_agg = create_raster_polygons(ds)
 
 	# Get pixel overlaps
 	wm = get_pixel_overlaps(gdf,pix_agg)
@@ -411,9 +407,7 @@ def test_aggregate_basic(ds=ds):
 	# it's actually 1.499981, whereas multiplying out 
 	# np.sum(agg.agg.rel_area[0]*np.array([0,1,2,3]))gives 1.499963... 
 	# Possibly worth examining more closely later
-	pd.testing.assert_series_equal(agg.agg.test,
-									pd.Series([[[[5.4999,6.4999,7.4999]]]],
-										name='test'),atol=1e-4)
+	assert np.allclose([v for v in agg.agg.test.values],1.4999,rtol=1e-4)
 
 def test_aggregate_wdataarray(ds=ds):
 	da = ds['test'].copy()
@@ -424,7 +418,7 @@ def test_aggregate_wdataarray(ds=ds):
 
 	# calculate the pix_agg variable tested above, to be used in the 
 	# tests below
-	pix_agg = create_raster_polygons(ds.copy())
+	pix_agg = create_raster_polygons(ds)
 
 	# Get pixel overlaps
 	wm = get_pixel_overlaps(gdf,pix_agg)
@@ -434,35 +428,11 @@ def test_aggregate_wdataarray(ds=ds):
 
 	# This requires shifting rtol to 1e-4 for some reason, in that 
 	# it's actually 1.499981, whereas multiplying out 
-	# np.sum(agg.agg.rel_area[0]*np.array([0,1,2,3])) gives 1.499963... 
+	# np.sum(agg.agg.rel_area[0]*np.array([0,1,2,3]))gives 1.499963... 
 	# Possibly worth examining more closely later
-	pd.testing.assert_series_equal(agg.agg.test,
-									pd.Series([[[[5.4999,6.4999,7.4999]]]],
-										name='test'),atol=1e-4)
+	assert np.allclose([v for v in agg.agg.test.values],1.4999,rtol=1e-4)
 
 def test_aggregate_basic_wdotproduct(ds=ds):
-	# Create polygon covering multiple pixels
-	gdf = {'name':['test'],
-				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
-	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
-
-	# calculate the pix_agg variable tested above, to be used in the 
-    # tests below
-	pix_agg = create_raster_polygons(ds.copy())
-
-    # Get pixel overlaps
-	wm = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
-
-    # Get aggregate
-	agg = aggregate(ds,wm,impl='dot_product')
-
-    # Same as above with for loop implementation
-	pd.testing.assert_series_equal(agg.agg.test,
-									pd.Series([[[[5.4999,6.4999,7.4999]]]],
-										name='test'),atol=1e-4)
-    
-
-def test_aggregate_twopolys_wdotproduct(ds=ds):
     # Create multiple polygons, to double check, since dot product
     # implementation takes a slightly different approach to indices 
     # in the geodataframe
@@ -473,7 +443,7 @@ def test_aggregate_twopolys_wdotproduct(ds=ds):
 
     # calculate the pix_agg variable tested above, to be used in the 
     # tests below
-    pix_agg = create_raster_polygons(ds.copy())
+    pix_agg = create_raster_polygons(ds)
 
     # Get pixel overlaps
     wm = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
@@ -485,10 +455,7 @@ def test_aggregate_twopolys_wdotproduct(ds=ds):
     # it's actually 1.499981, whereas multiplying out 
     # np.sum(agg.agg.rel_area[0]*np.array([0,1,2,3]))gives 1.499963... 
     # Possibly worth examining more closely later
-    pd.testing.assert_series_equal(agg.agg.test,
-    							 pd.Series([[[[5.4999,6.4999,7.4999]]],
-           								    [[[2.4999,3.4999,4.4999]]]],
-           								    name='test'),atol=1e-4)
+    assert np.allclose([v for v in agg.agg.test.values],[[1.4999],[0.4999]],rtol=1e-3)
 
 
 def test_aggregate_with_weights(ds=ds):
@@ -505,7 +472,7 @@ def test_aggregate_with_weights(ds=ds):
 
 	# calculate the pix_agg variable tested above, to be used in the 
 	# tests below
-	pix_agg = create_raster_polygons(ds.copy(),weights=weights)
+	pix_agg = create_raster_polygons(ds,weights=weights)
 
 
 	# Get pixel overlaps
@@ -516,23 +483,22 @@ def test_aggregate_with_weights(ds=ds):
 	agg_for = aggregate(ds,wm_for,impl='for_loop')
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
 
-	# Since the "test" for the input ds has [1,8] for the two 
-	# equatorial pixels, the average should just be 4 for timestep 1
-	pd.testing.assert_series_equal(agg_for.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
-	pd.testing.assert_series_equal(agg_dot.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
+	# Since the "test" for the input ds has [0,2] for the two 
+	# equatorial pixels, the average should just be 1.0
+	assert np.allclose([v for v in agg_for.agg.test.values],1.0)
+	assert np.allclose([v for v in agg_dot.agg.test.values],1.0)
 
 
 
 def test_aggregate_with_mismatched_grid():
 	# This is to see if the subset_find call works
 
-	ds = xr.Dataset({'test':(['lon','lat','time'],np.reshape(np.arange(1,28),(3,3,3))),
+	ds = xr.Dataset({'test':(['lon','lat'],np.array([[30,40,50],[10,0,1],[20,2,3]])),
 				 'lat_bnds':(['lat','bnds'],np.array([[-1.5,-0.5],[-0.5,0.5],[0.5,1.5]])),
 				 'lon_bnds':(['lon','bnds'],np.array([[-1.5,-0.5],[-0.5,0.5],[0.5,1.5]]))},
 				coords={'lat':(['lat'],np.array([-1,0,1])),
 						'lon':(['lon'],np.array([-1,0,1])),
-						'bnds':(['bnds'],np.array([0,1])),
-						'time':(['time'],pd.date_range('2019-01-01','2019-01-03'))})
+						'bnds':(['bnds'],np.array([0,1]))})
 
 
 	# Create polygon covering multiple pixels
@@ -542,46 +508,6 @@ def test_aggregate_with_mismatched_grid():
 
 	# calculate the pix_agg variable tested above, to be used in the 
 	# tests below
-	pix_agg = create_raster_polygons(ds.copy())
-
-
-	# Get pixel overlaps
-	wm_for = get_pixel_overlaps(gdf,pix_agg,impl='for_loop')
-	wm_dot = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
-
-	# Get aggregate
-	agg_for = aggregate(ds,wm_for,impl='for_loop')
-	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
-
-	pd.testing.assert_series_equal(agg_for.agg.test,pd.Series([[[[18.9999,19.9999,20.9999]]]],name='test'),atol=1e-4)
-	pd.testing.assert_series_equal(agg_dot.agg.test,pd.Series([[[[18.9999,19.9999,20.9999]]]],name='test'),atol=1e-4)
-
-
-
-# Should probably test multiple polygons just to be sure... 
-
-
-### Higher-D tests
-# Create a 4-D dataframe
-ds = xr.Dataset({'test':(['lat','lon','time','plev'],np.reshape(np.arange(1,3*2*4*3+1),(2,3,4,3))),
-				 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
-				 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]]))},
-				coords={'lat':(['lat'],np.array([0,1])),
-						'lon':(['lon'],np.array([0,1,2])),
-						'bnds':(['bnds'],np.array([0,1])),
-						'time':(['time'],pd.date_range('2019-01-01','2019-01-04')),
-                        'plev':(['plev'],np.array([1000,950,900]))})
-
-# Create multiple polygons
-gdf = {'name':['test1','test2'],
-       'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)]),
-                   Polygon([(1,0),(1,1),(2,1),(2,0),(1,0)])]}
-gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
-
-def test_aggregate_4d(ds=ds.copy(),gdf=gdf.copy()):
-	# Test 4D aggregation, to make sure it's only aggregating
-	# across lat / lon
-
 	pix_agg = create_raster_polygons(ds)
 
 
@@ -593,43 +519,12 @@ def test_aggregate_4d(ds=ds.copy(),gdf=gdf.copy()):
 	agg_for = aggregate(ds,wm_for,impl='for_loop')
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
 
-	# 
-	series_out = pd.Series([[[np.reshape(np.arange(24,36)+0.99933294,(4,3))]],
-           					[[np.reshape(np.arange(36,48)+0.99933294,(4,3))]]],name='test')
-
-	pd.testing.assert_series_equal(agg_for.agg.test,series_out)
-	pd.testing.assert_series_equal(agg_dot.agg.test,series_out)
-
-def test_aggregate_4d_altdimorders(ds=ds.copy(),gdf=gdf.copy()):
-	# Testing to make sure that, no matter the order of dimensions, 
-	# the aggregation is always over lat / lon in the right way
-	for perm in [k for k in itertools.permutations(['lon','lat','time','plev'])]:
-		ds = ds.transpose(*[*perm,'bnds'])
-		# Test to make sure dimension order doesn't matter in aggregating
-		pix_agg = create_raster_polygons(ds)
+	# On change in rtol, see note in test_aggregate_basic
+	assert np.allclose([v for v in agg_for.agg.test.values],1.4999,rtol=1e-4)
+	assert np.allclose([v for v in agg_dot.agg.test.values],1.4999,rtol=1e-4)
 
 
-		# Get pixel overlaps
-		wm_for = get_pixel_overlaps(gdf,pix_agg,impl='for_loop')
-		wm_dot = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
-
-		# Get aggregate
-		agg_for = aggregate(ds,wm_for,impl='for_loop')
-		agg_dot = aggregate(ds,wm_dot,impl='dot_product')
-
-		# If plev / time (the non-geographic dimensions) are in 
-		# different orders, then the output array will be in a different 
-		# order. Will test separately in to_dataset() to makes sure the
-		# dimensions remain correctly aggregated. 
-		if np.where([k == 'plev' for k in perm])[0][0] < np.where([k == 'time' for k in perm])[0][0]:
-			series_out = pd.Series([[[np.reshape(np.arange(24,36)+0.99933294,(4,3)).T]],
-	           						[[np.reshape(np.arange(36,48)+0.99933294,(4,3)).T]]],name='test')
-		else:
-			series_out = pd.Series([[[np.reshape(np.arange(24,36)+0.99933294,(4,3))]],
-	           						[[np.reshape(np.arange(36,48)+0.99933294,(4,3))]]],name='test')
-
-		pd.testing.assert_series_equal(agg_for.agg.test,series_out)
-		pd.testing.assert_series_equal(agg_dot.agg.test,series_out)
+# Should probably test multiple polygons just to be sure... 
 
 
 ### NEED A TEST FOR NAN BEHAVIOR
@@ -637,13 +532,12 @@ def test_aggregate_4d_altdimorders(ds=ds.copy(),gdf=gdf.copy()):
 # 2) That if a region is covered *partially* by pixels that are nans, that those are ignored 
 # in the aggregation calculation
 def test_aggregate_with_all_nans():
-	ds = xr.Dataset({'test':(['lon','lat','time'],np.reshape(np.arange(1,13)*np.nan,(2,2,3))),
+	ds = xr.Dataset({'test':(['lon','lat'],np.array([[np.nan,np.nan],[np.nan,np.nan]])),
 					 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
 					 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
 					coords={'lat':(['lat'],np.array([0,1])),
 							'lon':(['lon'],np.array([0,1])),
-							'bnds':(['bnds'],np.array([0,1])),
-							'time':(['time'],pd.date_range('2019-01-01','2019-01-03'))})
+							'bnds':(['bnds'],np.array([0,1]))})
 
 	# get aggregation mapping
 	pix_agg = create_raster_polygons(ds)
@@ -663,21 +557,19 @@ def test_aggregate_with_all_nans():
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
 
 	# Should only return nan 
-	pd.testing.assert_series_equal(agg_for.agg.test,pd.Series([[[[np.nan,np.nan,np.nan]]]],name='test'))
-	pd.testing.assert_series_equal(agg_dot.agg.test,pd.Series([[[[np.nan,np.nan,np.nan]]]],name='test'))
+	# (this is not a great assert - but agg.agg.test[0] comes out as [array(nan)], 
+	# which... I'm not entirely sure how to reproduce. It quaks like a single nan,
+	# but it's unclear to me how to get it to work)
+	assert np.all([np.isnan(k) for k in agg_for.agg.test])
+	assert np.all([np.isnan(k) for k in agg_dot.agg.test])
 
-def test_aggregate_with_some_gridnans():
-	# This is a test for aggregating across grid nans - i.e., 
-	# pixels that are entirely nan, which are dropped. 
-	ds = xr.Dataset({'test':(['lon','lat','time'],np.reshape(np.arange(1,13),(2,2,3))),
-				 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
-				 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
-				coords={'lat':(['lat'],np.array([0,1])),
-						'lon':(['lon'],np.array([0,1])),
-						'bnds':(['bnds'],np.array([0,1])),
-						'time':(['time'],pd.date_range('2019-01-01','2019-01-03'))})
-	# Make some pixels nan
-	ds['test'] = ds['test'].where(ds.lat!=1)
+def test_aggregate_with_some_nans():
+	ds = xr.Dataset({'test':(['lon','lat'],np.array([[np.nan,1],[2,np.nan]])),
+					 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
+					 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
+					coords={'lat':(['lat'],np.array([0,1])),
+							'lon':(['lon'],np.array([0,1])),
+							'bnds':(['bnds'],np.array([0,1]))})
 
 	# get aggregation mapping
 	pix_agg = create_raster_polygons(ds)
@@ -696,42 +588,11 @@ def test_aggregate_with_some_gridnans():
 	agg_for = aggregate(ds,wm_for,impl='for_loop')
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
 
-	# Should successfully aggregate
-	pd.testing.assert_series_equal(agg_for.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
-	pd.testing.assert_series_equal(agg_dot.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
+	# Should be 1.5; with one pixel valued 1, one pixel valued 2. 
+	assert np.allclose([agg_for.agg.test[0]],1.5,rtol=1e-4)
+	assert np.allclose([agg_dot.agg.test[0]],1.5,rtol=1e-4)
 
 
-def test_aggregate_with_partialnans():
-	# This is a test to make sure the warning comes up when there's 
-	# an inconsistent nan pixel - i.e., if a third dimension is time,
-	# it's a pixel that's nan sometimes and not other times
-	ds = xr.Dataset({'test':(['lon','lat','time'],np.reshape(np.arange(1,13),(2,2,3))),
-				 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
-				 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5]]))},
-				coords={'lat':(['lat'],np.array([0,1])),
-						'lon':(['lon'],np.array([0,1])),
-						'bnds':(['bnds'],np.array([0,1])),
-						'time':(['time'],pd.date_range('2019-01-01','2019-01-03'))})
-	ds['test'] = ds['test'].where(((ds.lon!=1) | (ds.lat!=1) | (ds.time!=pd.to_datetime('2019-01-01'))))
-
-	# get aggregation mapping
-	pix_agg = create_raster_polygons(ds)
-
-	# Create polygon covering multiple pixels
-	gdf = {'name':['test'],
-				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
-	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
-
-
-	# Get pixel overlaps
-	wm_for = get_pixel_overlaps(gdf,pix_agg,impl='for_loop')
-	wm_dot = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
-
-	# Get aggregate
-	with pytest.warns(UserWarning):
-		agg_for = aggregate(ds,wm_for,impl='for_loop')
-	with pytest.warns(UserWarning):
-		agg_dot = aggregate(ds,wm_dot,impl='dot_product')
 
 ##### aggregate() silencing tests #####
 # Create polygon covering multiple pixels

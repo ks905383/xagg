@@ -113,9 +113,10 @@ def prep_for_nc(agg_obj,loc_dim='poly_idx'):
         else:
             # For data variables (from the input grid), create empty array
             ds_out[var] = xr.DataArray(data=np.zeros((len(agg_obj.agg),
-                                                         *[agg_obj.ds_in[var].sizes[k] for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc','poly_idx']]))*np.nan,
-                                       dims=['poly_idx',*[k for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc','poly_idx']]],
-                                       coords=[[k for k in agg_obj.agg.poly_idx],*[agg_obj.ds_in[var][k].values for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc','poly_idx']]])
+                                                         *[agg_obj.ds_in[var].sizes[k] for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc']]))*np.nan,
+                                       dims=['poly_idx',*[k for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc']]],
+                                       coords=[[k for k in agg_obj.agg.poly_idx],*[agg_obj.ds_in[var][k].values for k in agg_obj.ds_in[var].sizes.keys() if k not in ['lat','lon','loc']]])
+        
             # Now insert aggregated values 
             for poly_idx in agg_obj.agg.poly_idx:
                 ds_out[var].loc[{'poly_idx':poly_idx}] = np.squeeze(agg_obj.agg.loc[poly_idx,var])

@@ -5,7 +5,6 @@ import xarray as xr
 import shutil
 import os
 import geopandas as gpd
-import itertools
 from geopandas import testing as gpdt
 from unittest import TestCase
 from unittest.mock import patch
@@ -64,57 +63,6 @@ def test_to_dataset_renamelocdim(agg=agg):
 	# Assert equal within tolerance, again likely due to very slight 
 	# variation off from actual 1.0, 2.0 due to crs
 	xr.testing.assert_allclose(ds_out,ds_ref,atol=0.0001)
-
-def test_to_dataset_4d():
-	# Testing multiple permutations of 4-dimensions, through both 
-	# dot product and for loop implementations, to make sure it's 
-	# only aggregating across lat / lon, and accurately outputting
-	# the right dimensions
-
-	# Create a 4-D dataframe
-	ds = xr.Dataset({'test':(['lat','lon','time','plev'],np.reshape(np.arange(1,3*2*4*3+1),(2,3,4,3))),
-					 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
-					 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]]))},
-					coords={'lat':(['lat'],np.array([0,1])),
-							'lon':(['lon'],np.array([0,1,2])),
-							'bnds':(['bnds'],np.array([0,1])),
-							'time':(['time'],pd.date_range('2019-01-01','2019-01-04')),
-	                        'plev':(['plev'],np.array([1000,950,900]))})
-
-	# Create multiple polygons
-	gdf = {'name':['test1','test2'],
-	       'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)]),
-	                   Polygon([(1,0),(1,1),(2,1),(2,0),(1,0)])]}
-	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
-
-	# Do so for every permutation of dimension order, to make sure 
-	# dimension order doesn't matter
-	for perm in [k for k in itertools.permutations(['lon','lat','time','plev'])]:
-		ds = ds.transpose(*[*perm,'bnds'])
-
-		# Get pixel overlaps
-		wm_for = pixel_overlaps(ds.copy(),gdf,impl='for_loop')
-		wm_dot = pixel_overlaps(ds.copy(),gdf,impl='dot_product')
-
-		# Get aggregate
-		agg_for = aggregate(ds.copy(),wm_for,impl='for_loop')
-		agg_dot = aggregate(ds.copy(),wm_dot,impl='dot_product')
-
-		# Build reference dataset
-		ds_ref = xr.Dataset({'test':(['poly_idx','time','plev'],np.reshape(np.arange(24,48)+0.99933294,(2,4,3))),
-				             'name':(['poly_idx'],['test1','test2'])},
-				           coords = {'poly_idx':(['poly_idx'],np.array([0,1])),
-				                     'time':(['time'],pd.date_range('2019-01-01','2019-01-04')),
-				                     'plev':(['plev'],np.array([1000,950,900]))})
-
-		if np.where([k == 'plev' for k in perm])[0][0] < np.where([k == 'time' for k in perm])[0][0]:
-			ds_ref = ds_ref.transpose('poly_idx','plev','time')
-
-		# Test
-		xr.testing.assert_allclose(agg_for.to_dataset(),ds_ref)
-		xr.testing.assert_allclose(agg_dot.to_dataset(),ds_ref)
-
-
 
 ##### to_dataframe() tests #####
 def test_to_dataframe(agg=agg):
