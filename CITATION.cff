@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Schwarzwald"
+  given-names: "Kevin"
+  orcid: "https://orcid.org/0000-0001-8309-7124"
+- family-names: "Geil"
+  given-names: "Kerrie"
+title: "xagg: A Python package to aggregate gridded data onto polygons"
+version: 0.3.2.3
+doi: 10.5281/zenodo.11476311
+date-released: 2024-08-10
+url: "https://github.com/ks905383/xagg"
