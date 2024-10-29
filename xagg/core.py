@@ -500,7 +500,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl=None):
     else:
         if impl=='dot_product':
             # Get relative area of each pixel
-            overlaps = overlaps.groupby('poly_idx',group_keys=False).apply(find_rel_area,include_groups=False)
+            overlaps = overlaps.groupby('poly_idx',group_keys=False)[overlaps.columns.tolist()].apply(find_rel_area,include_groups=False)
             overlaps['lat'] = overlaps['lat'].astype(float)
             overlaps['lon'] = overlaps['lon'].astype(float)
 
