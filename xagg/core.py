@@ -323,10 +323,6 @@ def create_raster_polygons(ds,
             bbox_thresh = grid_dist*2. # then set threshold to twice grid size, avoids huge subsets for high res grids
             ds = ds.sel(lon=slice(subset_bbox.total_bounds[0]-bbox_thresh,subset_bbox.total_bounds[2]+bbox_thresh),
                         lat=slice(subset_bbox.total_bounds[1]-bbox_thresh,subset_bbox.total_bounds[3]+bbox_thresh))
-            if weights is not None:
-                # Also subset weights (which should now match the ds grid after `process_weights`)
-                weights = weights.sel(lon=slice(subset_bbox.total_bounds[0]-bbox_thresh,subset_bbox.total_bounds[2]+bbox_thresh),
-                                  lat=slice(subset_bbox.total_bounds[1]-bbox_thresh,subset_bbox.total_bounds[3]+bbox_thresh))
         else:
             warnings.warn('[subset_bbox] is not a geodataframe; no mask by polygon bounding box used.')
             
