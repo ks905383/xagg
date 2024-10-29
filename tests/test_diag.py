@@ -54,6 +54,16 @@ if _has_plotpckgs:
 		fig,ax=wm.diag_fig({'NAME':'Los Angeles'},ds)
 
 		assert ax.get_title() == 'Poly #2384: Los Angeles; California; 06; 037; 06037'
+
+	def test_diag_fig_nonstandard_dimnames():
+		# Test to make sure this works if the input `ds` has
+		# nonstandard coordinate names
+		# Have to regenerate weightmap from start to really
+		# test
+		ds_rn = ds.rename({'lat':'y','lon':'x'}).copy()
+		wm = pixel_overlaps(ds_rn,gdf)
+		fig,ax=wm.diag_fig(50,ds_rn)
+		
 else:
 	def test_diag_fig_noimport():
 		# Should raise ImportError in the no-plot environment

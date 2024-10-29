@@ -3,7 +3,7 @@ import warnings
 import os
 import re
 from .options import get_options,set_options
-from .auxfuncs import subset_find
+from .auxfuncs import subset_find,fix_ds
 
 try:
     import cartopy 
@@ -50,6 +50,9 @@ class weightmap(object):
             from . diag import diag_fig
         except ImportError:
             raise ImportError('`wm.diag_fig()` separately requires `cartopy`, `matplotlib`, and `cmocean` to function; make sure these are installed first.')
+
+        # Standardize input ds coordinates etc.
+        ds = fix_ds(ds)
 
         # Adjust grids between the input ds and the weightmap grid (in case subset to 
         # bbox was used)
