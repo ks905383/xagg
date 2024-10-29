@@ -3,6 +3,7 @@ import xarray as xr
 import copy
 
 from . core import (create_raster_polygons,get_pixel_overlaps)
+from . auxfuncs import fix_ds
 from . options import get_options
 
 

@@ -14,7 +14,7 @@ try:
     import cmocean
     _has_plotpckgs=True
 except ImportError:
-	# To be able to test the rest with environments without xesmf
+	# To be able to test the rest with environments without plotting functions
 	_has_plotpckgs=False
 
 ##### diag_fig() tests #####

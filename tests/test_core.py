@@ -1,4 +1,5 @@
 import pytest
+import warnings
 import copy
 import pandas as pd
 import numpy as np
@@ -110,6 +111,32 @@ def test_process_weights_close_weights():
 	# Check if weights were correctly added to ds
 	xr.testing.assert_allclose(ds_compare,ds_t)
 
+def test_process_weights_missingoverlap_warning():
+	# Make sure a warning comes up if the weights file doesn't span
+	# the whole `ds` input's geography
+
+	# Make sure weights that are within `np.allclose` but not exactly
+	# the same grid as the input ds are correctly allocated
+	# Robustness against floating point differences in grids)
+	ds = xr.Dataset(coords={'lat':(['lat'],np.arange(-5,5)),
+							'lon':(['lon'],np.arange(-5,5))})
+
+	weights = xr.DataArray(data=np.array([[0,1],[2,3]]),
+							dims=['lat','lon'],
+							coords=[np.array([0,1]),
+									np.array([0,1])])
+
+	# Test that warning is raised
+	# (if no xesmf, then it fails anyways, tested separately)
+	if _has_xesmf:
+		with pytest.warns(UserWarning):
+			ds_t,weights_info = process_weights(ds,weights=weights)
+
+	# Test now that it doesn't raise when they do overlap
+	ds = ds.sel(lat=[0,1],lon=[0,1])
+	with warnings.catch_warnings():
+		warnings.simplefilter("error")
+		ds_t,weights_info = process_weights(ds,weights=weights)
 
 ##### create_raster_polygons() tests #####
 def test_create_raster_polygons_basic():
@@ -199,6 +226,41 @@ def test_create_raster_polygons_at180():
 	# pixels, so we expect the NoOverlapError to happen
 	with pytest.raises(NoOverlapError):
 		wm_out = get_pixel_overlaps(gdf_test,pix_agg)
+
+
+def test_create_raster_polygons_weightsbbox():
+	# To test for an error in which if subset_bbox is not None, then 
+	# only the ds and not the weights are subset, causing a regridding
+	# call and a corresponding error (if xesmf is not installed) or a 
+	# way out of sample bad regridding if xesmf is installed!
+	# (actually unclear if this is what was actually happening; in any
+	# case this captures the error)
+	ds = xr.Dataset({'test':(('lat','lon'),np.random.rand(10,20)),
+		 			 'weights':(('lat','lon'),np.random.rand(10,20))},
+		           coords = {'lat':(['lat'],np.arange(-5,5)),
+		                     'lon':(['lon'],np.arange(-10,10))})
+
+	# Manually set the poly-overlapping pixels, to test
+	ds['test'].loc[{'lat':[0,1],'lon':[0,1]}] = [[0,1],[2,3]]
+	ds['weights'].loc[{'lat':[0,1],'lon':[0,1]}] = [[3,2],[1,0]]
+
+	# Create polygon covering multiple pixels
+	gdf = {'name':['test'],
+				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
+	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+
+	####!! This should run without an error !!####
+	pix_agg = create_raster_polygons(ds,weights=ds.weights,
+									 subset_bbox=gdf)
+
+	# Let's test output to make sure the weights are correctly applied
+	wm_out = get_pixel_overlaps(gdf,pix_agg)
+	agg = aggregate(ds[['test']],wm_out)
+	ds_out = agg.to_dataset()
+	ds_test = xr.Dataset({'test':(['poly_idx'],[0.6666502])},
+                     coords = {'poly_idx':(['poly_idx'],[0])})
+
+	xr.testing.assert_allclose(ds_out,ds_test)
 
 
 

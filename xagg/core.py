@@ -162,10 +162,12 @@ def process_weights(ds,weights=None,target='ds',silent=None):
         if get_options()['nan_to_zero_regridding']:
             weights = weights.where(~np.isnan(weights),0)
 
+
         # Regrid, if necessary (do nothing if the grids match up to within
         # floating-point precision)
         if ((not ((ds.sizes['lat'] == weights.sizes['lat']) and (ds.sizes['lon'] == weights.sizes['lon']))) or 
             (not (np.allclose(ds.lat,weights.lat) and np.allclose(ds.lon,weights.lon)))):
+
             # Import xesmf here to allow the code to work without it (it 
             # often has dependency issues and isn't necessary for many 
             # features of xagg)
@@ -174,6 +176,20 @@ def process_weights(ds,weights=None,target='ds',silent=None):
                                  '`xesmf` is needed for `xagg` to regrid them to match; however, '+
                                  '`xesmf` is not installed. Either install `xesmf` or '+
                                  'manually regrid them to match each other.')
+
+            # Make sure the weights actually cover the dataset before 
+            # regridding (which could otherwise interpolate / hallucinate
+            # beyond its boundaries)
+            bbox_ds = [ds.lat.min(),ds.lat.max(),ds.lon.min(),ds.lon.max()]
+            bbox_wgts = [weights.lat.min(),weights.lat.max(),weights.lon.min(),weights.lon.max()]
+            if ((bbox_wgts[0]>bbox_ds[0]) or (bbox_wgts[1]<bbox_ds[1]) or
+                (bbox_wgts[2]>bbox_ds[2]) or (bbox_wgts[3]<bbox_wgts[3])):
+                warnings.warn('The `weights` input (bbox latmin, latmax, lonmin, lonmax: '+
+                              ', '.join([str(k.values) for k in bbox_wgts])+
+                              ' spans less area than the `ds` input (bbox: '+
+                              ', '.join([str(k.values) for k in bbox_ds])+'). Weights beyond '+
+                              ' this bounding box may be set to 0 or incorrectly interpolated.')
+
             if target == 'ds':
                 if not silent:
                     print('regridding weights to data grid...')
@@ -293,6 +309,10 @@ def create_raster_polygons(ds,
     ds = fix_ds(ds)
     ds = get_bnds(ds,silent=silent)
     #breakpoint()
+    
+    # Process weights
+    ds,winf = process_weights(ds,weights,target=weights_target)
+
     # Subset by shapefile bounding box, if desired
     if subset_bbox is not None:
         if type(subset_bbox) == gpd.geodataframe.GeoDataFrame:
@@ -306,8 +326,6 @@ def create_raster_polygons(ds,
         else:
             warnings.warn('[subset_bbox] is not a geodataframe; no mask by polygon bounding box used.')
             
-    # Process weights
-    ds,winf = process_weights(ds,weights,target=weights_target)
             
     # Mask
     if mask is not None:
@@ -478,7 +496,7 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl=None):
     else:
         if impl=='dot_product':
             # Get relative area of each pixel
-            overlaps = overlaps.groupby('poly_idx',group_keys=False).apply(find_rel_area)
+            overlaps = overlaps.groupby('poly_idx',group_keys=False)[overlaps.columns.tolist()].apply(find_rel_area,include_groups=False)
             overlaps['lat'] = overlaps['lat'].astype(float)
             overlaps['lon'] = overlaps['lon'].astype(float)
 
