@@ -127,8 +127,10 @@ def test_process_weights_missingoverlap_warning():
 									np.array([0,1])])
 
 	# Test that warning is raised
-	with pytest.warns(UserWarning):
-		ds_t,weights_info = process_weights(ds,weights=weights)
+	# (if no xesmf, then it fails anyways, tested separately)
+	if _has_xesmf:
+		with pytest.warns(UserWarning):
+			ds_t,weights_info = process_weights(ds,weights=weights)
 
 	# Test now that it doesn't raise when they do overlap
 	ds = ds.sel(lat=[0,1],lon=[0,1])
