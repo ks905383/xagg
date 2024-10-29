@@ -229,23 +229,40 @@ def test_create_raster_polygons_at180():
 
 
 def test_create_raster_polygons_weightsbbox():
-	# Make sure that the weights and ds are subset equally / correctly
 	# To test for an error in which if subset_bbox is not None, then 
 	# only the ds and not the weights are subset, causing a regridding
 	# call and a corresponding error (if xesmf is not installed) or a 
 	# way out of sample bad regridding if xesmf is installed!
+	# (actually unclear if this is what was actually happening; in any
+	# case this captures the error)
 	ds = xr.Dataset({'test':(('lat','lon'),np.random.rand(10,20)),
 		 			 'weights':(('lat','lon'),np.random.rand(10,20))},
 		           coords = {'lat':(['lat'],np.arange(-5,5)),
 		                     'lon':(['lon'],np.arange(-10,10))})
+
+	# Manually set the poly-overlapping pixels, to test
+	ds['test'].loc[{'lat':[0,1],'lon':[0,1]}] = [[0,1],[2,3]]
+	ds['weights'].loc[{'lat':[0,1],'lon':[0,1]}] = [[3,2],[1,0]]
 
 	# Create polygon covering multiple pixels
 	gdf = {'name':['test'],
 				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
 	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
 
-	pix_agg = create_raster_polygons(ds,weights=ds.test,
+	####!! This should run without an error !!####
+	pix_agg = create_raster_polygons(ds,weights=ds.weights,
 									 subset_bbox=gdf)
+
+	# Let's test output to make sure the weights are correctly applied
+	wm_out = get_pixel_overlaps(gdf,pix_agg)
+	agg = aggregate(ds[['test']],wm_out)
+	ds_out = agg.to_dataset()
+	ds_test = xr.Dataset({'test':(['poly_idx'],[0.6666502])},
+                     coords = {'poly_idx':(['poly_idx'],[0])})
+
+	xr.testing.assert_allclose(ds_out,ds_test)
+
+
 
 ##### get_pixel_overlaps() tests #####
 # build raster polygons from a simple 2x2x3 grid of lat/lon/time pixels
