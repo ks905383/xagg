@@ -1,0 +1,20 @@
+conda-forge/osx-64                                          Using cache
+conda-forge/noarch                                          Using cache
+pkgs/main/osx-64                                            Using cache
+pkgs/main/noarch                                            Using cache
+pkgs/r/osx-64                                               Using cache
+pkgs/r/noarch                                               Using cache
+
+Looking for: ['xesmf', '0.7.1']
+
+
+Pinned packages:
+  - python 3.13.*
+
+
+Could not solve for environment specs
+Encountered problems while solving:
+  - nothing provides requested 0.7.1
+
+The environment can't be solved, aborting the operation
+

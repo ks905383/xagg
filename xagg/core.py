@@ -162,10 +162,12 @@ def process_weights(ds,weights=None,target='ds',silent=None):
         if get_options()['nan_to_zero_regridding']:
             weights = weights.where(~np.isnan(weights),0)
 
+
         # Regrid, if necessary (do nothing if the grids match up to within
         # floating-point precision)
         if ((not ((ds.sizes['lat'] == weights.sizes['lat']) and (ds.sizes['lon'] == weights.sizes['lon']))) or 
             (not (np.allclose(ds.lat,weights.lat) and np.allclose(ds.lon,weights.lon)))):
+
             # Import xesmf here to allow the code to work without it (it 
             # often has dependency issues and isn't necessary for many 
             # features of xagg)
@@ -180,13 +182,12 @@ def process_weights(ds,weights=None,target='ds',silent=None):
             # beyond its boundaries)
             bbox_ds = [ds.lat.min(),ds.lat.max(),ds.lon.min(),ds.lon.max()]
             bbox_wgts = [weights.lat.min(),weights.lat.max(),weights.lon.min(),weights.lon.max()]
-
             if ((bbox_wgts[0]>bbox_ds[0]) or (bbox_wgts[1]<bbox_ds[1]) or
                 (bbox_wgts[2]>bbox_ds[2]) or (bbox_wgts[3]<bbox_wgts[3])):
                 warnings.warn('The `weights` input (bbox latmin, latmax, lonmin, lonmax: '+
-                              ', '.join([str(k).values for k in bbox_wgts])+
+                              ', '.join([str(k.values) for k in bbox_wgts])+
                               ' spans less area than the `ds` input (bbox: '+
-                              ', '.join([str(k).values for k in bbox_ds])+'). Weights beyond '+
+                              ', '.join([str(k.values) for k in bbox_ds])+'). Weights beyond '+
                               ' this bounding box may be set to 0 or incorrectly interpolated.')
 
             if target == 'ds':
