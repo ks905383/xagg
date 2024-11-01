@@ -62,7 +62,7 @@ If you have any questions about how to use :py:mod:`xagg`, please ask them in th
 
 If you spot a bug (`xagg` not working as advertised), please `open an issue <https://github.com/ks905383/xagg/issues>`_ if it hasn't yet been raised (or comment on an existing one if you see it listed already). To make sure the issue gets solved as quickly as possible: 
 - Include a `minimally reproducible example <https://stackoverflow.com/help/minimal-reproducible-example>`_ that triggers the bug
-- Include a copy of your environment (for example, the output of `conda list`) in which the bug occurred
+- Include a copy of your environment (for example, the output of ``conda list``) in which the bug occurred
 
 If you'd like to go the extra mile and help us fix the bug, feel free to `contribute a pull request <https://github.com/ks905383/xagg/pulls>`_! We ask that any PR: 
 - Follows a standard development workflow, like `this <https://docs.xarray.dev/en/stable/contributing.html#development-workflow>`_ one. 
