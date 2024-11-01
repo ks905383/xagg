@@ -55,7 +55,7 @@ Enter `xagg`.
    gdf = gpd.open_dataset('file.shp')
 ```
 
-`xagg` will then figure out the geographic grid (lat/lon) in `ds`, create polygons for each pixel, and then generate intersects between every polygon in the shapefile and every pixel. For each polygon in the shapefile, the relative area of each covering pixel is calculated - so, for example, if a polygon (say, a US county) is the size and shape of a grid pixel, but is split halfway between two pixels, the weight for each pixel will be 0.5, and the value of the gridded variables on that polygon will just be the average of both. 
+`xagg` will then figure out the geographic grid (lat/lon) in `ds`, create polygons for each pixel, and then generate intersects between every polygon in the `GeoDataFrame` and every pixel. For each polygon in the `GeoDataFrame`, the relative area of each covering pixel is calculated - so, for example, if a polygon (say, a US county) is the size and shape of a grid pixel, but is split halfway between two pixels, the weight for each pixel will be 0.5, and the value of the gridded variables on that polygon will just be the average of both. 
 
 Here is a sample code run, using the loaded files from above: 
 
@@ -83,7 +83,29 @@ Finally, `xagg` allows for direct exporting of the aggregated data in several co
 - CSV for STATA, R
 - Shapefile for QGIS, further spatial processing
 
-Best of all, `xagg` is flexible. Multiple variables in your dataset? `xagg` will aggregate them all, as long as they have at least `lat/lon` dimensions. Fields in your shapefile that you'd like to keep? `xagg` keeps all fields (for example FIPS codes from county datasets) all the way through the final export. Weird dimension names? `xagg` is trained to recognize all versions of "lat", "Latitude", "Y", "nav_lat", "Latitude_1"... etc. that the author has run into over the years of working with climate data; and this list is easily expandable as a keyword argument if needed. 
+Best of all, `xagg` is flexible. Multiple variables in your dataset? `xagg` will aggregate them all, as long as they have at least `lat/lon` dimensions. Fields in your shapefile that you'd like to keep? `xagg` keeps all attributes/fields (for example FIPS codes from county datasets) all the way through the final export. Weird dimension names? `xagg` is trained to recognize all versions of "lat", "Latitude", "Y", "nav_lat", "Latitude_1"... etc. that the author has run into over the years of working with climate data; and this list is easily expandable as a keyword argument if needed. 
+
+## How to support `xagg`
+The easiest way to support `xagg` is to star the repository and spread the word!
+
+Please also consider citing `xagg` if you use it in your research. The preferred citation can be found at the "Cite this repository" button in the About section on the top right of this page. 
+
+`xagg`, like much of open-source software, is a volunteer-run effort. It means a lot to the developers if you reach out and tell us that you're using our software, how it's helped you, and how it can be improved - it makes the long hours fixing bugs feel that much more worth it. (If you're feeling particularly generous, the lead developer would not say no to additional thanks through [contributions to his tea fund through Ko-Fi](ko-fi.com/ks905383) ;) ) 
+
+## Getting Help and Contributing
+If you have any questions about how to use `xagg`, please ask them in the [GitHub Discussions](https://github.com/ks905383/xagg/discussions) forum!
+
+If you spot a bug (`xagg` not working as advertised), please [open an issue](https://github.com/ks905383/xagg/issues) if it hasn't yet been raised (or comment on an existing one if you see it listed already). To make sure the issue gets solved as quickly as possible: 
+- Include a [minimally reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) that triggers the bug
+- Include a copy of your environment (for example, the output of `conda list`) in which the bug occurred
+
+If you'd like to go the extra mile and help us fix the bug, feel free to [contribute a pull request](https://github.com/ks905383/xagg/pulls)! We ask that any PR: 
+- Follows a standard development workflow, like [this](https://docs.xarray.dev/en/stable/contributing.html#development-workflow) one. 
+- If fixing a bug, [includes unit tests](https://stackoverflow.com/questions/3258733/new-to-unit-testing-how-to-write-great-tests) that fail when confronted with the original bug. GitHub Actions are set up to automatically run all tests in `xagg/tests/` upon a push.
+
+If there's a feature that you'd like `xagg` to have, please start a Discussion in the [GitHub Discussions](https://github.com/ks905383/xagg/discussions) forum, or implement it yourself in a pull request.  
+
+For more information on contributing in general, the [contribution guidelines](https://docs.xarray.dev/en/stable/contributing.html) to the `xarray` package are a great starting point (not everything will be directly relevant to `xagg`, but much of this guide is generally relevant!). 
 
 ## Use Cases
 
