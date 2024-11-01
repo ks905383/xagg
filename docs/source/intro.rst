@@ -48,17 +48,17 @@ Finally, :py:mod:`xagg` allows for direct exporting of the aggregated data in se
 
 Best of all, :py:mod:`xagg` is flexible. Multiple variables in your dataset? :py:mod:`xagg` will aggregate them all, as long as they have at least ``lat/lon`` dimensions. Fields in your shapefile that you'd like to keep? :py:mod:`xagg` keeps all fields (for example FIPS codes from county datasets) all the way through the final export. Weird dimension names? :py:mod:`xagg` is trained to recognize all versions of "lat", "Latitude", "Y", "nav_lat", "Latitude_1"... etc. that the author has run into over the years of working with climate data; and this list is easily expandable as a keyword argument if needed. 
 
-How to support `xagg`
+How to support :py:mod:`xagg`
 =======================================
-The easiest way to support `xagg` is to star the `GitHub repository <https://github.com/ks905383/xagg>`_ and spread the word!
+The easiest way to support :py:mod:`xagg` is to star the `GitHub repository <https://github.com/ks905383/xagg>`_ and spread the word!
 
-Please also consider citing `xagg` if you use it in your research. The preferred citation can be found at the "Cite this repository" button in the About section on the top right of the `GitHub repository <https://github.com/ks905383/xagg>`_. 
+Please also consider citing :py:mod:`xagg` if you use it in your research. The preferred citation can be found at the "Cite this repository" button in the About section on the top right of the `GitHub repository <https://github.com/ks905383/xagg>`_. 
 
-`xagg`, like much of open-source software, is a volunteer-run effort. It means a lot to the developers if you reach out and tell us that you're using our software, how it's helped you, and how it can be improved - it makes the long hours fixing bugs feel that much more worth it. (If you're feeling particularly generous, the lead developer would not say no to additional thanks through [contributions to his tea fund through Ko-Fi](ko-fi.com/ks905383) ;) ) 
+`xagg`, like much of open-source software, is a volunteer-run effort. It means a lot to the developers if you reach out and tell us that you're using our software, how it's helped you, and how it can be improved - it makes the long hours fixing bugs feel that much more worth it. (If you're feeling particularly generous, the lead developer would not say no to additional thanks through `contributions to his tea fund through Kofi <https://ko-fi.com/ks905383>`_ ;) ) 
 
 Getting Help and Contributing
 =======================================
-If you have any questions about how to use `xagg`, please ask them in the `GitHub Discussions <https://github.com/ks905383/xagg/discussions>`_ forum!
+If you have any questions about how to use :py:mod:`xagg`, please ask them in the `GitHub Discussions <https://github.com/ks905383/xagg/discussions>`_ forum!
 
 If you spot a bug (`xagg` not working as advertised), please `open an issue <https://github.com/ks905383/xagg/issues>`_ if it hasn't yet been raised (or comment on an existing one if you see it listed already). To make sure the issue gets solved as quickly as possible: 
 - Include a `minimally reproducible example <https://stackoverflow.com/help/minimal-reproducible-example>`_ that triggers the bug
@@ -66,11 +66,11 @@ If you spot a bug (`xagg` not working as advertised), please `open an issue <htt
 
 If you'd like to go the extra mile and help us fix the bug, feel free to `contribute a pull request <https://github.com/ks905383/xagg/pulls>`_! We ask that any PR: 
 - Follows a standard development workflow, like `this <https://docs.xarray.dev/en/stable/contributing.html#development-workflow>`_ one. 
-- If fixing a bug, `includes unit tests <https://stackoverflow.com/questions/3258733/new-to-unit-testing-how-to-write-great-tests>`_ that fail when confronted with the original bug. GitHub Actions are set up to automatically run all tests in `xagg/tests/` upon a push.
+- If fixing a bug, `includes unit tests <https://stackoverflow.com/questions/3258733/new-to-unit-testing-how-to-write-great-tests>`_ that fail when confronted with the original bug. GitHub Actions are set up to automatically run all tests in ``xagg/tests/`` upon a push.
 
-If there's a feature that you'd like `xagg` to have, please start a Discussion in the [GitHub Discussions](https://github.com/ks905383/xagg/discussions) forum, or implement it yourself in a pull request.  
+If there's a feature that you'd like :py:mod:`xagg` to have, please start a Discussion in the `GitHub Discussions <https://github.com/ks905383/xagg/discussions>`_ forum, or implement it yourself in a pull request.  
 
-For more information on contributing in general, the `contribution guidelines <https://docs.xarray.dev/en/stable/contributing.html>`_ to the `xarray` package are a great starting point (not everything will be directly relevant to `xagg`, but much of this guide is generally relevant!). 
+For more information on contributing in general, the `contribution guidelines <https://docs.xarray.dev/en/stable/contributing.html>`_ to the :py:mod:`xarray` package are a great starting point (not everything will be directly relevant to :py:mod:`xagg`, but much of this guide is generally relevant!). 
 
 
 Use cases
