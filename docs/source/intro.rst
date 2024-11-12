@@ -11,7 +11,7 @@ So, whenever we need to work with both gridded and geographic data products, we 
 
 Enter :py:mod:`xagg`. 
 
-:py:mod:`xagg` provides an easy-to-use (2 lines!), standardized way of aggregating raster data on rectangular grids to polygons. All you need is some gridded data in an :class:`xarray.Dataset` or :class:`xarray.DataArray` and some polygon data in a :class:`geopandas.GeoDataFrame`. Both of these are easy to use for the purposes of :py:mod:`xagg` - for example, all you need to use a shapefile is to open it::
+:py:mod:`xagg` provides an easy-to-use (2 lines!), standardized way of aggregating raster data on rectangular grids to polygons. All you need is some gridded data (on a rectangular grid) in an :class:`xarray.Dataset` or :class:`xarray.DataArray` and some polygon data in a :class:`geopandas.GeoDataFrame`. Both of these are easy to use for the purposes of :py:mod:`xagg` - for example, all you need to use a shapefile is to open it::
 
    import xarray as xr
    import geopandas as gpd
@@ -47,8 +47,6 @@ Finally, :py:mod:`xagg` allows for direct exporting of the aggregated data in se
 - Shapefile for QGIS, further spatial processing
 
 Best of all, :py:mod:`xagg` is flexible. Multiple variables in your dataset? :py:mod:`xagg` will aggregate them all, as long as they have at least ``lat/lon`` dimensions. Fields in your shapefile that you'd like to keep? :py:mod:`xagg` keeps all fields (for example FIPS codes from county datasets) all the way through the final export. Weird dimension names? :py:mod:`xagg` is trained to recognize all versions of "lat", "Latitude", "Y", "nav_lat", "Latitude_1"... etc. that the author has run into over the years of working with climate data; and this list is easily expandable as a keyword argument if needed. 
-
-Note that as of now, polygons must be defined on an equirectangular projection (see `here <https://xagg.readthedocs.io/en/latest/tips.html#indexerrors-in-xa-pixel-overlaps>`_) and raster data must be on a rectangular grid.
 
 How to support :py:mod:`xagg`
 =======================================
