@@ -65,5 +65,9 @@ IndexErrors in :py:meth:`xa.pixel_overlaps`
 ------------------------------------------------------------
 If you're running into an `IndexError` when running :py:meth:`xa.pixel_overlaps` (e.g., `IndexError: too many indices for array: array is 1-dimensional, but 3 were indexed`), try reprojecting the input :py:meth:`geodataframe` to `'EPSG:4326'` before running :py:meth:`xa.pixel_overlaps`. See `here <https://github.com/ks905383/xagg/issues/80>`_ for more discussion on this issue.
 
+Non-rectangular grids
+------------------------------------------------------------
+:py:mod:`xagg` unfortunately currently only works with rectangular grids. 
+
 
 
