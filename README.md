@@ -90,7 +90,7 @@ Best of all, `xagg` is flexible. Multiple variables in your dataset? `xagg` will
 ## How to support `xagg`
 The easiest way to support `xagg` is to star the repository and spread the word!
 
-Please also consider citing `xagg` if you use it in your research. The preferred citation can be found at the "Cite this repository" button in the About section on the top right of this page. 
+Please also consider citing `xagg` if you use it in your research. The preferred citation can be found at the "Cite this repository" button in the About section on the top right of this page. It links to our [paper](https://doi.org/10.21105/joss.07239) in the Journal of Open Source Software (JOSS). 
 
 `xagg`, like much of open-source software, is a volunteer-run effort. It means a lot to the developers if you reach out and tell us that you're using our software, how it's helped you, and how it can be improved - it makes the long hours fixing bugs feel that much more worth it. (If you're feeling particularly generous, the lead developer would not say no to additional thanks through [contributions to his tea fund through Ko-Fi](https://ko-fi.com/ks905383) ;) ) 
 
