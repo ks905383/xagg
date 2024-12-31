@@ -5,8 +5,10 @@ xagg
 [![pypi](https://img.shields.io/pypi/v/xagg.svg)](https://pypi.org/project/xagg)
 [![conda-forge](https://anaconda.org/conda-forge/xagg/badges/version.svg)](https://anaconda.org/conda-forge/xagg/)
 [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/xagg.svg)](https://anaconda.org/conda-forge/xagg)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.07239/status.svg)](https://doi.org/10.21105/joss.07239)
 [![DOI](https://zenodo.org/badge/367399550.svg)](https://zenodo.org/doi/10.5281/zenodo.11476311)
 [![Documentation Status](https://readthedocs.org/projects/xagg/badge/?version=latest)](https://xagg.readthedocs.io/en/latest/?badge=latest)
+
 
 
 A package to aggregate gridded data in `xarray` to polygons in `geopandas` using area-weighting from the relative area overlaps between pixels and polygons.
