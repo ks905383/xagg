@@ -17,10 +17,10 @@ A package to aggregate gridded data in `xarray` to polygons in `geopandas` using
 The easiest way to install the latest version of `xagg` is using `conda` or `mamba`:  
 
 ```
-conda install -c conda-forge xagg==0.3.2.4
+conda install -c conda-forge xagg==0.3.3.0
 
 # or
-mamba install -c conda-forge xagg==0.3.2.4
+mamba install -c conda-forge xagg==0.3.3.0
 ```
 
 We recommend installing `xagg` in a new environment whenever possible, to ensure all (sub)dependencies are correctly loaded. 
