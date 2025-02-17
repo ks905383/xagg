@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
 	name="xagg",
-    version="0.3.2.4",
+    version="0.3.3.0",
     author="Kevin Schwarzwald",
     author_email="kevin.schwarzwald@columbia.edu",
     description="Aggregating raster data over polygons",
@@ -34,5 +34,6 @@ setup(
      extras_require={
         'regrid':['xesmf>=0.7.1','esmpy>=8.1.0'],
         'plots':['matplotlib','cmocean','cartopy'],
+	'numba':['numba'],
      }
 )
