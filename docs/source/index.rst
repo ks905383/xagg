@@ -21,6 +21,8 @@ The simplest code run, involving raster data in an :py:mod:`xarray` :py:class:`D
 
 :py:class:`aggregated` can then be turned into an :py:mod:`xarray` :py:class:`Dataset`, a :py:mod:`geopandas` :py:class:`GeoDataFrame`, or directly exported to a CSV (for use in, e.g., STATA), NetCDF, or Shapefile.
 
+For tips (including on how to speed up processing), see [Tips](./tips.rst).
+
 .. toctree::
    :caption: Contents
 

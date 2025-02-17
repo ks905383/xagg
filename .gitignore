@@ -10,6 +10,8 @@ wm/
 docs/notebooks/wm/
 wm_export_test/
 
+# joss paper directory that sometimes shows up on the wrong branch
+joss_paper/
 
 # C extensions
 *.so

@@ -12,6 +12,11 @@ try:
     _has_xesmf=True
 except ImportError:
     _has_xesmf=False
+try:
+    from numba import jit as njit
+    _has_numba = True
+except ImportError:
+    _has_numba = False
 
 from . auxfuncs import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
 from . classes import (weightmap,aggregated)
@@ -555,6 +560,41 @@ def get_pixel_overlaps(gdf_in,pix_agg,impl=None):
 
     return wm_out
 
+#--------- NUMBA HELPER FUNCTIONS ---------
+if _has_numba:
+    @njit
+    def numba_indexer(x,idxs):
+        vals = np.full(len(idxs),np.nan)
+        for i in range(len(idxs)):
+            vals[i] = x[int(idxs[i])]
+        return vals
+
+    @njit
+    def numba_aggregate(data,idxs,weights):
+        # Since idxs, rel_area are stored in a dataarray,
+        # in the weightmap, they're padded with nans. 
+        # Remove those. 
+        idxs = idxs[~np.isnan(idxs)]
+        weights = weights[~np.isnan(weights)]
+
+        # Get the indices of the data needed
+        data = numba_indexer(data,idxs)
+
+        # Make sure to do aggregation only on non-nan pixels
+        nans = np.isnan(data)
+        data = data[~nans]
+        weights = weights[~nans]
+
+        if len(data) == 0:
+            agg = np.nan
+        else:
+            agg = np.sum(data*weights)/np.sum(weights)
+
+        return agg
+
+    def wrapper_numba_aggregate(data,idxs,rel_area):
+        return agggregate_numba(data,idxs,rel_area)
+#--------------------------------------------
 
 def aggregate(ds,wm,impl=None,silent=None):
     """ Aggregate raster variable(s) to polygon(s)
@@ -608,6 +648,10 @@ def aggregate(ds,wm,impl=None,silent=None):
             aggregation is calculated using a dot product, 
             requires much more memory (due to broadcasting of
             variables) but may be faster in certain circumstances
+        - ``'numba'``
+            aggregation is calculated using a simplified function
+            that uses numba's just-in-time compiler. Can be substantially
+            faster 
 
     silent : :py:class:`bool`, default = `False` (set by :py:meth:`xa.set_options`)
         if True, then no status updates are printed to std out
@@ -661,7 +705,7 @@ def aggregate(ds,wm,impl=None,silent=None):
                             'or "nowghts" as a string. Assuming no weights are included...')
         if impl=='dot_product':
             weights = np.ones((len(wm.overlap_da['loc'])))
-        elif impl=='for_loop':
+        elif (impl=='for_loop') or (impl=='numba'):
             weights = np.ones((len(wm.source_grid['lat'])))
     
     if impl=='dot_product':
@@ -723,7 +767,7 @@ def aggregate(ds,wm,impl=None,silent=None):
         ds_combined = xr.Dataset(data_dict)  
 
         for var in ds:
-            if ('bnds' not in ds[var].sizes) & ('loc' in ds[var].sizes):
+            if ('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes):
                 # convert to list of arrays - NOT SURE THIS IS THE RIGHT THING TO
                 # DO, JUST TRYING TO MATCH ORIGINAL FORMAT
                 wm.agg[var]=pd.Series([[[ds_combined[var].isel(poly_idx=i).values]] for i in range(len(ds_combined.poly_idx))])
@@ -734,7 +778,7 @@ def aggregate(ds,wm,impl=None,silent=None):
         for var in ds:
             # Process for every variable that has locational information, but isn't a 
             # bound variable
-            if ('bnds' not in ds[var].sizes) & ('loc' in ds[var].sizes):
+            if ('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes):
                 if not silent:
                     print('aggregating '+var+'...')
                 # Create the column for the relevant variable
@@ -792,7 +836,40 @@ def aggregate(ds,wm,impl=None,silent=None):
 
         # Put in class format
         agg_out = aggregated(agg=wm.agg,source_grid=wm.source_grid,
-        					 geometry=wm.geometry,ds_in=ds,weights=wm.weights)
+                             geometry=wm.geometry,ds_in=ds,weights=wm.weights)
+    elif impl=='numba':
+        if not _has_numba:
+            raise ImportError("impl == 'numba' requires `numba`, which is not installed.")
+        # Extract pixel idxs, area overlap for each polygon from weightmap object
+        idxs = xr.concat([xr.Dataset({'idxs':(['idx'],np.atleast_1d(np.array(idxs))),
+                     'rel_area':(['idx'],np.atleast_1d(np.atleast_1d(np.array(areas))[0]))},
+                      coords = {'idx':(['idx'],np.arange(len(np.atleast_1d(idxs))))}) 
+         for idxs,areas in zip(wm.agg.pix_idxs.values,wm.agg.rel_area.values)],
+                  dim=pd.Index(wm.agg.poly_idx.values,name='poly_idx'))
+
+        for var in ds:
+            if ('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes):
+                if not silent:
+                    print('aggregating '+var+'...')
+                agg = xr.merge([xr.apply_ufunc(numba_aggregate,
+                                   ds[var],
+                                   idxs.idxs,
+                                   idxs.rel_area,
+                                   input_core_dims = [['loc'],['idx'],['idx']],
+                                   output_core_dims = [[]],
+                                   vectorize=True,
+                                   dask='parallelized',
+                                   output_dtypes = [float]).to_dataset(name=var)
+                                for var in ds if (('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes))])
+
+                # Put in `aggregated` format (TODO: should reform this to remove some of the 
+                # nested lists that are here for some reason)
+                wm.agg[var] = [[[agg[var].sel(poly_idx = idx).values]] for idx in wm.agg.index]
+
+        # Put in class format
+        agg_out = aggregated(agg=wm.agg,source_grid=wm.source_grid,
+                             geometry=wm.geometry,ds_in=ds,weights=wm.weights)
+
 
     # Return
     if not silent:

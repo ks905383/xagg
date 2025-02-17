@@ -17,6 +17,12 @@ try:
 except ImportError:
 	# To be able to test the rest with environments without xesmf
 	_has_xesmf=False
+try:
+    from numba import jit as njit
+    _has_numba = True
+except ImportError:
+	# To be able to test the rest with environments without numba
+    _has_numba = False
 
 from xagg.core import (process_weights,create_raster_polygons,get_pixel_overlaps,aggregate,NoOverlapError)
 from xagg.options import set_options
@@ -522,7 +528,31 @@ def test_aggregate_basic_wdotproduct(ds=ds):
 	pd.testing.assert_series_equal(agg.agg.test,
 									pd.Series([[[[5.4999,6.4999,7.4999]]]],
 										name='test'),atol=1e-4)
-    
+
+def test_aggregate_basic_wnumba(ds=ds):
+	# Create polygon covering multiple pixels
+	gdf = {'name':['test'],
+				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
+	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+
+	pix_agg = create_raster_polygons(ds.copy())
+
+    # Get pixel overlaps
+	wm = get_pixel_overlaps(gdf,pix_agg)
+
+    # Get aggregate
+	if _has_numba:
+		agg = aggregate(ds,wm,impl='numba')
+
+	    # Same as above with for loop implementation
+		pd.testing.assert_series_equal(agg.agg.test,
+										pd.Series([[[[5.4999,6.4999,7.4999]]]],
+											name='test'),atol=1e-4)
+	else:
+		# Should raise ImportError in the no-numba environment
+		with pytest.raises(ImportError):
+			agg = aggregate(ds,wm,impl='numba')
+	    
 
 def test_aggregate_twopolys_wdotproduct(ds=ds):
     # Create multiple polygons, to double check, since dot product
@@ -654,6 +684,8 @@ def test_aggregate_4d(ds=ds.copy(),gdf=gdf.copy()):
 	# Get aggregate
 	agg_for = aggregate(ds,wm_for,impl='for_loop')
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
+	if _has_numba:
+		agg_num = aggregate(ds,wm_for,impl='numba') # Can use same wm as for_loop
 
 	# 
 	series_out = pd.Series([[[np.reshape(np.arange(24,36)+0.99933294,(4,3))]],
@@ -661,6 +693,8 @@ def test_aggregate_4d(ds=ds.copy(),gdf=gdf.copy()):
 
 	pd.testing.assert_series_equal(agg_for.agg.test,series_out)
 	pd.testing.assert_series_equal(agg_dot.agg.test,series_out)
+	if _has_numba:
+		pd.testing.assert_series_equal(agg_num.agg.test,series_out)
 
 def test_aggregate_4d_altdimorders(ds=ds.copy(),gdf=gdf.copy()):
 	# Testing to make sure that, no matter the order of dimensions, 
@@ -678,6 +712,8 @@ def test_aggregate_4d_altdimorders(ds=ds.copy(),gdf=gdf.copy()):
 		# Get aggregate
 		agg_for = aggregate(ds,wm_for,impl='for_loop')
 		agg_dot = aggregate(ds,wm_dot,impl='dot_product')
+		if _has_numba:
+			agg_num = aggregate(ds,wm_for,impl='numba') # Can use same wm as for_loop
 
 		# If plev / time (the non-geographic dimensions) are in 
 		# different orders, then the output array will be in a different 
@@ -692,6 +728,59 @@ def test_aggregate_4d_altdimorders(ds=ds.copy(),gdf=gdf.copy()):
 
 		pd.testing.assert_series_equal(agg_for.agg.test,series_out)
 		pd.testing.assert_series_equal(agg_dot.agg.test,series_out)
+		if _has_numba:
+			pd.testing.assert_series_equal(agg_num.agg.test,series_out)
+
+### TEST FOR MULTIPLE VARIABLES
+# Create a 4-D dataframe with multiple variables
+ds = xr.Dataset({'testvar':(['lat','lon','time','plev'],np.reshape(np.arange(1,3*2*4*3+1),(2,3,4,3))),
+				 'testvar2':(['lat','lon','time','plev'],np.reshape(np.arange(3*2*4*3+1,3*2*4*3*2+1),(2,3,4,3))),
+				 'testvar3':(['lat','lon','time'],np.reshape(np.arange(1,3*2*4+1),(2,3,4))),
+				 'lat_bnds':(['lat','bnds'],np.array([[-0.5,0.5],[0.5,1.5]])),
+				 'lon_bnds':(['lon','bnds'],np.array([[-0.5,0.5],[0.5,1.5],[1.5,2.5]]))},
+				coords={'lat':(['lat'],np.array([0,1])),
+						'lon':(['lon'],np.array([0,1,2])),
+						'bnds':(['bnds'],np.array([0,1])),
+						'time':(['time'],pd.date_range('2019-01-01','2019-01-04')),
+                        'plev':(['plev'],np.array([1000,950,900]))})
+
+# Create multiple polygons
+gdf = {'name':['test1','test2'],
+       'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)]),
+                   Polygon([(1,0),(1,1),(2,1),(2,0),(1,0)])]}
+gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+
+def test_aggregate_multiplevars(ds=ds.copy(),gdf=gdf.copy()):
+	# Test 4D aggregation, to make sure it's only aggregating
+	# across lat / lon
+
+	pix_agg = create_raster_polygons(ds)
+
+
+	# Get pixel overlaps
+	wm_for = get_pixel_overlaps(gdf,pix_agg,impl='for_loop')
+	wm_dot = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
+
+	# Get aggregate
+	agg_for = aggregate(ds,wm_for,impl='for_loop')
+	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
+	if _has_numba:
+		agg_num = aggregate(ds,wm_for,impl='numba') # Can use same wm as for_loop
+
+	# 
+	series_out = {'testvar':pd.Series([[[np.reshape(np.arange(24,36)+0.99933294,(4,3))]],
+           					[[np.reshape(np.arange(36,48)+0.99933294,(4,3))]]],name='testvar'),
+				  'testvar2':pd.Series([[[np.reshape(np.arange(96,108)+0.99933294,(4,3))]],
+           					[[np.reshape(np.arange(108,120)+0.99933294,(4,3))]]],name='testvar2'),
+				  'testvar3':pd.Series([[[np.arange(8,12)+0.99977765]],
+           					[[np.arange(12,16)+0.99977765]]],name='testvar3')}
+
+	for var in series_out:
+		pd.testing.assert_series_equal(agg_for.agg[var],series_out[var])
+		pd.testing.assert_series_equal(agg_dot.agg[var],series_out[var])
+		if _has_numba:
+			pd.testing.assert_series_equal(agg_num.agg[var],series_out[var])
+
 
 
 ### NEED A TEST FOR NAN BEHAVIOR
@@ -723,10 +812,14 @@ def test_aggregate_with_all_nans():
 	# Get aggregate
 	agg_for = aggregate(ds,wm_for,impl='for_loop')
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
+	if _has_numba:
+		agg_num = aggregate(ds,wm_for,impl='numba') # Can use same wm as for_loop
 
 	# Should only return nan 
 	pd.testing.assert_series_equal(agg_for.agg.test,pd.Series([[[[np.nan,np.nan,np.nan]]]],name='test'))
 	pd.testing.assert_series_equal(agg_dot.agg.test,pd.Series([[[[np.nan,np.nan,np.nan]]]],name='test'))
+	if _has_numba:
+		pd.testing.assert_series_equal(agg_num.agg.test,pd.Series([[[[np.nan,np.nan,np.nan]]]],name='test'))
 
 def test_aggregate_with_some_gridnans():
 	# This is a test for aggregating across grid nans - i.e., 
@@ -757,10 +850,14 @@ def test_aggregate_with_some_gridnans():
 	# Get aggregate
 	agg_for = aggregate(ds,wm_for,impl='for_loop')
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
+	if _has_numba:
+		agg_num = aggregate(ds,wm_for,impl='numba') # Can use same wm as for_loop
 
 	# Should successfully aggregate
 	pd.testing.assert_series_equal(agg_for.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
 	pd.testing.assert_series_equal(agg_dot.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
+	if _has_numba:
+		pd.testing.assert_series_equal(agg_num.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
 
 
 def test_aggregate_with_partialnans():
@@ -794,6 +891,8 @@ def test_aggregate_with_partialnans():
 		agg_for = aggregate(ds,wm_for,impl='for_loop')
 	with pytest.warns(UserWarning):
 		agg_dot = aggregate(ds,wm_dot,impl='dot_product')
+	if _has_numba:
+		agg_num = aggregate(ds,wm_for,impl='numba')
 
 ##### aggregate() silencing tests #####
 # Create polygon covering multiple pixels

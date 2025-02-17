@@ -41,15 +41,28 @@ This feature is still slightly experimental, so please let us know your experien
 
 Speed up overlap calculation
 ---------------------------------------
-At the expense of increased memory usage, processing may be sped up using an alternate calculation method (``impl='dot_product'``) :: 
+:py:class:`xagg` has a few backend algorithms for aggregation. By default, :py:class:`xagg` uses the ``'for_loop'`` implementation, which minimizes memory use, but can be very slow for certain large datasets. Alternatively, you can use: 
+
+- ``impl = 'dot_product'``: faster, but at the expense of increased memory usage
+- ``impl = 'numba'``: likely fastest for large datasets once compiled, uses the just-in-time compiler from `numba` in ``xa.aggregate()``. Requires :py:class:`numba` to be installed. 
+
+
+Switching to these algorithms is best achieved through setting defaults: :: 
 
    import xagg as xa
    # Set dot_product as default backend implementation 
    xa.set_defaults(impl='dot_product')
 
-Note that the `impl=dot_product` option in individual functions will be
-slowly deprecated over the next few versions in favor of using the option
-setting approach above (or using ``with xa.set_defaults(impl='dot_product'):`` ).
+   # Set numba as default backend implementation
+   xa.set_defaults(impl='numba')
+
+Alternatively, defaults can be set for an individual ``with`` block: ::
+   with xa.set_defaults(impl='...'):
+      wm = xa.pixel_overlaps(ds,gdf)
+      agg = xa.aggregate(ds,wm)
+
+Note that the `impl=...` option in individual functions will be
+slowly deprecated over the next few versions.
 
 Create diagnostic figure to inspect raster/polygon overlaps 
 ------------------------------------------------------------
