@@ -415,6 +415,7 @@ def subset_find(ds0,ds1,silent=None):
     else:
         was_stacked = False
     #if 'loc' not in ds1.sizes:
+    #    raise KeyError("`ds1` must be stacked loc=('lat','lon')")
     #    ds1 = ds1.stack(loc = ('lat','lon'))
     
     # Need a test to make sure the grid is the same. So maybe the gdf_out class 
@@ -427,18 +428,15 @@ def subset_find(ds0,ds1,silent=None):
               'were used for aggregation for efficiency - i.e. [subset_bbox=True] in '+
              'xa.pixel_overlaps())') #(this also happens because ds and ds_bnds above was already subset)
         # Zip up lat,lon pairs to allow comparison
-        latlons = list(zip(ds0.lat.values,ds0.lon.values))
-        latlons0 = list(zip(ds1['lat'].values,ds1['lon'].values))
+        latlons1 = [(lat,lon) for lat, lon in zip(ds1['lat'].values,ds1['lon'].values)]
         
-        # Find indices of the used grid for aggregation in the input grid
-        loc_idxs = [latlons.index(i) for i in latlons0]
+        # Subset by indices of the other grid
+        try:
+            ds0 = ds0.sel({'loc':latlons1})
         
-        if np.allclose(len(loc_idxs),len(latlons0)):
             if not silent:
                 print('grid adjustment successful')
-            # Subset by those indices
-            ds0 = ds0.isel(loc=loc_idxs)
-        else:
+        except KeyError:
             raise ValueError('Was not able to match grids!')
         
     if was_stacked:
