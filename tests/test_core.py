@@ -529,26 +529,30 @@ def test_aggregate_basic_wdotproduct(ds=ds):
 									pd.Series([[[[5.4999,6.4999,7.4999]]]],
 										name='test'),atol=1e-4)
 
-if _has_numba:
-	def test_aggregate_basic_wnumba(ds=ds):
-		# Create polygon covering multiple pixels
-		gdf = {'name':['test'],
-					'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
-		gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
+def test_aggregate_basic_wnumba(ds=ds):
+	# Create polygon covering multiple pixels
+	gdf = {'name':['test'],
+				'geometry':[Polygon([(0,0),(0,1),(1,1),(1,0),(0,0)])]}
+	gdf = gpd.GeoDataFrame(gdf,crs="EPSG:4326")
 
-		pix_agg = create_raster_polygons(ds.copy())
+	pix_agg = create_raster_polygons(ds.copy())
 
-	    # Get pixel overlaps
-		wm = get_pixel_overlaps(gdf,pix_agg)
+    # Get pixel overlaps
+	wm = get_pixel_overlaps(gdf,pix_agg)
 
-	    # Get aggregate
+    # Get aggregate
+	if _has_numba:
 		agg = aggregate(ds,wm,impl='numba')
 
 	    # Same as above with for loop implementation
 		pd.testing.assert_series_equal(agg.agg.test,
 										pd.Series([[[[5.4999,6.4999,7.4999]]]],
 											name='test'),atol=1e-4)
-    
+	else:
+		# Should raise ImportError in the no-numba environment
+		with pytest.raises(ImportError):
+			agg = aggregate(ds,wm,impl='numba')
+	    
 
 def test_aggregate_twopolys_wdotproduct(ds=ds):
     # Create multiple polygons, to double check, since dot product

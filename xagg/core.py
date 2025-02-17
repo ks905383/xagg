@@ -838,6 +838,8 @@ def aggregate(ds,wm,impl=None,silent=None):
         agg_out = aggregated(agg=wm.agg,source_grid=wm.source_grid,
                              geometry=wm.geometry,ds_in=ds,weights=wm.weights)
     elif impl=='numba':
+        if not _has_numba:
+            raise ImportError("impl == 'numba' requires `numba`, which is not installed.")
         # Extract pixel idxs, area overlap for each polygon from weightmap object
         idxs = xr.concat([xr.Dataset({'idxs':(['idx'],np.atleast_1d(np.array(idxs))),
                      'rel_area':(['idx'],np.atleast_1d(np.atleast_1d(np.array(areas))[0]))},

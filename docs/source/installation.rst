@@ -22,6 +22,10 @@ If using `weights` grids to add another weight layer to the aggregation (e.g., w
    mamba install -c conda-forge xesmf
 
 
+If wanting to use the ``numba``-based backend algorithm, :py:mod:`numba` is additionally required. We recommend installing them through ``conda`` or ``mamba``:: 
+
+   mamba install -c conda-forge numba
+
 If wanting to create diagnostic figures using :py:meth:`weightmap.diag_fig()`, :py:mod:`matplotlib`, :py:mod:`cartopy`, and :py:mod:`cmocean` are additionally required. We recommend installing them through ``conda`` or ``mamba``:: 
 
    mamba install -c conda-forge matplotlib cartopy cmocean

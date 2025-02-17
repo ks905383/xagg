@@ -27,7 +27,7 @@ OPTIONS: T_Options = {
 
 
 # Options for the backend implementation
-_IMPL_OPTIONS = frozenset(['for_loop','dot_product'])
+_IMPL_OPTIONS = frozenset(['for_loop','dot_product','numba'])
 # Options for regridding
 _RGRD_OPTIONS = frozenset(['bilinear','conservative'])
 
@@ -56,6 +56,7 @@ class set_options:
 
 		* ``for_loop``: slower, but lower memory use
 		* ``dot_product``: faster, but higher memory use
+		* ``numba``: likely fastest once compiled
 
 	"""
 	
