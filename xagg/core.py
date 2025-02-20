@@ -862,6 +862,10 @@ def aggregate(ds,wm,impl=None,silent=None):
                                    output_dtypes = [float]).to_dataset(name=var)
                                 for var in ds if (('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes))])
 
+                # Trigger computation, otherwise it separately triggers computation
+                # for every poly_idx below, with tremendous overhead 
+                agg = agg.compute()
+
                 # Put in `aggregated` format (TODO: should reform this to remove some of the 
                 # nested lists that are here for some reason)
                 wm.agg[var] = [[[agg[var].sel(poly_idx = idx).values]] for idx in wm.agg.index]
