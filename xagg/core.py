@@ -851,7 +851,7 @@ def aggregate(ds,wm,impl=None,silent=None):
             if ('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes):
                 if not silent:
                     print('aggregating '+var+'...')
-                agg = xr.merge([xr.apply_ufunc(numba_aggregate,
+                agg = xr.apply_ufunc(numba_aggregate,
                                    ds[var],
                                    idxs.idxs,
                                    idxs.rel_area,
@@ -860,7 +860,6 @@ def aggregate(ds,wm,impl=None,silent=None):
                                    vectorize=True,
                                    dask='parallelized',
                                    output_dtypes = [float]).to_dataset(name=var)
-                                for var in ds if (('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes))])
 
                 # Trigger computation, otherwise it separately triggers computation
                 # for every poly_idx below, with tremendous overhead 
