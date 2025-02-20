@@ -841,11 +841,27 @@ def aggregate(ds,wm,impl=None,silent=None):
         if not _has_numba:
             raise ImportError("impl == 'numba' requires `numba`, which is not installed.")
         # Extract pixel idxs, area overlap for each polygon from weightmap object
-        idxs = xr.concat([xr.Dataset({'idxs':(['idx'],np.atleast_1d(np.array(idxs))),
-                     'rel_area':(['idx'],np.atleast_1d(np.atleast_1d(np.array(areas))[0]))},
-                      coords = {'idx':(['idx'],np.arange(len(np.atleast_1d(idxs))))}) 
-         for idxs,areas in zip(wm.agg.pix_idxs.values,wm.agg.rel_area.values)],
-                  dim=pd.Index(wm.agg.poly_idx.values,name='poly_idx'))
+        pix_idxs = [np.atleast_1d(pix) for pix in wm.agg.pix_idxs.values]
+        rel_area = [np.atleast_1d(area[0]) for area in wm.agg.rel_area.values]
+        max_pix = max(len(lst) for lst in pix_idxs)  # Max number of pixels per polygon, to pad to
+
+        # Preallocate arrays filled with NaNs
+        n_polys = len(wm.agg)
+        pix_idxs_padded = np.full((n_polys, max_pix), np.nan)
+        rel_area_padded = np.full((n_polys, max_pix), np.nan)
+
+        # Fill the arrays, padding to max number of pixels with nans
+        for i, (pix_idxs, rel_area) in enumerate(zip(pix_idxs, rel_area)):
+            pix_idxs_padded[i, :len(pix_idxs)] = pix_idxs
+            rel_area_padded[i, :len(rel_area)] = rel_area
+
+        # Put into dataset
+        idxs = xr.Dataset({'idxs': (['poly_idx', 'idx'], pix_idxs_padded),
+                          'rel_area': (['poly_idx', 'idx'], rel_area_padded)},
+                          coords={'poly_idx': wm.agg.poly_idx.values,
+                                    'idx': np.arange(max_pix)}
+                        )
+
 
         for var in ds:
             if ('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes):
