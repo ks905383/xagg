@@ -94,6 +94,8 @@ def _diagnose_nans(da,other_dims,
 
 
     '''
+    # Copy, to make sure the original dataarray is untouched
+    da = da.copy()
 
     # Flag if all values of the variable are nan for some specific coordinate
     # along a dimension (this is not per se a problem, but good to have a 
@@ -111,6 +113,7 @@ def _diagnose_nans(da,other_dims,
     # Now, find for which `locs` there are inconsistent nans 
     somenan_flags = {dim:(da.isnull().any(dim = dim) != 
                           da.isnull().all(dim = dim)).any().values
+                         if da.sizes[dim] != 0 else False
                      for dim in other_dims}
 
     # Combine into single dict
@@ -144,15 +147,17 @@ def _warn_ifsomenans(ds,var,dims,
     that info. Basically, can do a [is in] across pix_idxs to flag
     poly_idxs that should optionally be nan in this case 
     '''
+    if type(ds) == xr.core.dataset.Dataset:
+        ds = ds[var].copy()
     
     if _return_somelocs:
         raise NotImplementedError
 
-        nanflags,somelocs = _diagnose_nans(ds[var],other_dims,
+        nanflags,somelocs = _diagnose_nans(ds,dims,
              _return_somelocs=True)
 
     else:
-        nanflags = _diagnose_nans(ds[var],other_dims)
+        nanflags = _diagnose_nans(ds,dims)
 
 
     if (_warn_trigger_partialnan and 

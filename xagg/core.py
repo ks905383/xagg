@@ -732,8 +732,13 @@ def aggregate(ds,wm,impl=None,silent=None):
                 # either has values for each step, or nans for each step - if
                 # there are random nans along non-location dimensions for the 
                 # same grid cell, throw a warning)
+                print('var_array before _warnifsomenans:')
+                print(var_array)
                 _warn_trigger_partialnan=_warn_ifsomenans(var_array,var,other_dims,
                                                             _warn_trigger_partialnan)
+
+                print('var_array after _warnifsomenans:')
+                print(var_array)
 
                 # multiply percent-overlaps by user-supplied weights 
                 weights_and_overlaps = wm.overlap_da * weights
@@ -761,6 +766,8 @@ def aggregate(ds,wm,impl=None,silent=None):
                 data_dict[var] = aggregated_array
 
         ds_combined = xr.Dataset(data_dict)  
+        print('ds_combined:')
+        print(ds_combined)
 
         for var in ds:
             if ('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes):
@@ -797,7 +804,8 @@ def aggregate(ds,wm,impl=None,silent=None):
                         # either has values for each step, or nans for each step - if
                         # there are random nans along non-location dimensions for the 
                         # same grid cell, throw a warning)
-                        _warn_trigger_partialnan=_warn_ifsomenans(ds,var,other_dims,_warn_trigger_partialnan)
+                        _warn_trigger_partialnan=_warn_ifsomenans(ds,var,other_dims,
+                                                                  _warn_trigger_partialnan)
 
 
                         if not np.isnan(ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)).all(): 
