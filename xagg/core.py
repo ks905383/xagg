@@ -732,13 +732,9 @@ def aggregate(ds,wm,impl=None,silent=None):
                 # either has values for each step, or nans for each step - if
                 # there are random nans along non-location dimensions for the 
                 # same grid cell, throw a warning)
-                print('var_array before _warnifsomenans:')
-                print(var_array)
                 _warn_trigger_partialnan=_warn_ifsomenans(var_array,var,other_dims,
                                                             _warn_trigger_partialnan)
 
-                print('var_array after _warnifsomenans:')
-                print(var_array)
 
                 # multiply percent-overlaps by user-supplied weights 
                 weights_and_overlaps = wm.overlap_da * weights
