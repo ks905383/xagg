@@ -25,6 +25,7 @@ except ImportError:
     _has_numba = False
 
 from xagg.core import (process_weights,create_raster_polygons,get_pixel_overlaps,aggregate,NoOverlapError)
+from xagg.auxfuncs import SomeNanWarning
 from xagg.options import set_options
 
 ##### process_weights() tests #####
@@ -607,12 +608,15 @@ def test_aggregate_with_weights(ds=ds):
 	# Get aggregate
 	agg_for = aggregate(ds,wm_for,impl='for_loop')
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
+	if _has_numba:
+		agg_num = aggregate(ds,wm_for,impl='numba')
 
 	# Since the "test" for the input ds has [1,8] for the two 
 	# equatorial pixels, the average should just be 4 for timestep 1
 	pd.testing.assert_series_equal(agg_for.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
 	pd.testing.assert_series_equal(agg_dot.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
-
+	if _has_numba:
+		pd.testing.assert_series_equal(agg_num.agg.test,pd.Series([[[[4,5,6]]]],name='test'))
 
 
 def test_aggregate_with_mismatched_grid():
@@ -644,9 +648,13 @@ def test_aggregate_with_mismatched_grid():
 	# Get aggregate
 	agg_for = aggregate(ds,wm_for,impl='for_loop')
 	agg_dot = aggregate(ds,wm_dot,impl='dot_product')
+	if _has_numba:
+		agg_num = aggregate(ds,wm_for,impl='numba')
 
 	pd.testing.assert_series_equal(agg_for.agg.test,pd.Series([[[[18.9999,19.9999,20.9999]]]],name='test'),atol=1e-4)
 	pd.testing.assert_series_equal(agg_dot.agg.test,pd.Series([[[[18.9999,19.9999,20.9999]]]],name='test'),atol=1e-4)
+	if _has_numba:
+		pd.testing.assert_series_equal(agg_num.agg.test,pd.Series([[[[18.9999,19.9999,20.9999]]]],name='test'),atol=1e-4)
 
 
 
@@ -871,6 +879,7 @@ def test_aggregate_with_partialnans():
 						'lon':(['lon'],np.array([0,1])),
 						'bnds':(['bnds'],np.array([0,1])),
 						'time':(['time'],pd.date_range('2019-01-01','2019-01-03'))})
+	# Add some nans in some locations at not all time steps
 	ds['test'] = ds['test'].where(((ds.lon!=1) | (ds.lat!=1) | (ds.time!=pd.to_datetime('2019-01-01'))))
 
 	# get aggregation mapping
@@ -887,12 +896,23 @@ def test_aggregate_with_partialnans():
 	wm_dot = get_pixel_overlaps(gdf,pix_agg,impl='dot_product')
 
 	# Get aggregate
-	with pytest.warns(UserWarning):
+	with pytest.warns(SomeNanWarning):
 		agg_for = aggregate(ds,wm_for,impl='for_loop')
-	with pytest.warns(UserWarning):
+	with pytest.warns(SomeNanWarning):
 		agg_dot = aggregate(ds,wm_dot,impl='dot_product')
 	if _has_numba:
-		agg_num = aggregate(ds,wm_for,impl='numba')
+		with pytest.warns(SomeNanWarning):
+			agg_num = aggregate(ds,wm_for,impl='numba')
+
+#def test_aggregate_with_fullnans():
+	# This is a test to make sure that pixels that have no data / are np.nan
+	# are ignored in the final aggregation, and the remaining overlapping
+	# pixels are renormalized
+
+
+#def test_aggregate_with_polynans():
+	# This is a test to make sure that regions that are completely outside
+	# of the dataset are nan of the same shape as the others have data
 
 ##### aggregate() silencing tests #####
 # Create polygon covering multiple pixels

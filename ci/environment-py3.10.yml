@@ -16,6 +16,7 @@ dependencies:
   - esmf >= 8.1.0
   - esmpy >= 8.1.0 
   - pytables
+  - dask
   ##############
   - pytest
   - pip:

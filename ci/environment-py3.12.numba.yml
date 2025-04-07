@@ -17,6 +17,7 @@ dependencies:
   - esmpy >= 8.1.0 
   - pytables
   - numba
+  - dask 
   ##############
   - pytest
   - pip:

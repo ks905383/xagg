@@ -70,6 +70,133 @@ def list_or_first(ser):
     else:
         return lis
 
+def _diagnose_nans(da,other_dims,
+                   _return_somelocs = False):
+    ''' Flag if partial nans in other dims
+
+    Parameters
+    ------------
+    da : :py:class:`xr.DataArray`
+
+    other_dims : :py:class:`list` of :py:meth:`str`
+        Dimensions over which to test nan prevalence
+
+    Returns
+    ------------
+    nanflags : :py:class:`dict`
+        `nanflags['all']` : A dictionary with keys of dimension names 
+                            and values True if any of the coordinates
+                            in that dimension has all nans in the `da`
+        `nanflags['some']` : A dictionary with keys of dimension names
+                             and values True if some coordinates in 
+                             that dimension have nans that other coordinates
+                             do not
+
+
+    '''
+    # Copy, to make sure the original dataarray is untouched
+    da = da.copy()
+
+    # Flag if all values of the variable are nan for some specific coordinate
+    # along a dimension (this is not per se a problem, but good to have a 
+    # flag if needed) 
+    allnan_flags = {dim:da.isnull().all(dim = [d for d in da.sizes if d != dim]).any().values
+                    for dim in other_dims}
+
+    # Flag if some values of the variable are nan for some specific coordinate
+    # along a dimension (this _could_ be a problem, because it means that 
+    # the weights will be different between different values of that coordinate
+    # First, drop all-nan slices, since they're captured above and not as much 
+    # of a problem
+    for dim in other_dims: 
+        da = da.dropna(dim,how='all')
+    # Now, find for which `locs` there are inconsistent nans 
+    somenan_flags = {dim:(da.isnull().any(dim = dim) != 
+                          da.isnull().all(dim = dim)).any().values
+                         if da.sizes[dim] != 0 else False
+                     for dim in other_dims}
+
+    # Combine into single dict
+    nanflags = {'all':allnan_flags,
+                'some':somenan_flags}
+
+    if _return_somelocs:
+        somelocs = {dim:(da.isnull().any(dim = dim) != 
+                          da.isnull().all(dim = dim)).any(dim = [d for d in other_dims if d != dim])
+                     for dim in other_dims}
+
+        return nanflags,somelocs
+    else:
+        return nanflags
+ 
+class SomeNanWarning(UserWarning):
+    ''' Warns when pixels are inconsistently nan along a dimension 
+    '''
+    pass
+
+def _warn_ifsomenans(ds,var,dims,
+                    _warn_trigger_partialnan=True,
+                    _return_somelocs=False):
+    ''' Wrapper for SomeNanWarning with standard text.
+    Triggers warning if `_warn_trigger_partialnan` is True and 
+    `_diagnose_nans(ds[var],other_dims)` returns True for at least
+    one dim for `nanflags['some']` 
+
+    ## TODO - is there a way to flag which poly_idxs this would 
+    affect? Should be, since this is used in xa.aggregate, that has
+    that info. Basically, can do a [is in] across pix_idxs to flag
+    poly_idxs that should optionally be nan in this case 
+    '''
+    if type(ds) == xr.core.dataset.Dataset:
+        ds = ds[var].copy()
+    
+    if _return_somelocs:
+        raise NotImplementedError
+
+        nanflags,somelocs = _diagnose_nans(ds,dims,
+             _return_somelocs=True)
+
+    else:
+        nanflags = _diagnose_nans(ds,dims)
+
+
+    if (_warn_trigger_partialnan and 
+        np.any([flag for dim,flag in nanflags['some'].items()])):
+        dims_with_somenans = [dim for dim,flag in nanflags['some'].items() if flag]
+        
+        warnings.warn('One or more grid cells in variable '+var+' have inconsistent nans along the dimension(s) '+
+                       ', '.join(dims_with_somenans)+' (i.e., one or more grid cells are nan for some but not all coordinates of the dimension(s))'+
+                       '. This means that grid cell weights will be different for different coordinates along '+
+                       ', '.join(dims_with_somenans)+'. The aggregation '+
+                       'calculation may therefore be incorrect, since it aggregates over different grid cells for '+
+                       ' the same polgyon for different coordinates of the dimension(s)'+', '.join(dims_with_somenans)+'.',
+                       SomeNanWarning)
+
+        _warn_trigger_partialnan = False
+
+    if _return_somelocs:
+        from functools import reduce
+        import operator
+
+        # Get all locations that are at partially nan in one direction
+        bad_locs = reduce(operator.or_, somelocs.values())
+        bad_locs = bad_locs.where(bad_locs,drop=True)
+
+        # Get their lat, lon locations
+        bad_coords = [(lat,lon) for lat,lon in zip(bad_locs.lat.values,bad_locs.lon.values)]
+        # Turn into set (for faster indexing)
+        bad_coords = set(bad_coords)
+
+        # Check each list of polygon grid cell overlap coordinates if they contain any bad coordinate
+        # This will need to go into aggregate()
+        #poly_badloc_mask = wm.agg.coords.apply(lambda x: bool(bad_coords.intersection(x)))
+        # and then a later, something that replaces the output in those locations with nan
+
+        return _warn_trigger_partialnan,bad_coords
+    else:
+        return _warn_trigger_partialnan
+   
+
 
 def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
                             'Latitude':{'Latitude':'lat','Longitude':'lon'},

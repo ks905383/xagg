@@ -19,6 +19,7 @@ dependencies:
   - cartopy
   - matplotlib
   - cmocean
+  - dask
   ##############
   - pytest
   - pip:

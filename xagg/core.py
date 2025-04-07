@@ -18,7 +18,7 @@ try:
 except ImportError:
     _has_numba = False
 
-from . auxfuncs import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first)
+from . auxfuncs import (find_rel_area,normalize,fix_ds,get_bnds,subset_find,list_or_first,_warn_ifsomenans)
 from . classes import (weightmap,aggregated)
 from . options import get_options
 
@@ -570,30 +570,35 @@ if _has_numba:
         return vals
 
     @njit
-    def numba_aggregate(data,idxs,weights):
+    def numba_aggregate(data,idxs,rel_area,add_weights=None):
+        if add_weights is None:
+            add_weights = np.ones(len(data))
+        
         # Since idxs, rel_area are stored in a dataarray,
         # in the weightmap, they're padded with nans. 
         # Remove those. 
         idxs = idxs[~np.isnan(idxs)]
-        weights = weights[~np.isnan(weights)]
-
+        rel_area = rel_area[~np.isnan(rel_area)]
+    
         # Get the indices of the data needed
         data = numba_indexer(data,idxs)
+        add_weights = numba_indexer(add_weights,idxs)
 
+        # Normalize area and additional weights to a single
+        # weights vector
+        weights = rel_area * add_weights
+    
         # Make sure to do aggregation only on non-nan pixels
         nans = np.isnan(data)
         data = data[~nans]
         weights = weights[~nans]
-
+    
         if len(data) == 0:
             agg = np.nan
         else:
             agg = np.sum(data*weights)/np.sum(weights)
-
+    
         return agg
-
-    def wrapper_numba_aggregate(data,idxs,rel_area):
-        return agggregate_numba(data,idxs,rel_area)
 #--------------------------------------------
 
 def aggregate(ds,wm,impl=None,silent=None):
@@ -614,8 +619,8 @@ def aggregate(ds,wm,impl=None,silent=None):
     
     Parameters
     ---------------
-    ds : :class:`xarray.Dataset`
-        an :class:`xarray.Dataset` containing one or more
+    ds : :py:class:`xarray.Dataset`
+        an :py:class:`xarray.Dataset` containing one or more
         variables with dimensions lat, lon (and possibly
         more). The dataset's geographic grid has to 
         include the lat/lon coordinates used in 
@@ -623,9 +628,9 @@ def aggregate(ds,wm,impl=None,silent=None):
         :func:`xagg.core.get_pixel_overlaps` (and saved in 
         ``wm['source_grid']``)
                
-    wm : :class:`xagg.classes.weightmap`
+    wm : :py:class:`xagg.classes.weightmap`
         the output to :func:`xagg.core.get_pixel_overlaps`; a 
-        :class:`xagg.classes.weightmap` object containing 
+        :py:class:`xagg.classes.weightmap` object containing 
 
         - ``['agg']``
             a dataframe, 
@@ -638,7 +643,7 @@ def aggregate(ds,wm,impl=None,silent=None):
             were calculated (and on which the linear indices 
             are based)
 
-    impl : :class:str (def: ``'for_loop'``) (set by :py:meth:`xa.set_options`)
+    impl : :py:class:str (def: ``'for_loop'``) (set by :py:meth:`xa.set_options`)
         which aggregation calculation method to use, either of: 
 
         - ``'for_loop'`` 
@@ -725,18 +730,10 @@ def aggregate(ds,wm,impl=None,silent=None):
 
                 # Check first if any nans are "complete" (meaning that a pixel 
                 # either has values for each step, or nans for each step - if
-                # there are random nans within a pixel, throw a warning)
-                if (_warn_trigger_partialnan and 
-                    (not xr.Dataset.equals(np.isnan(var_array).any(other_dims),
-                                           np.isnan(var_array).all(other_dims)))):
-                    warnings.warn('One or more pixels in variable '+var+' have *some* nans in the dimension(s) '+
-                                           ', '.join(other_dims)+
-                                           '. The code can currently only deal with pixels for which the '+
-                                           'pixel is *entirely* nan in all dimensions (or has no nans), however there is currently no '+
-                                           ' support for data in which pixels have only some nan values. The aggregation '+
-                                           'calculation is likely incorrect, since the weights will be different across different '+
-                                           'coordinates in the dimension(s) '+', '.join(other_dims)+'.')
-                    _warn_trigger_partialnan = False
+                # there are random nans along non-location dimensions for the 
+                # same grid cell, throw a warning)
+                _warn_trigger_partialnan=_warn_ifsomenans(var_array,var,other_dims,
+                                                            _warn_trigger_partialnan)
 
 
                 # multiply percent-overlaps by user-supplied weights 
@@ -765,6 +762,8 @@ def aggregate(ds,wm,impl=None,silent=None):
                 data_dict[var] = aggregated_array
 
         ds_combined = xr.Dataset(data_dict)  
+        print('ds_combined:')
+        print(ds_combined)
 
         for var in ds:
             if ('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes):
@@ -799,18 +798,11 @@ def aggregate(ds,wm,impl=None,silent=None):
                         other_dims = [k for k in np.atleast_1d(ds[var].sizes) if k != 'loc']
                         # Check first if any nans are "complete" (meaning that a pixel 
                         # either has values for each step, or nans for each step - if
-                        # there are random nans within a pixel, throw a warning)
-                        if (_warn_trigger_partialnan and 
-                            (not xr.Dataset.equals(np.isnan(ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)).any(other_dims),
-                                                   np.isnan(ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)).all(other_dims)))):
-                            warnings.warn('One or more pixels in variable '+var+' have *some* nans in the dimension(s) '+
-                                           ', '.join(other_dims)+
-                                           '. The code can currently only deal with pixels for which the '+
-                                           'pixel is *entirely* nan in all dimensions (or has no nans), however there is currently no '+
-                                           ' support for data in which pixels have only some nan values. The aggregation '+
-                                           'calculation is likely incorrect, since the weights will be different across different '+
-                                           'coordinates in the dimension(s) '+', '.join(other_dims)+'.')
-                            _warn_trigger_partialnan = False
+                        # there are random nans along non-location dimensions for the 
+                        # same grid cell, throw a warning)
+                        _warn_trigger_partialnan=_warn_ifsomenans(ds,var,other_dims,
+                                                                  _warn_trigger_partialnan)
+
 
                         if not np.isnan(ds[var].isel(loc=wm.agg.iloc[poly_idx,:].pix_idxs)).all(): 
                             # Get relative areas for the pixels overlapping with this Polygon
@@ -841,26 +833,65 @@ def aggregate(ds,wm,impl=None,silent=None):
         if not _has_numba:
             raise ImportError("impl == 'numba' requires `numba`, which is not installed.")
         # Extract pixel idxs, area overlap for each polygon from weightmap object
-        idxs = xr.concat([xr.Dataset({'idxs':(['idx'],np.atleast_1d(np.array(idxs))),
-                     'rel_area':(['idx'],np.atleast_1d(np.atleast_1d(np.array(areas))[0]))},
-                      coords = {'idx':(['idx'],np.arange(len(np.atleast_1d(idxs))))}) 
-         for idxs,areas in zip(wm.agg.pix_idxs.values,wm.agg.rel_area.values)],
-                  dim=pd.Index(wm.agg.poly_idx.values,name='poly_idx'))
+        pix_idxs = [np.atleast_1d(pix) for pix in wm.agg.pix_idxs.values]
+        rel_area = [np.atleast_1d(area[0]) if area is not np.nan else 
+                    np.atleast_1d(np.nan) for area in wm.agg.rel_area.values]
+        max_pix = max(len(lst) for lst in pix_idxs)  # Max number of pixels per polygon, to pad to
+
+        # Preallocate arrays filled with NaNs
+        n_polys = len(wm.agg)
+        pix_idxs_padded = np.full((n_polys, max_pix), np.nan)
+        rel_area_padded = np.full((n_polys, max_pix), np.nan)
+
+        # Fill the arrays, padding to max number of pixels with nans
+        for i, (pix_idxs, rel_area) in enumerate(zip(pix_idxs, rel_area)):
+            pix_idxs_padded[i, :len(pix_idxs)] = pix_idxs
+            rel_area_padded[i, :len(rel_area)] = rel_area
+
+        # Put into dataset
+        idxs = xr.Dataset({'idxs': (['poly_idx', 'idx'], pix_idxs_padded),
+                          'rel_area': (['poly_idx', 'idx'], rel_area_padded)},
+                          coords={'poly_idx': wm.agg.poly_idx.values,
+                                    'idx': np.arange(max_pix)}
+                        )
+        # Make into dask array 
+        idxs = idxs.chunk({'poly_idx':'auto','idx':-1})
+
+        # Make weights data array, to put into apply_ufunc below
+        weights = xr.DataArray(weights,
+                            dims = ['loc'],
+                            coords = {'loc':ds.loc})
 
         for var in ds:
             if ('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes):
                 if not silent:
                     print('aggregating '+var+'...')
-                agg = xr.merge([xr.apply_ufunc(numba_aggregate,
+
+                # Get the dimensions of the variable that aren't "loc" (location)
+                other_dims = [k for k in np.atleast_1d(ds[var].sizes) if k != 'loc']
+
+                # Check first if any nans are "complete" (meaning that a pixel 
+                # either has values for each step, or nans for each step - if
+                # there are random nans along non-location dimensions for the 
+                # same grid cell, throw a warning)
+                _warn_trigger_partialnan=_warn_ifsomenans(ds,var,other_dims,
+                                                          _warn_trigger_partialnan)
+
+                # Aggregate
+                agg = xr.apply_ufunc(numba_aggregate,
                                    ds[var],
                                    idxs.idxs,
                                    idxs.rel_area,
-                                   input_core_dims = [['loc'],['idx'],['idx']],
+                                   weights,
+                                   input_core_dims = [['loc'],['idx'],['idx'],['loc']],
                                    output_core_dims = [[]],
                                    vectorize=True,
                                    dask='parallelized',
                                    output_dtypes = [float]).to_dataset(name=var)
-                                for var in ds if (('bnds' not in ds[var].sizes) and ('loc' in ds[var].sizes))])
+
+                # Trigger computation, otherwise it separately triggers computation
+                # for every poly_idx below, with tremendous overhead 
+                agg = agg.compute()
 
                 # Put in `aggregated` format (TODO: should reform this to remove some of the 
                 # nested lists that are here for some reason)
