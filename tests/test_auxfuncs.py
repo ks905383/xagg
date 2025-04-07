@@ -310,5 +310,44 @@ def test_subset_find_nomatch():
 		subset_find(ds0,ds1)
 
 
+###### _diagnose_nans tests ######
+dims = ['lat','lon','dim1','dim2']
+da = xr.DataArray(np.random.rand(*([2]*len(dims))),
+                  dims = dims,
+                  coords = {dim:[0,1] for dim in dims})
+
+# Stack, which _diagnose_nans expects (well, not really, but 
+# this is the form that it'll always get it)
+da = da.stack(loc = ['lat','lon'])
+
+def test_diagnose_nans_all(da=da):
+    da = da.copy()
+
+    # Now, make all values along one of the dim1 coordinates nan
+    da.loc[{'dim1':0}] = np.nan
+
+    # Run _diagnose_nans
+    nanflags = _diagnose_nans(da,other_dims = ['dim1','dim2'])
+
+    # Make sure 'all' and only 'all' is triggered, and only for dim 1
+    assert nanflags['all']['dim1']
+    assert not nanflags['all']['dim2']
+    assert np.all(~flag for flag in nanflags['some'])
+
+def test_diagnose_nans_some(da=da):
+    da = da.copy()
+
+    # Now, make one value in a single location alog one of the dim1 
+    # coordinates nan
+    da.loc[{'lon':0,'dim1':0}] = np.nan
+
+    # Run _diagnose_nans
+    nanflags = _diagnose_nans(da,other_dims = ['dim1','dim2'])
+
+    # Make sure 'some' and only 'some' is triggered, and only for dim 1
+    assert nanflags['some']['dim1']
+    assert not nanflags['some']['dim2']
+    assert np.all(~flag for flag in nanflags['all'])
+
 
 

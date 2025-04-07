@@ -904,13 +904,13 @@ def test_aggregate_with_partialnans():
 		with pytest.warns(SomeNanWarning):
 			agg_num = aggregate(ds,wm_for,impl='numba')
 
-def test_aggregate_with_fullnans():
+#def test_aggregate_with_fullnans():
 	# This is a test to make sure that pixels that have no data / are np.nan
 	# are ignored in the final aggregation, and the remaining overlapping
 	# pixels are renormalized
 
 
-def test_aggregate_with_polynans():
+#def test_aggregate_with_polynans():
 	# This is a test to make sure that regions that are completely outside
 	# of the dataset are nan of the same shape as the others have data
 

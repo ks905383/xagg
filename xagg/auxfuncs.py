@@ -70,7 +70,8 @@ def list_or_first(ser):
     else:
         return lis
 
-def _diagnose_nans(da,other_dims):
+def _diagnose_nans(da,other_dims,
+                   _return_somelocs = False):
     ''' Flag if partial nans in other dims
 
     Parameters
@@ -116,20 +117,43 @@ def _diagnose_nans(da,other_dims):
     nanflags = {'all':allnan_flags,
                 'some':somenan_flags}
 
-    return nanflags
+    if _return_somelocs:
+        somelocs = {dim:(da.isnull().any(dim = dim) != 
+                          da.isnull().all(dim = dim)).any(dim = [d for d in other_dims if d != dim])
+                     for dim in other_dims}
+
+        return nanflags,somelocs
+    else:
+        return nanflags
  
 class SomeNanWarning(UserWarning):
     ''' Warns when pixels are inconsistently nan along a dimension 
     '''
     pass
 
-def _warn_ifsomenans(ds,var,dims,_warn_trigger_partialnan=True):
+def _warn_ifsomenans(ds,var,dims,
+                    _warn_trigger_partialnan=True,
+                    _return_somelocs=False):
     ''' Wrapper for SomeNanWarning with standard text.
     Triggers warning if `_warn_trigger_partialnan` is True and 
     `_diagnose_nans(ds[var],other_dims)` returns True for at least
     one dim for `nanflags['some']` 
+
+    ## TODO - is there a way to flag which poly_idxs this would 
+    affect? Should be, since this is used in xa.aggregate, that has
+    that info. Basically, can do a [is in] across pix_idxs to flag
+    poly_idxs that should optionally be nan in this case 
     '''
-    nanflags = _diagnose_nans(ds[var],other_dims)
+    
+    if _return_somelocs:
+        raise NotImplementedError
+
+        nanflags,somelocs = _diagnose_nans(ds[var],other_dims,
+             _return_somelocs=True)
+
+    else:
+        nanflags = _diagnose_nans(ds[var],other_dims)
+
 
     if (_warn_trigger_partialnan and 
         np.any([flag for dim,flag in nanflags['some'].items()])):
@@ -144,7 +168,28 @@ def _warn_ifsomenans(ds,var,dims,_warn_trigger_partialnan=True):
                        SomeNanWarning)
 
         _warn_trigger_partialnan = False
-    return _warn_trigger_partialnan
+
+    if _return_somelocs:
+        from functools import reduce
+        import operator
+
+        # Get all locations that are at partially nan in one direction
+        bad_locs = reduce(operator.or_, somelocs.values())
+        bad_locs = bad_locs.where(bad_locs,drop=True)
+
+        # Get their lat, lon locations
+        bad_coords = [(lat,lon) for lat,lon in zip(bad_locs.lat.values,bad_locs.lon.values)]
+        # Turn into set (for faster indexing)
+        bad_coords = set(bad_coords)
+
+        # Check each list of polygon grid cell overlap coordinates if they contain any bad coordinate
+        # This will need to go into aggregate()
+        #poly_badloc_mask = wm.agg.coords.apply(lambda x: bool(bad_coords.intersection(x)))
+        # and then a later, something that replaces the output in those locations with nan
+
+        return _warn_trigger_partialnan,bad_coords
+    else:
+        return _warn_trigger_partialnan
    
 
 
