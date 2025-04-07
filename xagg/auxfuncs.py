@@ -70,6 +70,83 @@ def list_or_first(ser):
     else:
         return lis
 
+def _diagnose_nans(da,other_dims):
+    ''' Flag if partial nans in other dims
+
+    Parameters
+    ------------
+    da : :py:class:`xr.DataArray`
+
+    other_dims : :py:class:`list` of :py:meth:`str`
+        Dimensions over which to test nan prevalence
+
+    Returns
+    ------------
+    nanflags : :py:class:`dict`
+        `nanflags['all']` : A dictionary with keys of dimension names 
+                            and values True if any of the coordinates
+                            in that dimension has all nans in the `da`
+        `nanflags['some']` : A dictionary with keys of dimension names
+                             and values True if some coordinates in 
+                             that dimension have nans that other coordinates
+                             do not
+
+
+    '''
+
+    # Flag if all values of the variable are nan for some specific coordinate
+    # along a dimension (this is not per se a problem, but good to have a 
+    # flag if needed) 
+    allnan_flags = {dim:da.isnull().all(dim = [d for d in da.sizes if d != dim]).any().values
+                    for dim in other_dims}
+
+    # Flag if some values of the variable are nan for some specific coordinate
+    # along a dimension (this _could_ be a problem, because it means that 
+    # the weights will be different between different values of that coordinate
+    # First, drop all-nan slices, since they're captured above and not as much 
+    # of a problem
+    for dim in other_dims: 
+        da = da.dropna(dim,how='all')
+    # Now, find for which `locs` there are inconsistent nans 
+    somenan_flags = {dim:(da.isnull().any(dim = dim) != 
+                          da.isnull().all(dim = dim)).any().values
+                     for dim in other_dims}
+
+    # Combine into single dict
+    nanflags = {'all':allnan_flags,
+                'some':somenan_flags}
+
+    return nanflags
+ 
+class SomeNanWarning(UserWarning):
+    ''' Warns when pixels are inconsistently nan along a dimension 
+    '''
+    pass
+
+def _warn_ifsomenans(ds,var,dims,_warn_trigger_partialnan=True):
+    ''' Wrapper for SomeNanWarning with standard text.
+    Triggers warning if `_warn_trigger_partialnan` is True and 
+    `_diagnose_nans(ds[var],other_dims)` returns True for at least
+    one dim for `nanflags['some']` 
+    '''
+    nanflags = _diagnose_nans(ds[var],other_dims)
+
+    if (_warn_trigger_partialnan and 
+        np.any([flag for dim,flag in nanflags['some'].items()])):
+        dims_with_somenans = [dim for dim,flag in nanflags['some'].items() if flag]
+        
+        warnings.warn('One or more grid cells in variable '+var+' have inconsistent nans along the dimension(s) '+
+                       ', '.join(dims_with_somenans)+' (i.e., one or more grid cells are nan for some but not all coordinates of the dimension(s))'+
+                       '. This means that grid cell weights will be different for different coordinates along '+
+                       ', '.join(dims_with_somenans)+'. The aggregation '+
+                       'calculation may therefore be incorrect, since it aggregates over different grid cells for '+
+                       ' the same polgyon for different coordinates of the dimension(s)'+', '.join(dims_with_somenans)+'.',
+                       SomeNanWarning)
+
+        _warn_trigger_partialnan = False
+    return _warn_trigger_partialnan
+   
+
 
 def fix_ds(ds,var_cipher = {'latitude':{'latitude':'lat','longitude':'lon'},
                             'Latitude':{'Latitude':'lat','Longitude':'lon'},

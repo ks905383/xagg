@@ -2,8 +2,9 @@
 __pycache__/
 *.py[cod]
 
-# Internal test notebooks
+# Internal test notebooks and files
 *test*.ipynb
+*tmp*.py
 
 # xagg /wm/ directories created during docs processing
 wm/
